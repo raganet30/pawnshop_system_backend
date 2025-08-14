@@ -1,0 +1,20 @@
+<?php
+$host = "127.0.0.1";
+$dbname = "pawnshop_db";
+$user = "root"; // change if your MySQL has a password
+$pass = "";
+
+try {
+    $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (PDOException $e) {
+    // Display a user-friendly message and stop execution
+    echo "<h2 style='color:red;'>Database Connection Failed</h2>";
+    echo "<p>Please check your database settings in <code>config/db.php</code></p>";
+    echo "<p><strong>Error Details:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
+    exit;
+}
+?>
