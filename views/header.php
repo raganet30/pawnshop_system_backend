@@ -12,11 +12,6 @@
 <link rel="stylesheet" href="../assets/css/bootstrap-icons.css">
 <link rel="stylesheet" href="../assets/css/style.css">
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 2397e9ba81146674cc06b2f589731cd7ab573737
 </head>
 <body>
 

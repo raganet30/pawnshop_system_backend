@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom px-0">
     <!-- Sidebar toggle button always at far left -->
-    <button class="btn btn-primary " id="sidebarToggleTop">
+    <button class="btn btn-secondary " id="sidebarToggleTop" >
         <i class="bi bi-list"></i>
     </button>
 
