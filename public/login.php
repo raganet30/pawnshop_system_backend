@@ -1,5 +1,6 @@
 <?php
 session_start();
+<<<<<<< HEAD
 
 // If user already logged in, go directly to dashboard
 if (isset($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
@@ -7,6 +8,8 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
     exit();
 }
 
+=======
+>>>>>>> 2397e9ba81146674cc06b2f589731cd7ab573737
 include '../views/header.php';
 ?>
 <div class="container d-flex justify-content-center align-items-center vh-100">
@@ -23,7 +26,11 @@ include '../views/header.php';
                 Swal.fire({
                     icon: 'error',
                     title: 'Login Failed',
+<<<<<<< HEAD
                     text: '<?php echo $_SESSION['error']; ?>',
+=======
+                    text: <?= json_encode($_SESSION['error']) ?>,
+>>>>>>> 2397e9ba81146674cc06b2f589731cd7ab573737
                 });
             });
             </script>

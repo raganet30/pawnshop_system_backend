@@ -108,6 +108,7 @@
     display: flex;
     flex-direction: column;
 }
+<<<<<<< HEAD
 
 
 /* for side bar and content style */
@@ -126,3 +127,5 @@
     #page-content-wrapper {
         flex: 1;
     }
+=======
+>>>>>>> 2397e9ba81146674cc06b2f589731cd7ab573737

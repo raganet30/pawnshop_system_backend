@@ -238,4 +238,24 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
+<<<<<<< HEAD
 
+=======
+<style>
+    #wrapper {
+        display: flex;
+        width: 100%;
+    }
+    #sidebar-wrapper {
+        min-width: 250px;
+        max-width: 250px;
+        transition: all 0.3s;
+    }
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -250px;
+    }
+    #page-content-wrapper {
+        flex: 1;
+    }
+</style>
+>>>>>>> 2397e9ba81146674cc06b2f589731cd7ab573737
