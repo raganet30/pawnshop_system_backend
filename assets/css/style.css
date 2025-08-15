@@ -1,0 +1,128 @@
+/* Sidebar container */
+#sidebar-wrapper {
+    background-color: #343a40; /* Dark Bootstrap gray */
+    border-right: 1px solid #212529;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+/* Sidebar heading */
+#sidebar-wrapper .sidebar-heading {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 15px;
+}
+
+/* Sidebar links */
+#sidebar-wrapper .list-group-item {
+    background-color: transparent;
+    color: #adb5bd;
+    border: none;
+    padding: 12px 20px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#sidebar-wrapper .list-group-item i {
+    font-size: 18px;
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #495057;
+    color: #fff;
+}
+
+/* Active link */
+#sidebar-wrapper .list-group-item.active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+/* Collapsed sidebar */
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: -250px;
+}
+
+/* Topbar */
+.navbar {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.navbar .nav-link {
+    color: #495057;
+}
+
+.navbar .nav-link:hover {
+    color: #0d6efd;
+}
+
+/* ========================= */
+/* Dashboard Responsive UI   */
+/* ========================= */
+
+/* Grid for stat cards */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+/* Individual card style */
+.dashboard-card {
+    flex: 1;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Tables and charts fill space */
+.card .table-responsive,
+.card canvas {
+    width: 100% !important;
+}
+
+/* Chart height for large screens */
+
+
+/* Make main content stretch to bottom */
+#page-content-wrapper {
+    padding: 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container-fluid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* for side bar and content style */
+    #wrapper {
+        display: flex;
+        width: 100%;
+    }
+    #sidebar-wrapper {
+        min-width: 250px;
+        max-width: 250px;
+        transition: all 0.3s;
+    }
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -250px;
+    }
+    #page-content-wrapper {
+        flex: 1;
+    }

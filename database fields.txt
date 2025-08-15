@@ -1,0 +1,16 @@
+pawned_items:
+pawn_id
+branch_id
+owner_name
+contact_no
+address
+unit_description
+category_id
+amount_pawned
+interest
+date_pawned
+status
+
+categories:
+category_id
+category_name
