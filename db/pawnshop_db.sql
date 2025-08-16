@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 14, 2025 at 04:20 PM
+-- Generation Time: Aug 16, 2025 at 09:47 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -51,6 +51,8 @@ CREATE TABLE `branches` (
   `branch_address` varchar(255) DEFAULT NULL,
   `branch_phone` varchar(30) DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
+  `interest_rate` decimal(5,4) DEFAULT 0.0600,
+  `cash_on_hand` decimal(12,2) DEFAULT 0.00,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -58,9 +60,9 @@ CREATE TABLE `branches` (
 -- Dumping data for table `branches`
 --
 
-INSERT INTO `branches` (`branch_id`, `branch_name`, `branch_address`, `branch_phone`, `status`, `created_at`) VALUES
-(1, 'Main Branch', '123 Central Ave, City', '09171234567', 'active', '2025-08-14 12:57:02'),
-(2, 'West Branch', '45 West St, City', '09181234567', 'active', '2025-08-14 12:57:02');
+INSERT INTO `branches` (`branch_id`, `branch_name`, `branch_address`, `branch_phone`, `status`, `interest_rate`, `cash_on_hand`, `created_at`) VALUES
+(1, 'Main Branch', 'Navarro St. , Calbayog City, Samar', '09171234567', 'active', 0.0600, 1000.00, '2025-08-14 12:57:02'),
+(2, 'Sample 2nd Branch', 'Sample', '09181234567', 'active', 0.0600, 0.00, '2025-08-14 12:57:02');
 
 -- --------------------------------------------------------
 
@@ -185,6 +187,7 @@ CREATE TABLE `pawned_items` (
   `interest_amount` decimal(10,2) DEFAULT NULL,
   `date_pawned` date NOT NULL,
   `date_claimed` date DEFAULT NULL,
+  `claimant_photo` varchar(255) DEFAULT NULL,
   `date_forfeited` date DEFAULT NULL,
   `status` enum('pawned','claimed','forfeited') NOT NULL DEFAULT 'pawned',
   `notes` text DEFAULT NULL,
@@ -198,10 +201,19 @@ CREATE TABLE `pawned_items` (
 -- Dumping data for table `pawned_items`
 --
 
-INSERT INTO `pawned_items` (`pawn_id`, `branch_id`, `owner_name`, `contact_no`, `address`, `unit_description`, `category`, `amount_pawned`, `interest_rate`, `interest_amount`, `date_pawned`, `date_claimed`, `date_forfeited`, `status`, `notes`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Juan Dela Cruz', '09170000001', 'City', 'iPhone 12 128GB', 'Gadgets', 15000.00, 6.00, NULL, '2025-07-10', NULL, NULL, 'pawned', NULL, NULL, NULL, '2025-08-14 12:57:02', NULL),
-(2, 1, 'Maria Santos', '09170000002', 'City', 'Samsung 55\" TV', 'Appliances', 22000.00, 6.00, 1320.00, '2025-06-01', '2025-07-01', NULL, 'claimed', '1 month min interest', NULL, NULL, '2025-08-14 12:57:02', NULL),
-(3, 2, 'Pedro Reyes', '09170000003', 'City', 'Gold Ring 18k', 'Jewelry', 12000.00, 6.00, NULL, '2025-05-15', NULL, '2025-07-20', 'forfeited', 'Unclaimed >60 days', NULL, NULL, '2025-08-14 12:57:02', NULL);
+INSERT INTO `pawned_items` (`pawn_id`, `branch_id`, `owner_name`, `contact_no`, `address`, `unit_description`, `category`, `amount_pawned`, `interest_rate`, `interest_amount`, `date_pawned`, `date_claimed`, `claimant_photo`, `date_forfeited`, `status`, `notes`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Mae Tan', '09123456789', 'City', 'iPhone 14', 'Gadgets', 9000.00, 6.00, 540.00, '2025-08-15', '2025-08-16', NULL, NULL, 'claimed', 'Brgy. Sabang', NULL, NULL, '2025-08-14 12:57:02', '2025-08-15 16:31:58'),
+(2, 1, 'Maria Santos', '09170000002', 'City', 'Samsung 55\" TV', 'Appliances', 22000.00, 6.00, 1320.00, '2025-06-01', '2025-07-01', NULL, NULL, 'claimed', '1 month min interest', NULL, NULL, '2025-08-14 12:57:02', NULL),
+(3, 2, 'Pedro Reyes', '09170000003', 'City', 'Gold Ring 18k', 'Jewelry', 12000.00, 6.00, NULL, '2025-05-15', NULL, NULL, '2025-07-20', 'pawned', 'sample', NULL, NULL, '2025-08-14 12:57:02', '2025-08-16 03:52:31'),
+(4, 1, 'Test Owner', '09123456789', NULL, 'realme 8i', 'Gadgets', 2000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'Test', NULL, NULL, '2025-08-16 04:16:02', NULL),
+(5, 1, 'Juan Tamad', '09123456789', NULL, 'oppo', 'Gadgets', 2000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'Test', NULL, NULL, '2025-08-16 04:16:48', NULL),
+(6, 1, 'Juan Tamad', '09123456789', NULL, 'oppo', 'Computer', 2000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'Test', NULL, NULL, '2025-08-16 04:17:09', NULL),
+(7, 1, 'Juan Dela Cruz', '09123456789', NULL, 'oppo', 'Gadgets', 2000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'test note', NULL, NULL, '2025-08-16 04:19:52', NULL),
+(8, 1, 'Juan Dela Cruz', '09123456789', NULL, 'oppo', 'Camera', 2000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'test note', NULL, NULL, '2025-08-16 04:20:01', NULL),
+(9, 1, 'Mae Tan', '09123456789', NULL, 'Samsung Ultra', 'Gadgets', 5000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'test note', NULL, NULL, '2025-08-16 04:26:54', NULL),
+(10, 1, 'Mae Tan', '09123456789', NULL, 'Samsung Ultra', 'Others', 100000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'test note', NULL, NULL, '2025-08-16 05:38:04', NULL),
+(11, 1, 'Mae Tan', '09123456789', NULL, 'Samsung Ultra', 'Camera', 1000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'test note', NULL, NULL, '2025-08-16 06:10:13', NULL),
+(12, 1, 'Mae Tan', '09123456789', NULL, 'Samsung Ultra', 'Gadgets', 10000.00, 6.00, NULL, '2025-08-16', NULL, NULL, NULL, 'pawned', 'test note', NULL, NULL, '2025-08-16 06:10:36', NULL);
 
 -- --------------------------------------------------------
 
@@ -270,7 +282,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `branch_id`, `username`, `password_hash`, `role`, `full_name`, `status`, `last_login`, `created_at`) VALUES
-(8, 1, 'admin', '$2y$10$npjSjuSvSvk9XzmFNK0F2e6cWLst/qJvJSj1nejEw23ARNmzmnjJa', 'admin', 'Admin User', 'active', NULL, '2025-08-14 13:36:07'),
+(8, 1, 'admin', '$2y$10$npjSjuSvSvk9XzmFNK0F2e6cWLst/qJvJSj1nejEw23ARNmzmnjJa', 'super_admin', 'Admin User', 'active', NULL, '2025-08-14 13:36:07'),
 (9, 1, 'cashier', '$2y$10$KaSPllnDlu3.wz39UXATQuyLwkxRkZCfnjvNcvCfuxyBP8d/ktafq', 'cashier', 'Cashier User', 'active', NULL, '2025-08-14 13:36:07'),
 (10, 1, 'manager', '$2y$10$m63O6yvN/Y9NpdffaR43YONv4D/np5fTbkR7Ad8K7yL4qxNOx1fDu', '', 'Manager User', 'active', NULL, '2025-08-14 13:36:07');
 
@@ -405,7 +417,7 @@ ALTER TABLE `interest_rates`
 -- AUTO_INCREMENT for table `pawned_items`
 --
 ALTER TABLE `pawned_items`
-  MODIFY `pawn_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `pawn_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `remata_sales`

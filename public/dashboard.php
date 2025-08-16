@@ -8,87 +8,6 @@ if (!isset($_SESSION['user'])) {
 require_once "../config/db.php";
 include '../views/header.php';
 
-/* =======================
-   SUMMARY CARDS QUERIES
-   ======================= */
-
-// 1. Total Pawned Units
-// $total_pawned_units = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'pawned'")->fetchColumn();
-
-// 2. Total Value of Pawned Items
-// $total_value_pawned = $pdo->query("SELECT COALESCE(SUM(amount_pawned),0) FROM pawned_items WHERE status = 'pawned'")->fetchColumn();
-
-// Query to get total pawned units and total value
-$pawned_stats = $pdo->query("
-    SELECT 
-        COUNT(*) AS total_units,
-        COALESCE(SUM(amount_pawned), 0) AS total_value
-    FROM pawned_items
-    WHERE status = 'pawned'
-")->fetch(PDO::FETCH_ASSOC);
-
-
-// 3. Cash on Hand (Pawned Amounts + Claimed Interest)
-$cash_on_hand = $pdo->query("
-    SELECT 
-        (SELECT COALESCE(SUM(amount_pawned),0) FROM pawned_items WHERE status = 'pawned') +
-        (SELECT COALESCE(SUM(interest_amount),0) FROM pawned_items WHERE status = 'claimed')
-")->fetchColumn();
-
-
-// 4. Daily Interest Accumulated (Today's claimed interest)
-$daily_interest = $pdo->query("
-    SELECT COALESCE(SUM(interest_amount),0) FROM pawned_items 
-    WHERE status = 'claimed' AND DATE(date_claimed) = CURDATE()
-")->fetchColumn();
-
-// 5. Daily Total Cash (Cash On Hand + Daily Interest)
-$daily_total_cash = $cash_on_hand + $daily_interest;
-
-// 6. Grand Total Interest Accumulated
-$grand_total_interest = $pdo->query("SELECT COALESCE(SUM(interest_amount),0) FROM pawned_items WHERE status = 'claimed'")->fetchColumn();
-
-// 7. Grand Total Cash (Grand Interest + Cash On Hand)
-$grand_total_cash = $grand_total_interest + $cash_on_hand;
-
-// 8. Forfeited Items Qty
-$forfeited_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'forfeited'")->fetchColumn();
-
-/* =======================
-   RECENT PAWNED ITEMS
-   ======================= */
-$recent_items = $pdo->query("
-    SELECT date_pawned, owner_name, unit_description, category, amount_pawned, status 
-    FROM pawned_items   where status = 'pawned'
-    ORDER BY date_pawned DESC 
-    LIMIT 10
-")->fetchAll(PDO::FETCH_ASSOC);
-
-// Monthly trend: Pawned and Interest per month (last 12 months)
-$trend_stmt = $pdo->query("
-    SELECT 
-        DATE_FORMAT(date_pawned, '%Y-%m') AS month,
-        COALESCE(SUM(amount_pawned), 0) AS total_pawned,
-        COALESCE(SUM(interest_amount), 0) AS total_interest
-    FROM pawned_items
-    WHERE date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-    GROUP BY month
-    ORDER BY month ASC
-");
-
-$trend_data = $trend_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Prepare arrays for Chart.js
-$trend_months = [];
-$trend_pawned = [];
-$trend_interest = [];
-
-foreach ($trend_data as $row) {
-    $trend_months[] = date("M Y", strtotime($row['month'] . "-01"));
-    $trend_pawned[] = (float)$row['total_pawned'];
-    $trend_interest[] = (float)$row['total_interest'];
-}
-
 
 ?>
 
@@ -101,45 +20,73 @@ foreach ($trend_data as $row) {
         <?php include '../views/topbar.php'; ?>
 
         <div class="container-fluid mt-4">
-           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Dashboard</h4>
-            <div>
-              <a href="#"><button class="btn btn-success" data-section="pawn-add">New Pawn</button></a>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Dashboard</h4>
+                <!-- <div>
+              <a href="pawns.php"><button class="btn btn-success" data-section="pawn-add">New Pawn</button></a>
               <button class="btn btn-outline-secondary" id="refreshBtn" >Refresh</button>
+            </div> -->
             </div>
-          </div>
 
             <!-- Summary Cards -->
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5>Pawned Items</h5>
-                            <p class="mb-1">Total Units: <strong><?= $pawned_stats['total_units'] ?> | </strong> Total Value: <strong>₱<?= number_format($pawned_stats['total_value'], 2) ?></strong></p>
-                            <!-- <p class="mb-0"></p> -->
-                        </div>
+            <div class="row g-2 mb-3">
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Pawned Items</div>
+                        <h3 id="pawnedUnits">0</h3>
                     </div>
                 </div>
-                <div class="col-md-3"><div class="card p-3 text-center"><div class="text-muted">Cash on Hand</div><h3>₱<?= number_format($cash_on_hand, 2) ?></h3></div></div>
-                <div class="col-md-3"><div class="card p-3 text-center"><div class="text-muted">Daily Interest Accumulated</div><h3>₱<?= number_format($daily_interest, 2) ?></h3></div></div>
-                <div class="col-md-3"><div class="card p-3 text-center"><div class="text-muted">Daily Total Cash (COH+Intrest)</div><h3>₱<?= number_format($daily_total_cash, 2) ?></h3></div></div>
-                <div class="col-md-3"><div class="card p-3 text-center"><div class="text-muted">Grand Total Interest</div><h3>₱<?= number_format($grand_total_interest, 2) ?></h3></div></div>
-                <div class="col-md-3"><div class="card p-3 text-center"><div class="text-muted">Grand Total Cash</div><h3>₱<?= number_format($grand_total_cash, 2) ?></h3></div></div>
-                <div class="col-md-3"><div class="card p-3 text-center"><div class="text-muted">Forfeited Items</div><h3><?= number_format($forfeited_qty) ?></h3></div></div>
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Claimed Items</div>
+                        <h3 id="claimedItems">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Forfeited Items</div>
+                        <h3 id="forfeitedItems">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Pawned Items Total Value</div>
+                        <h3 id="pawnedValue">₱0.00</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Cash on Hand</div>
+                        <h3 id="cashOnHand">₱0.00</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Daily Interest Accumulated</div>
+                        <h3 id="dailyInterest">₱0.00</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted">Grand Total Interest Accumulated</div>
+                        <h3 id="grandTotalInterest">₱0.00</h3>
+                    </div>
+                </div>
             </div>
 
             <!-- Monthly Trend Chart -->
-             <div class="card mb-4">
+            <div class="card mb-4">
                 <div class="card-header">Monthly Trends</div>
                 <div class="card-body">
                     <canvas id="monthlyTrendsChart" height="200"></canvas>
                 </div>
             </div>
 
-            
+
             <!-- Recent Pawned Items Table -->
             <div class="card">
-                <div class="card-header">Recent Pawned Items</div>
+                <div class="card-header">Recent Pawn Transactions</div>
                 <div class="card-body">
                     <table id="pawnedItemsTable" class="table table-striped table-bordered">
                         <thead>
@@ -153,27 +100,12 @@ foreach ($trend_data as $row) {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($recent_items as $item): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($item['date_pawned']) ?></td>
-                                <td><?= htmlspecialchars($item['owner_name']) ?></td>
-                                <td><?= htmlspecialchars($item['unit_description']) ?></td>
-                                <td><?= htmlspecialchars($item['category']) ?></td>
-                                <td>₱<?= number_format($item['amount_pawned'], 2) ?></td>
-                                <td>
-                                    <span class="badge bg-<?= 
-                                        $item['status'] == 'pawned' ? 'info' : 
-                                        ($item['status'] == 'claimed' ? 'success' : 'secondary')
-                                    ?>">
-                                        <?= ucfirst($item['status']) ?>
-                                    </span>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
+                            <!-- Filled dynamically by AJAX -->
                         </tbody>
                     </table>
                 </div>
             </div>
+
 
         </div>
 
@@ -190,72 +122,137 @@ foreach ($trend_data as $row) {
         });
     });
 
-    // DataTables init
-    $(document).ready(function () {
-        $('#pawnedItemsTable').DataTable();
-    });
-</script>
+   
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: <?= json_encode($trend_months) ?>,
-            datasets: [
-                {
-                    label: 'Pawned Items Value',
-                    data: <?= json_encode($trend_pawned) ?>,
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    fill: true,
-                    tension: 0.3
-                },
-                {
-                    label: 'Interest Earned',
-                    data: <?= json_encode($trend_interest) ?>,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    fill: true,
-                    tension: 0.3
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { mode: 'index', intersect: false }
+// Load Dashboard Stats
+    // This function fetches the latest stats from the server
+    function loadDashboardStats() {
+        $.ajax({
+            url: "dashboard_stats.php",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                $("#pawnedUnits").text(data.pawned_units);
+                $("#pawnedValue").text("₱" + parseFloat(data.pawned_value).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#cashOnHand").text("₱" + parseFloat(data.cash_on_hand).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#claimedItems").text(data.claimed_qty);
+                $("#forfeitedItems").text(data.forfeited_qty);
+                $("#dailyInterest").text("₱" + parseFloat(data.daily_interest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#grandTotalInterest").text("₱" + parseFloat(data.grand_total_interest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
             },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false },
-            scales: {
-                y: { beginAtZero: true }
+            error: function () {
+                console.error("Failed to load dashboard stats.");
             }
+        });
+    }
+
+    $(document).ready(function () {
+        loadDashboardStats();
+
+        // Optional auto-refresh every 30s
+        // setInterval(loadDashboardStats, 30000);
+    });
+
+
+// Load Recent Items and Monthly Trends
+// This function fetches recent pawned items and monthly trends data
+function loadDashboardData() {
+    $.ajax({
+        url: "dashboard_data.php",
+        method: "GET",
+        dataType: "json",
+        success: function (data) {
+            /* =====================
+               Fill Recent Items Table
+               ===================== */
+            const table = $("#pawnedItemsTable").DataTable();
+            table.clear();
+
+            data.recent_items.forEach(item => {
+                let statusBadge =
+                    item.status === "pawned"
+                        ? `<span class="badge bg-info">Pawned</span>`
+                        : item.status === "claimed"
+                        ? `<span class="badge bg-success">Claimed</span>`
+                        : `<span class="badge bg-secondary">${item.status}</span>`;
+
+                table.row.add([
+                    item.date_pawned,
+                    item.owner_name,
+                    item.unit_description,
+                    item.category,
+                    "₱" + parseFloat(item.amount_pawned).toLocaleString(undefined, {minimumFractionDigits:2}),
+                    statusBadge
+                ]);
+            });
+
+            table.draw();
+
+            /* =====================
+               Update Monthly Trends
+               ===================== */
+            const months = data.trend_data.map(row => row.month);
+            const pawned = data.trend_data.map(row => parseFloat(row.total_pawned));
+            const interest = data.trend_data.map(row => parseFloat(row.total_interest));
+
+            monthlyTrendsChart.data.labels = months.map(m => {
+                const d = new Date(m + "-01");
+                return d.toLocaleString("default", { month: "short", year: "numeric" });
+            });
+            monthlyTrendsChart.data.datasets[0].data = pawned;
+            monthlyTrendsChart.data.datasets[1].data = interest;
+            monthlyTrendsChart.update();
+        },
+        error: function () {
+            console.error("Failed to load dashboard data.");
         }
     });
+}
+
+$(document).ready(function () {
+    // DataTable init (empty at first)
+    $("#pawnedItemsTable").DataTable();
+
+    // Load data initially
+    loadDashboardData();
+
+    // Auto refresh every 30s
+    setInterval(loadDashboardData, 30000);
 });
+
+/* =====================
+   Chart.js Instance
+   ===================== */
+let ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+let monthlyTrendsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            {
+                label: 'Pawned Items Value',
+                data: [],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+                tension: 0.3
+            },
+            {
+                label: 'Interest Earned',
+                data: [],
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+                tension: 0.3
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        interaction: { mode: 'nearest', axis: 'x', intersect: false },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+
 </script>
-
-
-<<<<<<< HEAD
-
-=======
-<style>
-    #wrapper {
-        display: flex;
-        width: 100%;
-    }
-    #sidebar-wrapper {
-        min-width: 250px;
-        max-width: 250px;
-        transition: all 0.3s;
-    }
-    #wrapper.toggled #sidebar-wrapper {
-        margin-left: -250px;
-    }
-    #page-content-wrapper {
-        flex: 1;
-    }
-</style>
->>>>>>> 2397e9ba81146674cc06b2f589731cd7ab573737
