@@ -15,7 +15,7 @@ $pawned_stats = $pdo->query("
     SELECT COUNT(*) AS total_units,
            COALESCE(SUM(amount_pawned),0) AS total_value
     FROM pawned_items
-    WHERE status = 'pawned'
+    WHERE status = 'pawned' AND is_deleted = 0
 ")->fetch(PDO::FETCH_ASSOC);
 
 // Cash on Hand
@@ -24,10 +24,10 @@ $stmt->execute([$branch_id]);
 $cash_on_hand = $stmt->fetchColumn() ?? 0;
 
 // Claimed Items
-$claimed_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'claimed'")->fetchColumn();
+$claimed_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'claimed' AND is_deleted = 0 ")->fetchColumn();
 
 // Forfeited Items
-$forfeited_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'forfeited'")->fetchColumn();
+$forfeited_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'forfeited' AND is_deleted = 0 ")->fetchColumn();
 
 // Daily Interest
 $daily_interest = $pdo->query("

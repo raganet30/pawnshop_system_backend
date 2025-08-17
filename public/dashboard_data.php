@@ -13,7 +13,7 @@ if (!isset($_SESSION['user'])) {
    =========================== */
 $recent_items = $pdo->query("
     SELECT pawn_id, date_pawned, owner_name, unit_description, category, amount_pawned, status 
-    FROM pawned_items
+    FROM pawned_items where is_deleted = 0
     ORDER BY updated_at DESC 
     LIMIT 20
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -27,7 +27,7 @@ $trend_stmt = $pdo->query("
         COALESCE(SUM(amount_pawned), 0) AS total_pawned,
         COALESCE(SUM(interest_amount), 0) AS total_interest
     FROM pawned_items
-    WHERE date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+    WHERE date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) AND is_deleted = 0
     GROUP BY month
     ORDER BY month ASC
 ");

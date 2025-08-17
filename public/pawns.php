@@ -252,6 +252,50 @@ include '../views/header.php';
                 </div>
             </div>
 
+            <!-- Forfeit Modal -->
+            <div class="modal fade" id="forfeitPawnModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form id="forfeitPawnForm" method="POST">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Forfeit Pawned Item</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="pawn_id" id="forfeitPawnId">
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label>Owner Name</label>
+                                        <input type="text" class="form-control" id="forfeitOwnerName" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Unit</label>
+                                        <input type="text" class="form-control" id="forfeitUnit" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Date Pawned</label>
+                                        <input type="text" class="form-control" id="forfeitDatePawned" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Months</label>
+                                        <input type="text" class="form-control" id="forfeitMonths" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Amount Pawned</label>
+                                        <input type="text" class="form-control" id="forfeitAmount" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger">Confirm Forfeit</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
 
 
 
@@ -286,18 +330,16 @@ include '../views/header.php';
     </div>
 </div>
 
-<!-- Sidebar Toggle Script -->
+
 <script>
-    const wrapper = document.getElementById("wrapper");
-    document.querySelectorAll("#sidebarToggle, #sidebarToggleTop").forEach(btn => {
-        btn.addEventListener("click", () => {
-            wrapper.classList.toggle("toggled");
-        });
-    });
+
 
     // DataTables AJAX init
     $(document).ready(function () {
         $('#pawnTable').DataTable({
+            columnDefs: [
+                { className: "text-center", targets: "_all" } // applies to ALL columns
+            ],
             "ajax": "pawn_list.php",
             "columns": [
                 { "title": "Date Pawned" },
@@ -311,6 +353,8 @@ include '../views/header.php';
             ]
         });
     });
+
+
 
 
     // add pawn script
@@ -488,83 +532,169 @@ include '../views/header.php';
 
 
 
-// Open Edit Modal and load pawn details
-$(document).on("click", ".editPawnBtn", function (e) {
-    e.preventDefault();
-    const pawnId = $(this).data("id");
+    // Open Edit Modal and load pawn details
+    $(document).on("click", ".editPawnBtn", function (e) {
+        e.preventDefault();
+        const pawnId = $(this).data("id");
 
-    $.ajax({
-        url: "pawn_get.php",
-        type: "GET",
-        data: { pawn_id: pawnId },
-        dataType: "json",
-        success: function (data) {
+        $.ajax({
+            url: "pawn_get.php",
+            type: "GET",
+            data: { pawn_id: pawnId },
+            dataType: "json",
+            success: function (data) {
+                if (data.error) {
+                    Swal.fire("Error", data.error, "error");
+                    return;
+                }
+
+                // Populate modal fields
+                $("#editPawnId").val(data.pawn_id);
+                $("#editOwnerName").val(data.owner_name);
+                $("#editContactNo").val(data.contact_no);
+                $("#editUnitDesc").val(data.unit_description);
+                $("#editCategory").val(data.category);
+                $("#editAmountPawned").val(data.amount_pawned);
+                $("#editNotes").val(data.notes);
+                $("#editDatePawned").val(data.date_pawned);
+
+                $("#editPawnModal").modal("show");
+            },
+            error: function () {
+                Swal.fire("Error", "Failed to fetch pawn details.", "error");
+            }
+        });
+    });
+
+
+    // Submit Edit Form
+    // Handle Edit Pawn Form Submission
+    $("#editPawnForm").on("submit", function (e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: "Confirm Edit?",
+            text: "This will adjust Cash on Hand if the amount changes.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Save Changes",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "pawn_edit_process.php",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Updated!",
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                $("#editPawnModal").modal("hide");
+                                $("#pawnTable").DataTable().ajax.reload();
+                            });
+                        } else {
+                            Swal.fire("Error", response.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Something went wrong.", "error");
+                    }
+                });
+            }
+        });
+    });
+
+
+    // Open Forfeit Modal
+    $(document).on("click", ".forfeitPawnBtn", function (e) {
+        e.preventDefault();
+        const pawnId = $(this).data("id");
+
+        $.get("pawn_get.php", { pawn_id: pawnId }, function (data) {
             if (data.error) {
                 Swal.fire("Error", data.error, "error");
                 return;
             }
 
-            // Populate modal fields
-            $("#editPawnId").val(data.pawn_id);
-            $("#editOwnerName").val(data.owner_name);
-            $("#editContactNo").val(data.contact_no);
-            $("#editUnitDesc").val(data.unit_description);
-            $("#editCategory").val(data.category);
-            $("#editAmountPawned").val(data.amount_pawned);
-            $("#editNotes").val(data.notes);
-            $("#editDatePawned").val(data.date_pawned);
+            // Calculate months
+            const datePawned = new Date(data.date_pawned);
+            const now = new Date();
+            const days = Math.floor((now - datePawned) / (1000 * 60 * 60 * 24));
+            const months = Math.max(1, Math.ceil(days / 30));
 
-            $("#editPawnModal").modal("show");
-        },
-        error: function () {
-            Swal.fire("Error", "Failed to fetch pawn details.", "error");
-        }
+            // Populate modal
+            $("#forfeitPawnId").val(data.pawn_id);
+            $("#forfeitOwnerName").val(data.owner_name);
+            $("#forfeitUnit").val(data.unit_description);
+            $("#forfeitDatePawned").val(data.date_pawned);
+            $("#forfeitMonths").val(months + " month(s)");
+            $("#forfeitAmount").val("₱" + parseFloat(data.amount_pawned).toLocaleString());
+
+            $("#forfeitPawnModal").modal("show");
+        }, "json");
     });
-});
 
+    // Handle Forfeit Form Submit
+    $("#forfeitPawnForm").on("submit", function (e) {
+        e.preventDefault();
+        const formData = $(this).serialize();
 
-// Submit Edit Form
-// Handle Edit Pawn Form Submission
-$("#editPawnForm").on("submit", function (e) {
-    e.preventDefault();
-
-    Swal.fire({
-        title: "Confirm Edit?",
-        text: "This will adjust Cash on Hand if the amount changes.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, Save Changes",
-        cancelButtonText: "Cancel"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "pawn_edit_process.php",
-                type: "POST",
-                data: $(this).serialize(),
-                dataType: "json",
-                success: function (response) {
+        Swal.fire({
+            title: "Confirm Forfeit?",
+            text: "This will mark the item as forfeited and update cash flow.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Forfeit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("pawn_forfeit_process.php", formData, function (response) {
                     if (response.status === "success") {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Updated!",
-                            text: response.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            $("#editPawnModal").modal("hide");
+                        Swal.fire("Forfeited!", response.message, "success").then(() => {
+                            $("#forfeitPawnModal").modal("hide");
                             $("#pawnTable").DataTable().ajax.reload();
                         });
                     } else {
                         Swal.fire("Error", response.message, "error");
                     }
-                },
-                error: function () {
-                    Swal.fire("Error", "Something went wrong.", "error");
-                }
-            });
-        }
+                }, "json");
+            }
+        });
     });
-});
+
+
+
+    // delete pawn
+    $(document).on("click", ".deletePawnBtn", function (e) {
+        e.preventDefault();
+        const pawnId = $(this).data("id");
+
+        Swal.fire({
+            title: "Move to Trash?",
+            text: "This pawn record will be moved to trash but not permanently deleted.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Move it",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("pawn_delete.php", { pawn_id: pawnId }, function (response) {
+                    if (response.status === "success") {
+                        Swal.fire("Trashed!", response.message, "success");
+                        $("#pawnTable").DataTable().ajax.reload();
+                    } else {
+                        Swal.fire("Error", response.message, "error");
+                    }
+                }, "json");
+            }
+        });
+    });
+
 
 
 </script>

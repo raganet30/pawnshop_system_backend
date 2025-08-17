@@ -31,7 +31,7 @@ try {
     $pdo->beginTransaction();
 
     // Fetch old pawn record
-    $stmt = $pdo->prepare("SELECT amount_pawned, branch_id FROM pawned_items WHERE pawn_id = ?");
+    $stmt = $pdo->prepare("SELECT amount_pawned, branch_id FROM pawned_items WHERE pawn_id = ? AND is_deleted = 0 ");
     $stmt->execute([$pawn_id]);
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 

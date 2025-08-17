@@ -16,7 +16,7 @@ $user_role = $_SESSION['user']['role'] ?? 'cashier';
 $stmt = $pdo->query("
     SELECT *
     FROM pawned_items
-    WHERE status = 'pawned'
+    WHERE status = 'pawned'AND is_deleted = 0
     ORDER BY date_pawned DESC
 ");
 
@@ -25,11 +25,10 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     // Start dropdown
     $actions = '
-        <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
+         <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-three-dots fs-5"></i>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
     ';
 
     // Only super_admin can see Edit

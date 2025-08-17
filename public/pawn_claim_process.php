@@ -21,7 +21,7 @@ try {
     }
 
     // Fetch pawned item
-    $stmt = $pdo->prepare("SELECT * FROM pawned_items WHERE pawn_id = ? AND status = 'pawned'");
+    $stmt = $pdo->prepare("SELECT * FROM pawned_items WHERE pawn_id = ? AND status = 'pawned' AND is_deleted = 0 ");
     $stmt->execute([$pawn_id]);
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 
