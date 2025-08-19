@@ -39,6 +39,8 @@ include '../views/header.php';
                     <input type="password" name="password" id="password" class="form-control" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Login</button>
+                <div class="text-center mt-3">
+                    <a href="#" class="text-decoration-none">Forgot password? Contact Admin.</a>
             </form>
         </div>
     </div>

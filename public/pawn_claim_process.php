@@ -21,7 +21,7 @@ try {
     }
 
     // Fetch pawned item
-    $stmt = $pdo->prepare("SELECT * FROM pawned_items WHERE pawn_id = ? AND status = 'pawned' AND is_deleted = 0 ");
+    $stmt = $pdo->prepare("SELECT * FROM pawned_items WHERE pawn_id = ? ");
     $stmt->execute([$pawn_id]);
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -86,7 +86,7 @@ try {
         VALUES (?, 'claim', 'in', ?, 'claims', LAST_INSERT_ID(), 'Pawn claimed', ?, NOW())");
     $stmt->execute([$branch_id, $total_paid, $user_id]);
 
-    echo json_encode(["status" => "success", "message" => "Pawn item successfully claimed!"]);
+    echo json_encode(["status" => "success", "message" => "Pawn item successfully claimed! Cash on Hand +₱" . number_format($total_paid, 2)]);
 
 } catch (Exception $e) {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

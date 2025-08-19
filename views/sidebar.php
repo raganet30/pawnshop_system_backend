@@ -50,6 +50,23 @@ $role = $_SESSION['user']['role'] ?? 'guest';
             <a href="branches.php" class="list-group-item <?= $currentPage === 'branches.php' ? 'active' : '' ?>">
                 <i class="bi bi-diagram-3"></i> Branches
             </a>
+            <a href="users.php" class="list-group-item <?= $currentPage === 'users.php' ? 'active' : '' ?>">
+                <i class="bi bi-people"></i> Users
+            </a>
+
+            <!-- Audit Logs -->
+            <a href="audit_logs.php" class="list-group-item <?= $currentPage === 'audit_logs.php' ? 'active' : '' ?>">
+                <i class="bi bi-journal-text"></i> Audit Logs
+            </a>
+            
+            <!-- Trash Bin Page -->
+            <a href="trash.php" class="list-group-item <?= $currentPage === 'trash.php' ? 'active' : '' ?>">
+                <i class="bi bi-trash"></i> Trash Bin
+            </a>
+
+            <a href="settings.php" class="list-group-item <?= $currentPage === 'settings.php' ? 'active' : '' ?>">
+                <i class="bi bi-gear"></i> Settings    
+            </a>        
         <?php endif; ?>
     </div>
 </div>

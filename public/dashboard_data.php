@@ -11,9 +11,11 @@ if (!isset($_SESSION['user'])) {
 /* ===========================
    RECENT PAWNED ITEMS (ALL)
    =========================== */
+$branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
+
 $recent_items = $pdo->query("
     SELECT pawn_id, date_pawned, owner_name, unit_description, category, amount_pawned, status 
-    FROM pawned_items where is_deleted = 0
+    FROM pawned_items where is_deleted = 0 AND branch_id = $branch_id
     ORDER BY updated_at DESC 
     LIMIT 20
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -27,7 +29,7 @@ $trend_stmt = $pdo->query("
         COALESCE(SUM(amount_pawned), 0) AS total_pawned,
         COALESCE(SUM(interest_amount), 0) AS total_interest
     FROM pawned_items
-    WHERE date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) AND is_deleted = 0
+    WHERE date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) AND is_deleted = 0 AND branch_id = $branch_id
     GROUP BY month
     ORDER BY month ASC
 ");

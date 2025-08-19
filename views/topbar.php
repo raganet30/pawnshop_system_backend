@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom px-0">
     <!-- Sidebar toggle button always at far left -->
-    <button class="btn btn-secondary " id="sidebarToggleTop" >
-        <i class="bi bi-list"></i>
+    <button class="btn btn-link p-0 ms-2" id="sidebarToggleTop">
+        <i class="bi bi-list fs-2"></i>
     </button>
 
     <div class="container-fluid">

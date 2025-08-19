@@ -58,3 +58,16 @@ ref_id
 notes
 user_id
 created_at
+
+
+
+audit_log:
+audit_id
+user_id
+action
+table_name
+record_id
+before_json
+after_json
+ip_address
+created_at

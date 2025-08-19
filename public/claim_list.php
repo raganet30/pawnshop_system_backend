@@ -11,15 +11,16 @@ if (!isset($_SESSION['user'])) {
 }
 
 $user_role = $_SESSION['user']['role'] ?? 'cashier';
+
+// branch id is set in the session for branch-specific views
 $branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
 
 
-// Fetch pawned items (only status = 'pawned') & branch-specific
-// Note: This assumes branch_id is set in the session for branch-specific views
+// Fetch pawned items (only status = 'claimed')
 $stmt = $pdo->query("
     SELECT *
     FROM pawned_items
-    WHERE status = 'pawned' AND is_deleted = 0 AND branch_id = $branch_id 
+    WHERE status = 'claimed'AND is_deleted = 0 AND branch_id = $branch_id
     ORDER BY date_pawned DESC
 ");
 
@@ -46,47 +47,30 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
 
-    // Claim (all roles, only if status = pawned — already filtered)
-    $actions .= '
-        <li>
-            <a class="dropdown-item claimPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                <i class="bi bi-cash-coin text-success"></i> Claim
-            </a>
-        </li>
-    ';
-
-    // Forfeit (admin + super_admin only)
-    if (in_array($user_role, ['admin', 'super_admin'])) {
-        $actions .= '
-            <li>
-                <a class="dropdown-item forfeitPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                    <i class="bi bi-exclamation-triangle text-warning"></i> Forfeit
-                </a>
-            </li>
-        ';
-    }
 
     // Delete (super_admin only)
-    if ($user_role === 'super_admin') {
-        $actions .= '
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">
-                    <i class="bi bi-trash"></i> Move to Trash
-                </a>
-            </li>
-        ';
-    }
+    // if ($user_role === 'super_admin') {
+    //     $actions .= '
+    //         <li><hr class="dropdown-divider"></li>
+    //         <li>
+    //             <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">
+    //                 <i class="bi bi-trash"></i> Delete
+    //             </a>
+    //         </li>
+    //     ';
+    // }
 
     // Close dropdown
     $actions .= '</ul></div>';
 
     $rows[] = [
         $row['date_pawned'],
+        $row['date_claimed'] ?? 'N/A', // Handle null date_claimed
         htmlspecialchars($row['owner_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
         '₱' . number_format($row['amount_pawned'], 2),
+        '₱' . number_format($row['interest_amount'], 2),
         htmlspecialchars($row['contact_no']),
         htmlspecialchars($row['notes']),
         $actions

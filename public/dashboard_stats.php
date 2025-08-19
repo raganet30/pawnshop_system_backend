@@ -8,14 +8,18 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
+
+// branch id is set in the session for branch-specific views
 $branch_id = $_SESSION['user']['branch_id'];
+
+
 
 // Pawned Units & Value
 $pawned_stats = $pdo->query("
     SELECT COUNT(*) AS total_units,
            COALESCE(SUM(amount_pawned),0) AS total_value
     FROM pawned_items
-    WHERE status = 'pawned' AND is_deleted = 0
+    WHERE status = 'pawned' AND is_deleted = 0 AND branch_id = $branch_id
 ")->fetch(PDO::FETCH_ASSOC);
 
 // Cash on Hand
@@ -24,22 +28,22 @@ $stmt->execute([$branch_id]);
 $cash_on_hand = $stmt->fetchColumn() ?? 0;
 
 // Claimed Items
-$claimed_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'claimed' AND is_deleted = 0 ")->fetchColumn();
+$claimed_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'claimed' AND is_deleted = 0 AND branch_id = $branch_id  ")->fetchColumn();
 
 // Forfeited Items
-$forfeited_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'forfeited' AND is_deleted = 0 ")->fetchColumn();
+$forfeited_qty = $pdo->query("SELECT COUNT(*) FROM pawned_items WHERE status = 'forfeited' AND is_deleted = 0 AND branch_id = $branch_id ")->fetchColumn();
 
 // Daily Interest
 $daily_interest = $pdo->query("
     SELECT COALESCE(SUM(interest_amount),0)
     FROM pawned_items
-    WHERE status = 'claimed' AND DATE(date_claimed) = CURDATE()
+    WHERE status = 'claimed' AND DATE(date_claimed) = CURDATE() AND is_deleted = 0 AND branch_id = $branch_id
 ")->fetchColumn();
 
 // Grand Interest
 $grand_total_interest = $pdo->query("
     SELECT COALESCE(SUM(interest_amount),0)
-    FROM pawned_items WHERE status = 'claimed'
+    FROM pawned_items WHERE status = 'claimed' AND is_deleted = 0 AND branch_id = $branch_id
 ")->fetchColumn();
 
 echo json_encode([

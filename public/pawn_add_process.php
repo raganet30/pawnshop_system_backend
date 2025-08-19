@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
 
 header('Content-Type: application/json');
 
@@ -12,10 +13,19 @@ if (!isset($_SESSION['user'])) {
 try {
     $pdo->beginTransaction();
 
-    $branch_id = $_SESSION['user']['branch_id'];
-    $amount_pawned = (float) $_POST['amount_pawned'];
+    $branch_id  = $_SESSION['user']['branch_id'];
+    $user_id    = $_SESSION['user']['id'];
+    $full_name  = $_SESSION['user']['name'];
 
-    // 1. Check current COH
+    $owner_name       = $_POST['owner_name'] ?? '';
+    $contact_no       = $_POST['contact_no'] ?? '';
+    $unit_description = $_POST['unit_description'] ?? '';
+    $category         = $_POST['category'] ?? '';
+    $amount_pawned    = (float) ($_POST['amount_pawned'] ?? 0);
+    $notes            = $_POST['notes'] ?? null;
+    $date_pawned      = $_POST['date_pawned'] ?? date("Y-m-d");
+
+    // 1. Lock COH row
     $stmt = $pdo->prepare("SELECT cash_on_hand FROM branches WHERE branch_id = ? FOR UPDATE");
     $stmt->execute([$branch_id]);
     $current_cash = $stmt->fetchColumn();
@@ -24,29 +34,41 @@ try {
         throw new Exception("Branch cash record not found.");
     }
 
-    // 2. Validation: prevent negative COH
     if ($current_cash < $amount_pawned) {
         throw new Exception("Insufficient cash on hand. Available: ₱" . number_format($current_cash, 2));
     }
 
-    // 3. Insert pawn item
+    // 2. Insert pawn item
     $stmt = $pdo->prepare("INSERT INTO pawned_items 
-        (branch_id, owner_name, contact_no, unit_description, category, amount_pawned, notes, date_pawned, status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pawned')");
+        (branch_id, owner_name, contact_no, unit_description, category, amount_pawned, notes, date_pawned, created_by, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned')");
     $stmt->execute([
         $branch_id,
-        $_POST['owner_name'],
-        $_POST['contact_no'],
-        $_POST['unit_description'],
-        $_POST['category'],
+        $owner_name,
+        $contact_no,
+        $unit_description,
+        $category,
         $amount_pawned,
-        $_POST['notes'] ?? null,
-        $_POST['date_pawned']
+        $notes,
+        $date_pawned,
+        $user_id
     ]);
 
-    // 4. Deduct from COH
+    // 3. Deduct COH
     $updateCash = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?");
     $updateCash->execute([$amount_pawned, $branch_id]);
+
+    // 4. Log Audit
+    $description = sprintf(
+        "%s added a new pawn item: %s (Unit: %s, Category: %s, Amount: ₱%s) ",
+        $full_name,
+        $owner_name,
+        $unit_description,
+        $category,
+        number_format($amount_pawned, 2)
+    );
+
+    logAudit($pdo, $user_id, $branch_id, 'Add Pawned Item', $description);
 
     $pdo->commit();
 
