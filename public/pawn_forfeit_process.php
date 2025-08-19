@@ -58,7 +58,7 @@ try {
 
     // If you have a date_forfeited column, uncomment the next line and comment the following one.
     // $upd = $pdo->prepare("UPDATE pawned_items SET status='forfeited', date_forfeited=NOW() WHERE pawn_id=?");
-    $upd = $pdo->prepare("UPDATE pawned_items SET status='forfeited' WHERE pawn_id=?");
+    $upd = $pdo->prepare("UPDATE pawned_items SET status='forfeited', date_forfeited=NOW() WHERE pawn_id=?");
     $upd->execute([$pawn_id]);
 
     $updCoh = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
