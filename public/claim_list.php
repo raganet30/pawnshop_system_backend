@@ -49,21 +49,27 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     $actions = '';
     if ($user_role !== 'super_admin') {
-        $actions = '
-            <div class="dropdown">
-                <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots fs-5"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                            <i class="bi bi-eye text-info"></i> View
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        ';
-    }
+    $actions = '
+        <div class="dropdown">
+            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots fs-5"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                        <i class="bi bi-eye text-info"></i> View
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item revertClaimBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
+                        <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawned
+                    </a>
+                </li>
+            </ul>
+        </div>
+    ';
+}
+
 
     $rows[] = [
         htmlspecialchars($row['date_pawned']),

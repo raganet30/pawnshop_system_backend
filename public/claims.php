@@ -101,4 +101,31 @@ $(document).ready(function(){
         });
     <?php endif; ?>
 });
+
+
+
+$(document).on("click", ".revertClaimBtn", function(e){
+    e.preventDefault();
+    let pawn_id = $(this).data("id");
+
+    Swal.fire({
+        title: "Revert Claim?",
+        text: "This will move the item back to pawned items and deduct cash on hand.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Revert"
+    }).then((result) => {
+        if(result.isConfirmed){
+            $.post("claim_revert_process.php", { pawn_id: pawn_id }, function(resp){
+                if(resp.status === "success"){
+                    Swal.fire("Reverted!", resp.message, "success");
+                    $("#claimsTable").DataTable().ajax.reload();`
+                } else {
+                    Swal.fire("Error", resp.message, "error");
+                }
+            }, "json");
+        }
+    });
+});
+
 </script>
