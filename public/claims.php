@@ -1,93 +1,104 @@
 <?php
 session_start();
-// Redirect if not logged in
 if (!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit();
 }
+
+require_once "../config/db.php";
 include '../views/header.php';
+
+$user_role  = $_SESSION['user']['role'];
+$branch_id  = $_SESSION['user']['branch_id'] ?? null;
+
+// restrict: cashier/admin only see their branch; super_admin sees all
 ?>
-
-
 <div class="d-flex" id="wrapper">
-    <!-- Sidebar -->
     <?php include '../views/sidebar.php'; ?>
 
-    <!-- Page Content -->
     <div id="page-content-wrapper">
-        <!-- Top Navigation -->
         <?php include '../views/topbar.php'; ?>
 
-        <!-- Main Content -->
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Claims</h2>
-                <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPawnModal">
-                    <i class="bi bi-plus-circle"></i> 
-                </button> -->
+                <h4>Claims</h4>
+
+                <?php if ($user_role === 'super_admin'): ?>
+                    <!-- Branch filter dropdown for super admin -->
+                    <select id="branchFilter" class="form-select" style="width: 200px;">
+                        <option value="">All Branches</option>
+                        <?php
+                        $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name ASC");
+                        while ($b = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo '<option value="'.$b['branch_id'].'">'.htmlspecialchars($b['branch_name']).'</option>';
+                        }
+                        ?>
+                    </select>
+                <?php endif; ?>
             </div>
 
-
-
-            <!-- DataTable -->
             <div class="card">
                 <div class="card-header">Claimed Items</div>
                 <div class="card-body">
-                    <table id="pawnTable" class="table table-striped table-bordered" style="width:100%">
+                    <table id="claimsTable" class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th>Date Pawned</th>
                                 <th>Date Claimed</th>
-                                <th>Owner</th>
+                                <th>Owner Name</th>
                                 <th>Unit</th>
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
                                 <th>Interest Amount</th>
+                                <th>Total Paid</th>
                                 <th>Contact No.</th>
                                 <th>Notes</th>
-                                <th>Actions</th>
+                                <?php if ($user_role !== 'super_admin'): ?>
+                                    <th>Action</th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
-                        <tbody>
-                            <!-- Populated dynamically via DataTables AJAX -->
-                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
         <?php include '../views/footer.php'; ?>
     </div>
 </div>
 
-
 <script>
-
-
-    // DataTables AJAX init
-    $(document).ready(function () {
-        $('#pawnTable').DataTable({
-            columnDefs: [
-                { className: "text-center", targets: "_all" } // applies to ALL columns
-            ],
-            "ajax": "claim_list.php",
-            "columns": [
-                { "title": "Date Pawned" },
-                { "title": "Date Claimed" },
-                { "title": "Owner" },
-                { "title": "Unit" },
-                { "title": "Category" },
-                { "title": "Amount Pawned" },
-                { "title": "Interest Amount"},
-                { "title": "Contact No." },
-                { "title": "Notes" },
-                { "title": "Actions", "orderable": false }
-            ]
-        });
+$(document).ready(function(){
+    let userRole = "<?= $user_role ?>";
+    let table = $("#claimsTable").DataTable({
+        "ajax": {
+            "url": "claim_list.php",
+            "data": function(d){
+                if(userRole === "super_admin"){
+                    d.branch_id = $("#branchFilter").val(); // add branch filter param
+                }
+            }
+        },
+        "columns": [
+            { "data": 0 },
+            { "data": 1 },
+            { "data": 2 },
+            { "data": 3 },
+            { "data": 4 },
+            { "data": 5 },
+            { "data": 6 },
+            { "data": 7 },
+            { "data": 8 },
+            { "data": 9 },
+            <?php if ($user_role !== 'super_admin'): ?>
+            { "data": 10, "orderable": false }
+            <?php endif; ?>
+        ]
     });
 
-
-
-
-
+    <?php if ($user_role === 'super_admin'): ?>
+        $("#branchFilter").on("change", function(){
+            table.ajax.reload();
+        });
+    <?php endif; ?>
+});
 </script>

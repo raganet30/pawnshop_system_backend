@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
 
 if (!isset($_SESSION['user'])) {
     http_response_code(401);
@@ -13,12 +14,16 @@ if (!isset($_SESSION['user'])) {
    =========================== */
 $branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
 
+// Get recent pawned items for the branch
+// This will return the last 20 items, regardless of status
 $recent_items = $pdo->query("
     SELECT pawn_id, date_pawned, owner_name, unit_description, category, amount_pawned, status 
     FROM pawned_items where is_deleted = 0 AND branch_id = $branch_id
     ORDER BY updated_at DESC 
     LIMIT 20
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+
 
 /* ===========================
    MONTHLY TRENDS

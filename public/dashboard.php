@@ -8,6 +8,12 @@ if (!isset($_SESSION['user'])) {
 require_once "../config/db.php";
 include '../views/header.php';
 
+// role restriction for admin and cashier
+// If the user is not an admin or cashier, redirect to the super admin dashboard
+if ($_SESSION['user']['role'] == 'super_admin') {
+    header("Location: dashboard_super.php");
+    exit();
+}
 
 ?>
 

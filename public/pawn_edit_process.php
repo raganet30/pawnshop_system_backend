@@ -10,7 +10,7 @@ if (!isset($_SESSION['user'])) {
 }
 
 // Restrict to super_admin only
-if ($_SESSION['user']['role'] !== 'super_admin') {
+if ($_SESSION['user']['role'] !== 'admin' && $_SESSION['user']['role'] !== 'super_admin') {
     echo json_encode(["status" => "error", "message" => "Access denied"]);
     exit();
 }

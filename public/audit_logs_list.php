@@ -13,25 +13,27 @@ if (!isset($_SESSION['user'])) {
 
 
 // branch id is set in the session for branch-specific views
-$branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
+// $branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
 
 
 // Fetch pawned items (only status = 'claimed')
 $stmt = $pdo->query("
-    SELECT *
+    SELECT audit_logs.*, branches.branch_name AS branch_name
     FROM audit_logs
-    WHERE branch_id = $branch_id
-    ORDER BY created_at DESC
+    LEFT JOIN branches ON audit_logs.branch_id = branches.branch_id
+    ORDER BY audit_logs.created_at DESC
 ");
+
 
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
-    
+
     $rows[] = [
         $row['created_at'],
-        $action = $row['action_type'],
-        $description = $row['description']
+        $row['action_type'],
+        $row['description'],
+        $row['branch_name']
     ];
 }
 

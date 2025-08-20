@@ -1,72 +1,60 @@
 <?php
-// sidebar.php
+// sidebar.php (refactored role-based)
 if (!isset($_SESSION)) session_start();
 require_once "../config/db.php";
 
-$branchName = "Unknown Branch";
-if (isset($_SESSION['user']['branch_id'])) {
+$branchName = "Super Admin Modules"; // Default for super admin
+if (!empty($_SESSION['user']['branch_id'])) {
     $stmt = $pdo->prepare("SELECT branch_name FROM branches WHERE branch_id = ?");
     $stmt->execute([$_SESSION['user']['branch_id']]);
-    $branchName = $stmt->fetchColumn() ?? "Unknown Branch";
+    $branchName = $stmt->fetchColumn() ?: $branchName;
 }
 
-// Detect current page for active link
 $currentPage = basename($_SERVER['PHP_SELF']);
 $role = $_SESSION['user']['role'] ?? 'guest';
-?>
 
+$menuItems = [
+    // Super admin specific dashboard
+    ['href' => 'dashboard_super.php', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'roles' => ['super_admin']],
+    // Admin / Cashier dashboard
+    ['href' => 'dashboard.php', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'roles' => ['admin', 'cashier']],
+
+    // Common items
+    ['href' => 'pawns.php', 'icon' => 'bi-box-seam', 'label' => 'Pawns', 'roles' => '*'],
+    ['href' => 'claims.php', 'icon' => 'bi-cash-coin', 'label' => 'Claims', 'roles' => '*'],
+
+    // Admin & Super Admin
+    ['href' => 'forfeits.php', 'icon' => 'bi-exclamation-triangle', 'label' => 'Forfeits', 'roles' => ['super_admin', 'admin']],
+    ['href' => 'reports.php', 'icon' => 'bi-file-earmark-text', 'label' => 'Reports', 'roles' => ['super_admin', 'admin']],
+
+    // Admin only (trash available to admin )
+    ['href' => 'trash.php', 'icon' => 'bi-trash', 'label' => 'Trash Bin', 'roles' => ['admin']],
+
+    // Super admin only
+    ['href' => 'branches.php', 'icon' => 'bi-diagram-3', 'label' => 'Branches', 'roles' => ['super_admin']],
+    ['href' => 'users.php', 'icon' => 'bi-people', 'label' => 'Users', 'roles' => ['super_admin']],
+    ['href' => 'audit_logs.php', 'icon' => 'bi-journal-text', 'label' => 'Audit Logs', 'roles' => ['super_admin']],
+    ['href' => 'settings.php', 'icon' => 'bi-gear', 'label' => 'Settings', 'roles' => ['super_admin']],
+];
+
+function isAllowed($itemRoles, $currentRole) {
+    if ($itemRoles === '*') return true;
+    return in_array($currentRole, (array)$itemRoles, true);
+}
+?>
 <div id="sidebar-wrapper">
     <div class="sidebar-heading text-center py-3">
         <h6 class="mb-0"><strong><?= htmlspecialchars($branchName) ?></strong></h6>
     </div>
 
     <div class="list-group list-group-flush">
-
-        <!-- Dashboard (all roles) -->
-            <a href="dashboard.php" class="list-group-item <?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">
-                <i class="bi bi-speedometer2"></i> Dashboard
+        <?php foreach ($menuItems as $item): 
+            if (!isAllowed($item['roles'], $role)) continue;
+            $active = $currentPage === $item['href'] ? 'active' : '';
+        ?>
+            <a href="<?= htmlspecialchars($item['href']) ?>" class="list-group-item <?= $active ?>">
+                <i class="bi <?= htmlspecialchars($item['icon']) ?>"></i> <?= htmlspecialchars($item['label']) ?>
             </a>
-        <!-- Dashboard (all roles) -->
-
-        <!-- Pawns (all roles) -->
-        <a href="pawns.php" class="list-group-item <?= $currentPage === 'pawns.php' ? 'active' : '' ?>">
-            <i class="bi bi-box-seam"></i> Pawns
-        </a>
-
-        <!-- Claims (all roles) -->
-        <a href="claims.php" class="list-group-item <?= $currentPage === 'claims.php' ? 'active' : '' ?>">
-            <i class="bi bi-cash-coin"></i> Claims
-        </a>
-
-        <?php if ($role === 'admin' || $role === 'super_admin'): ?>
-            <a href="forfeits.php" class="list-group-item <?= $currentPage === 'forfeits.php' ? 'active' : '' ?>">
-                <i class="bi bi-exclamation-triangle"></i> Forfeits
-            </a>
-
-            <a href="reports.php" class="list-group-item <?= $currentPage === 'reports.php' ? 'active' : '' ?>">
-                <i class="bi bi-file-earmark-text"></i> Reports
-            </a>
-
-            <a href="branches.php" class="list-group-item <?= $currentPage === 'branches.php' ? 'active' : '' ?>">
-                <i class="bi bi-diagram-3"></i> Branches
-            </a>
-            <a href="users.php" class="list-group-item <?= $currentPage === 'users.php' ? 'active' : '' ?>">
-                <i class="bi bi-people"></i> Users
-            </a>
-
-            <!-- Audit Logs -->
-            <a href="audit_logs.php" class="list-group-item <?= $currentPage === 'audit_logs.php' ? 'active' : '' ?>">
-                <i class="bi bi-journal-text"></i> Audit Logs
-            </a>
-            
-            <!-- Trash Bin Page -->
-            <a href="trash.php" class="list-group-item <?= $currentPage === 'trash.php' ? 'active' : '' ?>">
-                <i class="bi bi-trash"></i> Trash Bin
-            </a>
-
-            <a href="settings.php" class="list-group-item <?= $currentPage === 'settings.php' ? 'active' : '' ?>">
-                <i class="bi bi-gear"></i> Settings    
-            </a>        
-        <?php endif; ?>
+        <?php endforeach; ?>
     </div>
 </div>

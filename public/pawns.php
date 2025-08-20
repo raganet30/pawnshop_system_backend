@@ -22,9 +22,11 @@ include '../views/header.php';
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2>Pawns</h2>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPawnModal">
-                    <i class="bi bi-plus-circle"></i> Add Pawn
-                </button>
+                <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPawnModal">
+                        <i class="bi bi-plus-circle"></i> Add Pawn
+                    </button>
+                <?php endif; ?>
             </div>
 
             <!-- Add Pawn Modal -->
@@ -134,8 +136,8 @@ include '../views/header.php';
                                         <label>Interest</label>
                                         <input type="text" class="form-control" id="claimInterest" readonly>
                                     </div>
-                                   
-                                   
+
+
                                     <div class="col-md-6">
                                         <label>Total Payment</label>
                                         <input type="text" class="form-control" id="claimTotal" readonly>
@@ -307,7 +309,9 @@ include '../views/header.php';
                                 <th>Amount Pawned</th>
                                 <th>Contact No.</th>
                                 <th>Notes</th>
+                            <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
                                 <th>Actions</th>
+                            <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -341,7 +345,9 @@ include '../views/header.php';
                 { "title": "Amount Pawned" },
                 { "title": "Contact No." },
                 { "title": "Notes" },
+                <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
                 { "title": "Actions", "orderable": false }
+                <?php endif; ?>
             ]
         });
     });
@@ -442,7 +448,7 @@ include '../views/header.php';
         });
     });
 
-    
+
     // Submit claim form
     $("#claimPawnForm").on("submit", function (e) {
         e.preventDefault();

@@ -86,7 +86,7 @@ try {
         VALUES (?, 'claim', 'in', ?, 'claims', LAST_INSERT_ID(), 'Pawn claimed', ?, NOW())");
     $stmt->execute([$branch_id, $total_paid, $user_id]);
 
-    echo json_encode(["status" => "success", "message" => "Pawn item successfully claimed! Cash on Hand +₱" . number_format($total_paid, 2)]);
+    echo json_encode(["status" => "success", "message" => "Pawn item successfully claimed! Cash on Hand  +₱" . number_format($total_paid, 2)]);
 
 } catch (Exception $e) {
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

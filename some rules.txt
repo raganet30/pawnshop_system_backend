@@ -3,6 +3,10 @@ Super Admin
 - can overview the the stats of all branches (customized dashboard of all branches, provide graphs or charts)
 - can add, edit, delete users & branches
 
+Delete Function
+- pawned item: add back to COH (amount panwed)
+
+
 Restore/Delete Function
 - only super admin can delete/restore pawned items
 - status:pawn - restore -> updated is_deleted=0, added to pawn table

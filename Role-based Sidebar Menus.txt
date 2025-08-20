@@ -1,0 +1,26 @@
+Sidbar Role-based Menus
+Super Admin:
+* Dashboard (dashboard_super.php)
+* Pawns (pawns.php)
+* Claims (claims.php)
+* Forfeits (forfeits.php)
+* Reports (reports.php)
+* Branches (branches.php)
+* Users (users.php)
+* Audit Logs (audit_logs.php)
+* Trash (trash.php)
+* Settings (setttings.php)
+
+
+Admin:
+* Dashboard (dashboard.php)
+* Pawns (pawns.php)
+* Claims (claims.php)
+* Forfeits (forfeits.php)
+* Reports (reports.php)
+* Trash (trash.php)
+
+Cashier: 
+* Dashboard (dashboard.php)
+* Pawns (pawns.php)
+* Claims (claims.php)

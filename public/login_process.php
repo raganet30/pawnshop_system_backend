@@ -37,13 +37,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'branch_id' => filter_var($user['branch_id'], FILTER_SANITIZE_NUMBER_INT)
             ];
 
-            // // Redirect based on role
-            // if ($user['role'] === 'cashier') {
-            //     header("Location: dashboard.php");
-            // } else {
-            header("Location: dashboard.php");
-            // }
-            // exit;
+            // Redirect based on role
+            if ($user['role'] === 'super_admin') {
+                header("Location: dashboard_super.php");
+            } else {
+                header("Location: dashboard.php");
+            }
+            exit;
         } else {
             $_SESSION['error'] = "Password verification failed for username: {$username}";
             header("Location: login.php");

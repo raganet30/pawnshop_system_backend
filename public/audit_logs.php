@@ -38,7 +38,8 @@ include '../views/header.php';
                             <tr>
                                 <th>Date </th>
                                 <th>Activity</th>
-                                <th>Description</th>
+                                <th>Logs</th>
+                                <th>Branch</th>
                                 
                             </tr>
                         </thead>
@@ -68,7 +69,8 @@ include '../views/header.php';
             "columns": [
                 { "title": "Date" },
                 { "title": "Activity" },
-                { "title": "Description" }
+                { "title": "Logs" },
+                { "title": "Branch" }
             ]
         });
     });

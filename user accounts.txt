@@ -1,0 +1,20 @@
+USER ACCOUNTS
+1. Super Admin
+	username: super_admin
+	password: super_admin
+
+2. Admin - Main Branch
+	username: admin_main
+	password: admin_main123
+
+3. Admin - Gandara Branch
+	username: admin_gandara
+	password: admin_gandara123
+
+4. Cashier - Main Branch
+	username: cashier_main
+	password: cashier_main123
+
+5. Cashier - Gandara Branch
+	username: cashier_gandara
+	password: cashier_gandara123

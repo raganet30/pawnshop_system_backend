@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
 
 header('Content-Type: application/json');
 
@@ -11,52 +12,52 @@ if (!isset($_SESSION['user'])) {
 }
 
 $user_role = $_SESSION['user']['role'] ?? 'cashier';
-$branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
+$branch_id = $_SESSION['user']['branch_id'] ?? null;
 
+// branch filtering
+// This will set $params to an empty array for super_admin, or to [branch_id] for other roles
+$params = [];
+$where = branchFilter($user_role, $branch_id, $params);
 
-// Fetch pawned items (only status = 'pawned') & branch-specific
-// Note: This assumes branch_id is set in the session for branch-specific views
-$stmt = $pdo->query("
-    SELECT *
-    FROM pawned_items
-    WHERE status = 'pawned' AND is_deleted = 0 AND branch_id = $branch_id 
-    ORDER BY date_pawned DESC
-");
+// Build query dynamically
+$sql = "SELECT * FROM pawned_items $where ORDER BY date_pawned DESC";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
 
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
     // Start dropdown
     $actions = '
          <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-three-dots fs-5"></i>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end">
+            <i class="bi bi-three-dots fs-5"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
     ';
 
     // Only super_admin can see Edit
-    if ($_SESSION['user']['role'] === 'super_admin') {
+    if ($user_role === 'admin') {
         $actions .= '
         <li>
             <a class="dropdown-item editPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
                 <i class="bi bi-pencil-square text-primary"></i> Edit
             </a>
         </li>
-    ';
+        ';
     }
 
+    if ($user_role === 'admin' || $user_role === 'cashier') {
 
-    // Claim (all roles, only if status = pawned — already filtered)
-    $actions .= '
+        $actions .= '
         <li>
             <a class="dropdown-item claimPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
                 <i class="bi bi-cash-coin text-success"></i> Claim
             </a>
         </li>
     ';
+    }
 
-    // Forfeit (admin + super_admin only)
-    if (in_array($user_role, ['admin', 'super_admin'])) {
+    // Forfeit (admin only)
+    if (in_array($user_role, ['admin'])) {
         $actions .= '
             <li>
                 <a class="dropdown-item forfeitPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
@@ -64,10 +65,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 </a>
             </li>
         ';
-    }
 
-    // Delete (super_admin only)
-    if ($user_role === 'super_admin') {
         $actions .= '
             <li><hr class="dropdown-divider"></li>
             <li>
@@ -79,7 +77,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
     // Close dropdown
-    $actions .= '</ul></div>';
+    $actions .= '</ul>';
 
     $rows[] = [
         $row['date_pawned'],
