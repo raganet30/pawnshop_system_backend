@@ -1,0 +1,127 @@
+
+======================
+ Pawnshop DB Schema (Updated)
+======================
+
+1. customers
+------------
+customer_id (PK)
+full_name
+contact_no
+address
+photo_path
+created_at
+
+2. pawned_items
+---------------
+pawn_id (PK)
+branch_id (FK -> branches.branch_id)
+customer_id (FK -> customers.customer_id)
+unit_description
+category
+amount_pawned
+interest_rate
+date_pawned
+status (pawned, claimed, forfeited, sold)
+notes
+created_by
+updated_by
+created_at
+updated_at
+
+3. claims
+---------
+claim_id (PK)
+pawn_id (FK -> pawned_items.pawn_id)
+branch_id (FK -> branches.branch_id)
+date_claimed
+months
+interest_rate
+interest_amount
+principal_amount
+penalty_amount
+total_paid
+cashier_id
+notes
+photo_path
+created_at
+
+4. forfeitures
+--------------
+forfeiture_id (PK)
+pawn_id (FK -> pawned_items.pawn_id)
+branch_id (FK -> branches.branch_id)
+date_forfeited
+reason
+notes
+created_at
+
+5. remata_sales
+---------------
+sale_id (PK)
+pawn_id (FK -> pawned_items.pawn_id)
+branch_id (FK -> branches.branch_id)
+date_sold
+selling_price
+buyer_name
+cashier_id
+notes
+created_at
+
+6. tubo_payments
+----------------
+tubo_id (PK)
+pawn_id (FK -> pawned_items.pawn_id)
+branch_id (FK -> branches.branch_id)
+date_paid
+months_covered
+interest_rate
+interest_amount
+cashier_id
+notes
+created_at
+
+7. cash_ledger
+--------------
+ledger_id (PK)
+branch_id (FK -> branches.branch_id)
+txn_type (pawn, claim, tubo, forfeiture, sale, adjustment)
+direction (in, out)
+amount
+ref_table
+ref_id
+notes
+created_at
+user_id
+
+8. branches
+-----------
+branch_id (PK)
+branch_name
+branch_address
+branch_phone
+status (active, inactive)
+interest_rate
+cash_on_hand
+created_at
+
+9. users
+--------
+user_id (PK)
+branch_id (FK -> branches.branch_id)
+username (unique)
+password_hash
+role (super_admin, admin, cashier)
+full_name
+status (active, inactive)
+last_login
+created_at
+
+10. audit_logs
+--------------
+log_id (PK)
+user_id (FK -> users.user_id)
+action_type
+description
+branch_id (FK -> branches.branch_id)
+created_at

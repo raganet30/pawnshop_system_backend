@@ -11,6 +11,10 @@
 <link rel="stylesheet" href="../assets/css/datatables.min.css">
 <link rel="stylesheet" href="../assets/css/bootstrap-icons.css">
 <link rel="stylesheet" href="../assets/css/style.css">
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
 
 </head>
 <body>

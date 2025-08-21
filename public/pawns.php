@@ -38,20 +38,54 @@ include '../views/header.php';
                                 <h5 class="modal-title">Add New Pawn Item</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
+
                             <div class="modal-body">
                                 <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label>Owner Name</label>
-                                        <input type="text" class="form-control" name="owner_name" required>
+
+                                    <!-- Owner Details -->
+                                    <!-- Customer Selection/Add New -->
+                                    <div class="col-md-12">
+                                        <label>Customer</label>
+                                        <select id="customer_id" name="customer_id" class="form-control" required>
+                                            <option value="">-- Select Customer --</option>
+                                        </select>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Contact No.</label>
-                                        <input type="text" class="form-control" name="contact_no" required>
+
+                                    <div class="col-md-12 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="addNewCustomer">
+                                            <label class="form-check-label" for="addNewCustomer">
+                                                Add New Customer
+                                            </label>
+                                        </div>
                                     </div>
+
+                                    <div id="newCustomerFields" class="row g-3" style="display:none;">
+                                        <div class="col-md-6">
+                                            <label>Full Name</label>
+                                            <input type="text" class="form-control" name="customer_name" >
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Contact No.</label>
+                                            <input type="text" class="form-control" name="contact_no"
+                                                placeholder="09XXXXXXXXX">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Address</label>
+                                            <input type="text" class="form-control" name="address"
+                                                placeholder="Customer Address">
+                                        </div>
+
+
+                                    </div>
+
+
+                                    <!-- Pawn Item Details -->
                                     <div class="col-md-6">
                                         <label>Unit</label>
                                         <input type="text" class="form-control" name="unit_description" required>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Category</label>
                                         <select name="category" class="form-control" required>
@@ -64,25 +98,30 @@ include '../views/header.php';
                                             <option value="Others">Others</option>
                                         </select>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Amount Pawned</label>
-                                        <!-- Visible input for user with formatting -->
+                                        <!-- Visible input with formatting -->
                                         <input type="text" class="form-control" id="addAmountPawnedVisible"
                                             placeholder="0.00" required>
-                                        <!-- Hidden input to submit the raw numeric value -->
+                                        <!-- Hidden input for raw numeric value -->
                                         <input type="hidden" name="amount_pawned" id="addAmountPawned">
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Note</label>
-                                        <input type="text" class="form-control" name="notes" required>
+                                        <input type="text" class="form-control" name="notes">
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Date Pawned</label>
                                         <input type="date" class="form-control" name="date_pawned"
                                             value="<?php echo date('Y-m-d'); ?>" required>
                                     </div>
+
                                 </div>
                             </div>
+
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-success">Save</button>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -91,6 +130,8 @@ include '../views/header.php';
                     </div>
                 </div>
             </div>
+
+
 
 
 
@@ -294,10 +335,27 @@ include '../views/header.php';
 
 
 
-
+            <!-- add branch filtering when super admin is the user -->
             <!-- DataTable -->
+            <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                <div class="mb-3">
+                    <label for="branchFilter" class="form-label">Select Branch</label>
+                    <select id="branchFilter" class="form-select" style="width: 250px;">
+                        <option value="">All Branches</option>
+                        <?php
+                        // Load branches from DB
+                        $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                        while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+            <?php endif; ?>
+
             <div class="card">
                 <div class="card-header">Pawned Items</div>
+
                 <div class="card-body">
                     <table id="pawnTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
@@ -309,9 +367,9 @@ include '../views/header.php';
                                 <th>Amount Pawned</th>
                                 <th>Contact No.</th>
                                 <th>Notes</th>
-                            <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                <th>Actions</th>
-                            <?php endif; ?>
+                                <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
+                                    <th>Actions</th>
+                                <?php endif; ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -320,6 +378,8 @@ include '../views/header.php';
                     </table>
                 </div>
             </div>
+
+
         </div>
 
         <?php include '../views/footer.php'; ?>
@@ -327,126 +387,425 @@ include '../views/header.php';
 </div>
 
 
+
+
+
+
+
+
 <script>
 
 
     // DataTables AJAX init
     $(document).ready(function () {
-        $('#pawnTable').DataTable({
+        let pawnTable = $('#pawnTable').DataTable({
             columnDefs: [
                 { className: "text-center", targets: "_all" } // applies to ALL columns
             ],
-            "ajax": "pawn_list.php",
-            "columns": [
-                { "title": "Date Pawned" },
-                { "title": "Owner" },
-                { "title": "Unit" },
-                { "title": "Category" },
-                { "title": "Amount Pawned" },
-                { "title": "Contact No." },
-                { "title": "Notes" },
+            ajax: {
+                url: "pawn_list.php",
+                data: function (d) {
+                    <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                        d.branch_id = $('#branchFilter').val(); // send selected branch ID
+                    <?php endif; ?>
+                }
+            },
+            columns: [
+                { title: "Date Pawned" },
+                { title: "Owner" },
+                { title: "Unit" },
+                { title: "Category" },
+                { title: "Amount Pawned" },
+                { title: "Contact No." },
+                { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                { "title": "Actions", "orderable": false }
-                <?php endif; ?>
+                                                            { title: "Actions", orderable: false }
+            <?php endif; ?>
             ]
         });
+
+        <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+            // Reload table when branch is changed
+            $('#branchFilter').on('change', function () {
+                pawnTable.ajax.reload();
+            });
+        <?php endif; ?>
     });
+
 
 
 
 
     // add pawn script
-    $(document).ready(function () {
-        // Handle Add Pawn form submission
-        $("#addPawnForm").on("submit", function (e) {
-            e.preventDefault();
+    // $(document).ready(function () {
+    //     // Handle Add Pawn form submission
+    //     $("#addPawnForm").on("submit", function (e) {
+    //         e.preventDefault();
 
-            Swal.fire({
-                title: "Confirm Add Pawn?",
-                text: "This will save the pawned item.",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, Save it!",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "pawn_add_process.php",
-                        type: "POST",
-                        data: $(this).serialize(),
-                        dataType: "json",
-                        success: function (response) {
-                            if (response.status === "success") {
-                                Swal.fire("Success", response.message, "success");
-                                $("#addPawnModal").modal("hide");
-                                $("#addPawnForm")[0].reset();
-                                $("#pawnTable").DataTable().ajax.reload();
-                            } else {
-                                Swal.fire("Error", response.message, "error");
-                            }
-                        },
-                        error: function () {
-                            Swal.fire("Error", "Something went wrong.", "error");
-                        }
-                    });
-                }
+    //         Swal.fire({
+    //             title: "Confirm Add Pawn?",
+    //             text: "This will save the pawned item.",
+    //             icon: "question",
+    //             showCancelButton: true,
+    //             confirmButtonText: "Yes, Save it!",
+    //         }).then((result) => {
+    //             if (result.isConfirmed) {
+    //                 $.ajax({
+    //                     url: "pawn_add_process.php",
+    //                     type: "POST",
+    //                     data: $(this).serialize(),
+    //                     dataType: "json",
+    //                     success: function (response) {
+    //                         if (response.status === "success") {
+    //                             Swal.fire("Success", response.message, "success");
+    //                             $("#addPawnModal").modal("hide");
+    //                             $("#addPawnForm")[0].reset();
+    //                             $("#pawnTable").DataTable().ajax.reload();
+    //                         } else {
+    //                             Swal.fire("Error", response.message, "error");
+    //                         }
+    //                     },
+    //                     error: function () {
+    //                         Swal.fire("Error", "Something went wrong.", "error");
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     });
+    // });
+
+
+
+    // load customer search with Select2
+    // $(document).ready(function () {
+    //     // Initialize Select2 when modal is shown
+    //     $('#addPawnModal').on('shown.bs.modal', function () {
+    //         if (!$('#customer_id').hasClass("select2-hidden-accessible")) {
+    //             $('#customer_id').select2({
+    //                 placeholder: 'Search or add new customer',
+    //                 dropdownParent: $('#addPawnModal'), // important for modals
+    //                 ajax: {
+    //                     url: 'customer_search.php',
+    //                     dataType: 'json',
+    //                     delay: 250,
+    //                     data: function (params) {
+    //                         return { term: params.term };
+    //                     },
+    //                     processResults: function (data) {
+    //                         return { results: data };
+    //                     }
+    //                 },
+    //                 minimumInputLength: 1,
+    //                 allowClear: true,
+    //                 templateResult: formatCustomer,
+    //                 templateSelection: formatCustomerSelection
+    //             });
+
+    //             console.log("✅ Select2 initialized on #customer_id");
+    //         }
+    //     });
+
+    //     // Format customer in dropdown
+    //     function formatCustomer(customer) {
+    //         if (customer.loading) return customer.text;
+    //         return $('<span>' + customer.text + ' (' + customer.contact_no + ')</span>');
+    //     }
+
+    //     function formatCustomerSelection(customer) {
+    //         return customer.text || customer.id;
+    //     }
+
+    //     // Show new customer fields if adding new
+    //     $('#customer_id').on('select2:select', function (e) {
+    //         let data = e.params.data;
+    //         if (data.isNew) {
+    //             $('#newCustomerFields').show();
+    //             $('input[name="contact_no"]').val('');
+    //             $('input[name="address"]').val('');
+    //         } else {
+    //             $('#newCustomerFields').hide();
+    //             $('input[name="contact_no"]').val(data.contact_no);
+    //             $('input[name="address"]').val(data.address);
+    //         }
+    //     });
+
+    //     // Add Pawn form submission
+    //     $("#addPawnForm").on("submit", function (e) {
+    //         e.preventDefault();
+    //         Swal.fire({
+    //             title: "Confirm Add Pawn?",
+    //             text: "This will save the pawned item.",
+    //             icon: "question",
+    //             showCancelButton: true,
+    //             confirmButtonText: "Yes, Save it!",
+    //         }).then((result) => {
+    //             if (result.isConfirmed) {
+    //                 $.ajax({
+    //                     url: "pawn_add_process.php",
+    //                     type: "POST",
+    //                     data: $(this).serialize(),
+    //                     dataType: "json",
+    //                     success: function (response) {
+    //                         if (response.status === "success") {
+    //                             Swal.fire("Success", response.message, "success");
+    //                             $("#addPawnModal").modal("hide");
+    //                             $("#addPawnForm")[0].reset();
+    //                             $("#pawnTable").DataTable().ajax.reload();
+    //                         } else {
+    //                             Swal.fire("Error", response.message, "error");
+    //                         }
+    //                     },
+    //                     error: function () {
+    //                         Swal.fire("Error", "Something went wrong.", "error");
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     });
+    // });
+
+
+
+    // $(document).ready(function() {
+
+    //     $('#addPawnModal').on('shown.bs.modal', function () {
+    //         $('#customer_id').select2({
+    //             placeholder: 'Search or add new customer',
+    //             dropdownParent: $('#addPawnModal'),
+    //             ajax: {
+    //                 url: 'customer_search.php',
+    //                 dataType: 'json',
+    //                 delay: 250,
+    //                 data: function (params) {
+    //                     return { term: params.term };
+    //                 },
+    //                 processResults: function (data) {
+    //                     return {
+    //                         results: data.map(function(item) {
+    //                             return {
+    //                                 id: item.id,
+    //                                 text: item.text,
+    //                                 contact_no: item.contact_no,
+    //                                 address: item.address
+    //                             };
+    //                         })
+    //                     };
+    //                 }
+    //             },
+    //             minimumInputLength: 1,
+    //             tags: true,              // <-- enable new entries
+    //             createTag: function (params) {
+    //                 return {
+    //                     id: params.term,
+    //                     text: params.term,
+    //                     isNew: true            // mark it as a new customer
+    //                 };
+    //             },
+    //             allowClear: true
+    //         });
+    //     });
+
+    //     // When selecting a customer
+    //     $('#customer_id').on('select2:select', function (e) {
+    //         let data = e.params.data;
+    //         if (data.isNew) {
+    //             // Show extra fields for new customer
+    //             $('#newCustomerFields').show();
+    //             $('input[name="contact_no"]').val('');
+    //             $('input[name="address"]').val('');
+    //         } else {
+    //             $('#newCustomerFields').hide();
+    //             $('input[name="contact_no"]').val(data.contact_no || '');
+    //             $('input[name="address"]').val(data.address || '');
+    //         }
+    //     });
+
+    //     // When clearing selection
+    //     $('#customer_id').on('select2:clear', function() {
+    //         $('#newCustomerFields').show();
+    //         $('input[name="contact_no"]').val('');
+    //         $('input[name="address"]').val('');
+    //     });
+
+    // });
+
+
+
+
+    $(document).ready(function () {
+
+        $('#addPawnModal').on('shown.bs.modal', function () {
+
+            $('#customer_id').select2({
+                placeholder: 'Search for customer...',
+                dropdownParent: $('#addPawnModal'),
+                ajax: {
+                    url: 'customer_search.php',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { search: params.term || '' }; // pass search term
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(function (item) {
+                                return {
+                                    id: item.customer_id,
+                                    text: item.full_name,
+                                    contact_no: item.contact_no,
+                                    address: item.address
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 0, // show all customers immediately
+                templateResult: formatCustomer,
+                templateSelection: formatCustomerSelection,
+                allowClear: true
             });
+
+            // Format how each customer appears in the dropdown
+            function formatCustomer(customer) {
+                if (customer.loading) return customer.text;
+
+                // Create a jQuery object so HTML renders correctly
+                var $container = $(
+                    "<div class='select2-result-customer'>" +
+                    "<div class='fw-bold'>" + customer.text + "</div>" +
+                    (customer.address ? "<small>Address: " + customer.address + "</small>" : "") +
+                    (customer.contact_no ? " | <small>Contact: " + customer.contact_no + "</small>" : "") +
+
+                    "</div>"
+                );
+
+                return $container;
+            }
+
+            // Format selected customer (shown in the input)
+            function formatCustomerSelection(customer) {
+                return customer.text || customer.id || '';
+            }
+
+
+        });
+
+        // Toggle new customer fields and required attribute
+        $('#addNewCustomer').change(function () {
+            if ($(this).is(':checked')) {
+                // Show new customer fields
+                $('#newCustomerFields').show();
+                $('#customer_id').prop('disabled', true);
+
+                // Make customer_name required
+                $('input[name="customer_name"]').prop('required', true);
+            } else {
+                // Hide new customer fields
+                $('#newCustomerFields').hide();
+                $('#customer_id').prop('disabled', false);
+
+                // Make customer_name optional
+                $('input[name="customer_name"]').prop('required', false);
+            }
+        });
+
+
+        // Fill contact/address on selection
+        $('#customer_id').on('select2:select', function (e) {
+            let data = e.params.data;
+            $('input[name="contact_no"]').val(data.contact_no || '');
+            $('input[name="address"]').val(data.address || '');
+        });
+
+        $('#customer_id').on('select2:clear', function () {
+            $('input[name="contact_no"]').val('');
+            $('input[name="address"]').val('');
+        });
+
+    });
+
+    // Add Pawn form submission
+    $("#addPawnForm").on("submit", function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: "Confirm Add Pawn?",
+            text: "This will save the pawned item.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Save it!",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "pawn_add_process.php",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            Swal.fire("Success", response.message, "success");
+                            $("#addPawnModal").modal("hide");
+                            $("#addPawnForm")[0].reset();
+                            $("#pawnTable").DataTable().ajax.reload();
+                        } else {
+                            Swal.fire("Error", response.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Something went wrong.", "error");
+                    }
+                });
+            }
         });
     });
+
 
 
 
     // When clicking Claim button
-    $(document).on("click", ".claimPawnBtn", function (e) {
-        e.preventDefault();
-        const pawnId = $(this).data("id");
-
-        $.ajax({
-            url: "pawn_get.php",
-            type: "GET",
-            data: { pawn_id: pawnId },
-            dataType: "json",
-            success: function (data) {
-                if (data.error) {
-                    Swal.fire("Error", data.error, "error");
-                    return;
-                }
-
-                // Calculate months
-                const datePawned = new Date(data.date_pawned);
-                const now = new Date();
-                const days = Math.floor((now - datePawned) / (1000 * 60 * 60 * 24));
-                const months = Math.max(1, Math.ceil(days / 30));
-
-                // Interest (assume branch interest_rate in %)
-                const interestRate = parseFloat(data.interest_rate) || 6; // %
-                const principal = parseFloat(data.amount_pawned);
-                const interest = principal * (interestRate / 100) * months;
-                const total = principal + interest;
-
-                // Fill visible fields
-                $("#claimPawnId").val(data.pawn_id);
-                $("#claimOwnerName").val(data.owner_name);
-                $("#claimUnitDescription").val(data.unit_description);
-                $("#claimDatePawned").val(data.date_pawned);
-                $("#claimAmountPawned").val(principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                $("#claimMonths").val(months + " month(s)");
-                $("#claimInterest").val("₱" + interest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                $("#claimTotal").val("₱" + total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-
-                // Fill hidden fields for backend
-                $("#claimInterestRate").val(interestRate);
-                $("#claimInterestValue").val(interest.toFixed(2));
-                $("#claimPrincipalValue").val(principal.toFixed(2));
-                $("#claimTotalValue").val(total.toFixed(2));
-                $("#claimMonthsValue").val(months);
-
-                $("#claimPawnModal").modal("show");
+    $(document).ready(function () {
+        $('#customer_id').select2({
+            placeholder: 'Search or add new customer',
+            ajax: {
+                url: 'customer_search.php',
+                dataType: 'json',
+                delay: 250,
+                data: params => ({ term: params.term }),
+                processResults: data => ({ results: data })
             },
-            error: function () {
-                Swal.fire("Error", "Unable to fetch pawn details.", "error");
+            minimumInputLength: 1,
+            allowClear: true,
+            tags: true  // allow entering new names
+        });
+
+        // Handle selection
+        $('#customer_id').on('select2:select', function (e) {
+            let data = e.params.data;
+
+            if (data.id) {
+                // Existing customer: hide extra fields, auto-fill contact & address
+                $('#newCustomerFields').hide();
+                $('input[name="contact_no"]').val(data.contact_no || '');
+                $('input[name="address"]').val(data.address || '');
+            } else {
+                // New customer typed: show extra fields
+                $('#newCustomerFields').show();
+                $('input[name="contact_no"]').val('');
+                $('input[name="address"]').val('');
             }
         });
     });
+
+
+
+
+
+
+    $('#addAmountPawnedVisible').on('input', function () {
+        let raw = $(this).val().replace(/[^0-9.]/g, '');
+        $('#addAmountPawned').val(raw);
+    });
+
 
 
     // Submit claim form

@@ -10,85 +10,118 @@ if (!isset($_SESSION['user'])) {
     echo json_encode(["data" => []]);
     exit();
 }
-
 $user_role = $_SESSION['user']['role'] ?? 'cashier';
-$branch_id = $_SESSION['user']['branch_id'] ?? null;
+$session_branch_id = $_SESSION['user']['branch_id'] ?? null;
 
-// branch filtering
-// This will set $params to an empty array for super_admin, or to [branch_id] for other roles
+// Super admin can filter branch via AJAX request
+$selected_branch_id = $_GET['branch_id'] ?? null;
+
+// Apply branch filter
 $params = [];
-$where = branchFilter($user_role, $branch_id, $params);
+if ($user_role === 'super_admin') {
+    if (!empty($selected_branch_id)) {
+        $where = "WHERE p.status = 'pawned' AND p.is_deleted = 0 AND p.branch_id = ?";
+        $params[] = $selected_branch_id;
+    } else {
+        // show all branches
+        $where = "WHERE p.status = 'pawned' AND p.is_deleted = 0";
+    }
+} else {
+    // Non-super_admin users are locked to their session branch
+    $where = "WHERE p.status = 'pawned' AND p.is_deleted = 0 AND p.branch_id = ?";
+    $params[] = $session_branch_id;
+}
 
-// Build query dynamically
-$sql = "SELECT * FROM pawned_items $where ORDER BY date_pawned DESC";
+// Fetch pawned items
+$sql = "
+    SELECT 
+        p.pawn_id,
+        p.date_pawned,
+        p.unit_description,
+        p.category,
+        p.amount_pawned,
+        p.notes,
+        c.full_name,
+        c.contact_no
+    FROM pawned_items p
+    LEFT JOIN customers c ON p.customer_id = c.customer_id
+    $where
+    ORDER BY p.date_pawned DESC
+";
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 
+
+
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    // Start dropdown
-    $actions = '
-         <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-three-dots fs-5"></i>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end">
-    ';
-
-    // Only super_admin can see Edit
-    if ($user_role === 'admin') {
+    // Build actions dropdown (only if user has access)
+    $actions = '';
+    if (in_array($user_role, ['admin', 'cashier'])) {
         $actions .= '
-        <li>
-            <a class="dropdown-item editPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                <i class="bi bi-pencil-square text-primary"></i> Edit
+            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots fs-5"></i>
             </a>
-        </li>
+            <ul class="dropdown-menu dropdown-menu-end">
         ';
-    }
 
-    if ($user_role === 'admin' || $user_role === 'cashier') {
+        // Edit (admin only)
+        if ($user_role === 'admin') {
+            $actions .= '
+                <li>
+                    <a class="dropdown-item editPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                        <i class="bi bi-pencil-square text-primary"></i> Edit
+                    </a>
+                </li>
+            ';
+        }
 
-        $actions .= '
-        <li>
-            <a class="dropdown-item claimPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                <i class="bi bi-cash-coin text-success"></i> Claim
-            </a>
-        </li>
-    ';
-    }
-
-    // Forfeit (admin only)
-    if (in_array($user_role, ['admin'])) {
+        // Claim (admin + cashier)
         $actions .= '
             <li>
-                <a class="dropdown-item forfeitPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                    <i class="bi bi-exclamation-triangle text-warning"></i> Forfeit
+                <a class="dropdown-item claimPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                    <i class="bi bi-cash-coin text-success"></i> Claim
                 </a>
             </li>
         ';
 
-        $actions .= '
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">
-                    <i class="bi bi-trash"></i> Move to Trash
-                </a>
-            </li>
-        ';
+        // Forfeit + Delete (admin only)
+        if ($user_role === 'admin') {
+            $actions .= '
+                <li>
+                    <a class="dropdown-item forfeitPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                        <i class="bi bi-exclamation-triangle text-warning"></i> Forfeit
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">
+                        <i class="bi bi-trash"></i> Move to Trash
+                    </a>
+                </li>
+            ';
+        }
+
+        $actions .= '</ul>';
     }
 
-    // Close dropdown
-    $actions .= '</ul>';
-
-    $rows[] = [
+    // Build row for DataTable
+    $rowData = [
         $row['date_pawned'],
-        htmlspecialchars($row['owner_name']),
+        htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
         '₱' . number_format($row['amount_pawned'], 2),
         htmlspecialchars($row['contact_no']),
-        htmlspecialchars($row['notes']),
-        $actions
+        htmlspecialchars($row['notes'])
     ];
+
+    // Append Actions column only if applicable
+    if (in_array($user_role, ['admin', 'cashier'])) {
+        $rowData[] = $actions;
+    }
+
+    $rows[] = $rowData;
 }
 
 echo json_encode(["data" => $rows]);

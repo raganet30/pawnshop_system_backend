@@ -14,44 +14,54 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
     exit();
 }
 
-
-
-$global_cash = $pdo->query("SELECT COALESCE(SUM(cash_on_hand),0) FROM branches")->fetchColumn();
+// GLOBAL CASH (sum of all branches cash_on_hand)
+$global_cash = $pdo->query("
+    SELECT COALESCE(SUM(cash_on_hand), 0) 
+    FROM branches 
+")->fetchColumn();
 
 /* =======================
    BRANCH STATS
    ======================= */
 $branch_stats = $pdo->query("
-    SELECT b.branch_id, b.branch_name,
-           SUM(CASE WHEN p.status = 'pawned' THEN 1 ELSE 0 END) AS total_pawned,
-           SUM(CASE WHEN p.status = 'claimed' THEN 1 ELSE 0 END) AS claimed,
-           SUM(CASE WHEN p.status = 'forfeited' THEN 1 ELSE 0 END) AS forfeited,
-           COALESCE(SUM(p.amount_pawned),0) AS total_pawned_value,
-           COALESCE(SUM(p.interest_amount),0) AS total_interest_amount,
-           b.cash_on_hand
-    FROM branches b
-    LEFT JOIN pawned_items p 
-        ON b.branch_id = p.branch_id 
-        AND p.is_deleted = 0
-    GROUP BY b.branch_id, b.branch_name
+    SELECT 
+    b.branch_id, 
+    b.branch_name,
+    SUM(CASE WHEN p.status = 'pawned' THEN 1 ELSE 0 END) AS total_pawned,
+    SUM(CASE WHEN p.status = 'claimed' THEN 1 ELSE 0 END) AS claimed,
+    SUM(CASE WHEN p.status = 'forfeited' THEN 1 ELSE 0 END) AS forfeited,
+    COALESCE(SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned_value,
+    COALESCE(SUM(tp.interest_amount), 0) AS total_interest_amount,
+    b.cash_on_hand
+FROM branches b
+LEFT JOIN pawned_items p 
+    ON b.branch_id = p.branch_id 
+    AND p.is_deleted = 0
+LEFT JOIN tubo_payments tp 
+    ON p.pawn_id = tp.pawn_id 
+GROUP BY b.branch_id, b.branch_name
+
 ")->fetchAll(PDO::FETCH_ASSOC);
-
-
 
 /* =======================
    MONTHLY TREND (ALL BRANCHES)
    ======================= */
 $trend_stmt = $pdo->query("
-    SELECT DATE_FORMAT(date_pawned, '%Y-%m') AS month,
-           COALESCE(SUM(amount_pawned), 0) AS total_pawned,
-           COALESCE(SUM(interest_amount), 0) AS total_interest
-    FROM pawned_items
-    WHERE date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-    GROUP BY month
-    ORDER BY month ASC
+    SELECT DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
+       COALESCE(SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
+       COALESCE(SUM(tp.interest_amount), 0) AS total_interest
+FROM pawned_items p
+LEFT JOIN tubo_payments tp 
+    ON p.pawn_id = tp.pawn_id 
+WHERE p.is_deleted = 0
+  AND p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+GROUP BY month
+ORDER BY month ASC
+
 ");
 $trend_data = $trend_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Prepare arrays for chart
 $trend_months = [];
 $trend_pawned = [];
 $trend_interest = [];
@@ -60,7 +70,6 @@ foreach ($trend_data as $row) {
     $trend_pawned[] = (float) $row['total_pawned'];
     $trend_interest[] = (float) $row['total_interest'];
 }
-
 ?>
 <div class="d-flex" id="wrapper">
     <?php include '../views/sidebar.php'; ?>
@@ -72,9 +81,6 @@ foreach ($trend_data as $row) {
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Super Admin Dashboard</h4>
             </div>
-
-           
-               
 
             <!-- Branch Summary Table -->
             <div class="card mb-4">
@@ -89,19 +95,19 @@ foreach ($trend_data as $row) {
                                 <th>Forfeited</th>
                                 <th>Total Pawned Value</th>
                                 <th>Cash on Hand</th>
-                                <th>Total Interest Accumulated</th>
+                                <th>Total Interest Collected</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
-                            $grand_pawned = $grand_claimed = $grand_forfeited = $grand_value = $grand_coh = $grand_interest_amount = 0;
+                            $grand_pawned = $grand_claimed = $grand_forfeited = $grand_value = $grand_coh = $grand_interest = 0;
                             foreach ($branch_stats as $branch):
                                 $grand_pawned += $branch['total_pawned'];
                                 $grand_claimed += $branch['claimed'];
                                 $grand_forfeited += $branch['forfeited'];
                                 $grand_value += $branch['total_pawned_value'];
                                 $grand_coh += $branch['cash_on_hand'];
-                                $grand_interest_amount += $branch['total_interest_amount'];
+                                $grand_interest += $branch['total_interest_amount'];
                                 ?>
                                 <tr>
                                     <td><?= htmlspecialchars($branch['branch_name']) ?></td>
@@ -122,14 +128,12 @@ foreach ($trend_data as $row) {
                                 <th><?= number_format($grand_forfeited) ?></th>
                                 <th>₱<?= number_format($grand_value, 2) ?></th>
                                 <th>₱<?= number_format($grand_coh, 2) ?></th>
-                                 <th>₱<?= number_format($grand_interest_amount, 2) ?></th>
+                                <th>₱<?= number_format($grand_interest, 2) ?></th>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
             </div>
-
-
 
             <!-- Monthly Trend Chart -->
             <div class="card mb-4">
@@ -169,7 +173,7 @@ foreach ($trend_data as $row) {
                         tension: 0.3
                     },
                     {
-                        label: 'Interest Earned',
+                        label: 'Interest Collected',
                         data: <?= json_encode($trend_interest) ?>,
                         borderColor: 'rgba(255,99,132,1)',
                         backgroundColor: 'rgba(255,99,132,0.2)',
@@ -197,7 +201,7 @@ foreach ($trend_data as $row) {
                         backgroundColor: 'rgba(75,192,192,0.7)'
                     },
                     {
-                        label: 'Interest Earned',
+                        label: 'Interest Collected',
                         data: <?= json_encode(array_column($branch_stats, 'total_interest_amount')) ?>,
                         backgroundColor: 'rgba(255,99,132,0.7)'
                     }
