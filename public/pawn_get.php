@@ -30,7 +30,8 @@ $sql = "
         p.category,
         p.amount_pawned,
         p.notes,
-        p.date_pawned
+        p.date_pawned,
+        p.status
     FROM pawned_items p
     LEFT JOIN customers c ON p.customer_id = c.customer_id
     WHERE p.pawn_id = ?
@@ -47,9 +48,23 @@ if (!$pawn) {
     exit();
 }
 
+// Fetch branch interest based on session branch
+$branch_id = $_SESSION['user']['branch_id'] ?? 0;
+$branchInterest = 6; // default if not found
+
+if ($branch_id) {
+    $stmtBranch = $pdo->prepare("SELECT interest_rate FROM branches WHERE branch_id = ?");
+    $stmtBranch->execute([$branch_id]);
+    $branch = $stmtBranch->fetch(PDO::FETCH_ASSOC);
+    if ($branch) {
+        $branchInterest = floatval($branch['interest_rate']);
+    }
+}
+
 // Return JSON
 header('Content-Type: application/json');
 echo json_encode([
     "status" => "success",
-    "pawn"   => $pawn
+    "pawn" => $pawn,
+    "branch_interest" => $branchInterest
 ]);

@@ -1,87 +1,62 @@
+$(function () {
 
-
-    // When clicking Claim button
-    $(document).ready(function () {
-        $('#customer_id').select2({
-            placeholder: 'Search or add new customer',
-            ajax: {
-                url: 'customer_search.php',
-                dataType: 'json',
-                delay: 250,
-                data: params => ({ term: params.term }),
-                processResults: data => ({ results: data })
-            },
-            minimumInputLength: 1,
-            allowClear: true,
-            tags: true  // allow entering new names
-        });
-
-        // Handle selection
-        $('#customer_id').on('select2:select', function (e) {
-            let data = e.params.data;
-
-            if (data.id) {
-                // Existing customer: hide extra fields, auto-fill contact & address
-                $('#newCustomerFields').hide();
-                $('input[name="contact_no"]').val(data.contact_no || '');
-                $('input[name="address"]').val(data.address || '');
-            } else {
-                // New customer typed: show extra fields
-                $('#newCustomerFields').show();
-                $('input[name="contact_no"]').val('');
-                $('input[name="address"]').val('');
-            }
-        });
-    });
-
-
-
-
-    $('#addAmountPawnedVisible').on('input', function () {
-        let raw = $(this).val().replace(/[^0-9.]/g, '');
-        $('#addAmountPawned').val(raw);
-    });
-
-
-
-    // Submit claim form
-    $("#claimPawnForm").on("submit", function (e) {
-        e.preventDefault();
-
-        // ✅ Ensure claimant photo is captured
-        if (!$("#claimantPhoto").val()) {
-            Swal.fire("Error", "Please capture claimant photo before submitting.", "error");
-            return false;
+    // Utility: Fill input fields from a mapping
+    function fillFields(mapping, data) {
+        for (const selector in mapping) {
+            $(selector).val(data[mapping[selector]] ?? '');
         }
+    }
 
-        const formData = $(this).serialize();
+    // Claim Button Click
+    $(document).on("click", ".claimPawnBtn", function (e) {
+        e.preventDefault();
+        const pawnId = $(this).data("id");
 
-        Swal.fire({
-            title: "Confirm Claim?",
-            text: "This action cannot be undone.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Claim it!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.post("pawn_claim_process.php", formData, function (response) {
-                    if (response.status === "success") {
-                        Swal.fire("Claimed!", response.message, "success").then(() => {
-                            $("#claimPawnModal").modal("hide");
-                            $("#pawnTable").DataTable().ajax.reload();
-                        });
-                    } else {
-                        Swal.fire("Error", response.message, "error");
-                    }
-                }, "json");
-            }
-        });
+        $.getJSON("pawn_get.php", { pawn_id: pawnId })
+            .done((data) => {
+                if (data.status !== "success") {
+                    return Swal.fire("Error", data.message || "Unable to fetch pawn details.", "error");
+                }
+
+                const pawn = data.pawn;
+                const datePawned = new Date(pawn.date_pawned);
+                const now = new Date();
+                const months = Math.max(1, Math.ceil((now - datePawned) / (1000 * 60 * 60 * 24 * 30)));
+
+                const principal = parseFloat(pawn.amount_pawned);
+                const interestRate = parseFloat(data.branch_interest) || 6;
+                const interest = principal * interestRate * months;
+                const total = principal + interest;
+
+                // Fill visible fields
+                fillFields({
+                    "#claimPawnId": "pawn_id",
+                    "#claimOwnerName": "customer_name",
+                    "#claimUnitDescription": "unit_description",
+                    "#claimDatePawned": "date_pawned"
+                }, pawn);
+
+                $("#claimAmountPawned").val(principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#claimMonths").val(months + " month(s)");
+                $("#claimInterest").val("₱" + interest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#claimTotal").val("₱" + total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+
+                // Fill hidden fields
+                $("#claimInterestRate").val(interestRate);
+                $("#claimInterestValue").val(interest.toFixed(2));
+                $("#claimPrincipalValue").val(principal.toFixed(2));
+                $("#claimTotalValue").val(total.toFixed(2));
+                $("#claimMonthsValue").val(months);
+
+                // Reset photo
+                $("#claimantPhoto").val('');
+                $("#capturedCanvas").get(0).getContext("2d").clearRect(0, 0, 320, 240);
+
+                // Show modal
+                $("#claimPawnModal").modal("show");
+            })
+            .fail(() => Swal.fire("Error", "Unable to fetch pawn details.", "error"));
     });
-
-
-
-
-
 
     // Webcam Capture for Claimant Photo
     // Initialize webcam stream and capture functionality
@@ -125,5 +100,36 @@
 
 
 
+    // Submit claim form
+    $("#claimPawnForm").on("submit", function (e) {
+        e.preventDefault();
 
+        if (!hiddenPhotoInput.value) {
+            return Swal.fire("Error", "Please capture claimant photo before submitting.", "error");
+        }
 
+        const formData = $(this).serialize();
+
+        Swal.fire({
+            title: "Confirm Claim?",
+            text: "This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Claim it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("pawn_claim_process.php", formData, function (response) {
+                    if (response.status === "success") {
+                        Swal.fire("Claimed!", response.message, "success").then(() => {
+                            $("#claimPawnModal").modal("hide");
+                            $("#pawnTable").DataTable().ajax.reload();
+                        });
+                    } else {
+                        Swal.fire("Error", response.message || "Unable to claim pawn.", "error");
+                    }
+                }, "json").fail(() => Swal.fire("Error", "Server error while processing claim.", "error"));
+            }
+        });
+    });
+
+});

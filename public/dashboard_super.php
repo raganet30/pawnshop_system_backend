@@ -90,7 +90,7 @@ foreach ($trend_data as $row) {
                         <thead class="table-light">
                             <tr>
                                 <th>Branch</th>
-                                <th>Total Pawned Items</th>
+                                <th>Pawned Items</th>
                                 <th>Claimed</th>
                                 <th>Forfeited</th>
                                 <th>Total Pawned Value</th>

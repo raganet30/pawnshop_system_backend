@@ -133,83 +133,90 @@ include '../views/header.php';
                 </div>
             </div>
 
-                
+
             <!-- Edit Pawn Modal -->
-<div class="modal fade" id="editPawnModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="editPawnForm" method="POST" action="pawn_edit_process.php">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Pawn Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+            <div class="modal fade" id="editPawnModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form id="editPawnForm" method="POST" action="pawn_edit_process.php">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Pawn Item</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
 
-                <div class="modal-body">
-                    <input type="hidden" name="pawn_id" id="editPawnId">
+                            <div class="modal-body">
+                                <input type="hidden" name="pawn_id" id="editPawnId">
 
-                    <div class="row g-3">
-                        <!-- Customer (read-only) -->
-                        <div class="col-md-12">
-                            <label>Pawner</label>
-                            <input type="text" class="form-control" id="editCustomerName" readonly>
-                        </div>
+                                <div class="row g-3">
+                                    <!-- Customer (read-only) -->
+                                    <div class="col-md-12">
+                                        <label>Pawner</label>
+                                        <input type="text" class="form-control" id="editCustomerName" readonly>
+                                    </div>
 
-                        <!-- Contact (read-only for reference) -->
-                        <div class="col-md-6">
-                            <label>Contact No.</label>
-                            <input type="text" class="form-control" id="editContactNo" readonly>
-                        </div>
+                                    <!-- Contact (read-only for reference) -->
+                                    <div class="col-md-6">
+                                        <label>Contact No.</label>
+                                        <input type="text" class="form-control" id="editContactNo" readonly>
+                                    </div>
 
-                        <!-- Address (read-only for reference) -->
-                        <div class="col-md-6">
-                            <label>Address</label>
-                            <input type="text" class="form-control" id="editAddress" readonly>
-                        </div>
+                                    <!-- Address (read-only for reference) -->
+                                    <div class="col-md-6">
+                                        <label>Address</label>
+                                        <input type="text" class="form-control" id="editAddress" readonly>
+                                    </div>
 
-                        <!-- Pawn Item Details -->
-                        <div class="col-md-6">
-                            <label>Unit</label>
-                            <input type="text" class="form-control" name="unit_description" id="editUnitDescription" required>
-                        </div>
+                                    <!-- Pawn Item Details -->
+                                    <div class="col-md-6">
+                                        <label>Unit</label>
+                                        <input type="text" class="form-control" name="unit_description"
+                                            id="editUnitDescription" required>
+                                    </div>
 
-                        <div class="col-md-6">
-                            <label>Category</label>
-                            <select name="category" id="editCategory" class="form-control" required>
-                                <option value="">-- Select Category --</option>
-                                <option value="Gadgets">Gadgets</option>
-                                <option value="Computer">Computer</option>
-                                <option value="Camera">Camera</option>
-                                <option value="Vehicle">Vehicle</option>
-                                <option value="Appliances">Appliances</option>
-                                <option value="Others">Others</option>
-                            </select>
-                        </div>
+                                    <div class="col-md-6">
+                                        <label>Category</label>
+                                        <select name="category" id="editCategory" class="form-control" required>
+                                            <option value="">-- Select Category --</option>
+                                            <option value="Gadgets">Gadgets</option>
+                                            <option value="Computer">Computer</option>
+                                            <option value="Camera">Camera</option>
+                                            <option value="Vehicle">Vehicle</option>
+                                            <option value="Appliances">Appliances</option>
+                                            <option value="Others">Others</option>
+                                        </select>
+                                    </div>
 
-                        <div class="col-md-6">
-                            <label>Amount Pawned</label>
-                            <input type="number" class="form-control" name="amount_pawned" id="editAmountPawned" step="0.01" required>
-                        </div>
+                                    <div class="col-md-6">
+                                        <label>Amount Pawned</label>
+                                        <!-- Visible input with formatting -->
+                                        <input type="text" class="form-control" id="editAmountPawnedVisible"
+                                            placeholder="0.00" required>
+                                        <!-- Hidden input for raw numeric value -->
+                                        <input type="hidden" name="amount_pawned" id="editAmountPawned">
+                                    </div>
 
-                        <div class="col-md-6">
-                            <label>Note</label>
-                            <input type="text" class="form-control" name="notes" id="editNotes">
-                        </div>
+                                    <div class="col-md-6">
+                                        <label>Note</label>
+                                        <input type="text" class="form-control" name="notes" id="editNotes">
+                                    </div>
 
-                        <div class="col-md-6">
-                            <label>Date Pawned</label>
-                            <input type="date" class="form-control" name="date_pawned" id="editDatePawned" required>
-                        </div>
+                                    <div class="col-md-6">
+                                        <label>Date Pawned</label>
+                                        <input type="date" class="form-control" name="date_pawned" id="editDatePawned"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Save Changes</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+            </div>
 
 
 
@@ -294,7 +301,7 @@ include '../views/header.php';
                 </div>
             </div>
 
-           
+
 
             <!-- Forfeit Modal -->
             <div class="modal fade" id="forfeitPawnModal" tabindex="-1">
@@ -328,6 +335,11 @@ include '../views/header.php';
                                     <div class="col-md-6">
                                         <label>Amount Pawned</label>
                                         <input type="text" class="form-control" id="forfeitAmount" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Reason</label>
+                                        <input type="text" class="form-control" id="forfeitReason" name="forfeitReason"
+                                            required>
                                     </div>
                                 </div>
                             </div>
@@ -428,7 +440,7 @@ include '../views/header.php';
                 { title: "Contact No." },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                                        { title: "Actions", orderable: false }
+                                                                                                    { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -444,35 +456,44 @@ include '../views/header.php';
 
 
 
-
-
-
-
-
     // Open Forfeit Modal
     $(document).on("click", ".forfeitPawnBtn", function (e) {
         e.preventDefault();
         const pawnId = $(this).data("id");
 
         $.get("pawn_get.php", { pawn_id: pawnId }, function (data) {
-            if (data.error) {
-                Swal.fire("Error", data.error, "error");
+            if (data.status !== "success") {
+                Swal.fire("Error", data.message || "Failed to fetch pawn details", "error");
                 return;
             }
 
+            const pawn = data.pawn;
+
             // Calculate months
-            const datePawned = new Date(data.date_pawned);
+            const datePawned = new Date(pawn.date_pawned);
             const now = new Date();
             const days = Math.floor((now - datePawned) / (1000 * 60 * 60 * 24));
             const months = Math.max(1, Math.ceil(days / 30));
 
-            // Populate modal
-            $("#forfeitPawnId").val(data.pawn_id);
-            $("#forfeitOwnerName").val(data.owner_name);
-            $("#forfeitUnit").val(data.unit_description);
-            $("#forfeitDatePawned").val(data.date_pawned);
+            // Restriction: only allow forfeiture if >= 2 months
+            if (months < 2) {
+                Swal.fire(
+                    "Not Eligible",
+                    "Pawned item can only be forfeited after 2 months.",
+                    "info"
+                );
+                return; // stop further execution
+            }
+
+            // Populate modal fields
+            $("#forfeitPawnId").val(pawn.pawn_id);
+            $("#forfeitOwnerName").val(pawn.customer_name);
+            $("#forfeitUnit").val(pawn.unit_description);
+            $("#forfeitDatePawned").val(pawn.date_pawned);
             $("#forfeitMonths").val(months + " month(s)");
-            $("#forfeitAmount").val("₱" + parseFloat(data.amount_pawned).toLocaleString());
+            $("#forfeitAmount").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            $("#forfeitNotes").val(pawn.notes || "");
+            $("#forfeitReason").val(""); // clear previous reason
 
             $("#forfeitPawnModal").modal("show");
         }, "json");
@@ -481,6 +502,20 @@ include '../views/header.php';
     // Handle Forfeit Form Submit
     $("#forfeitPawnForm").on("submit", function (e) {
         e.preventDefault();
+        const monthsText = $("#forfeitMonths").val(); // e.g., "3 month(s)"
+        const months = parseInt(monthsText);
+
+        if (months < 2) {
+            Swal.fire("Error", "Pawned item can only be forfeited after 2 months.", "error");
+            return;
+        }
+
+        const reason = $("#forfeitReason").val().trim();
+        if (!reason) {
+            Swal.fire("Error", "Please provide a reason for forfeiture.", "error");
+            return;
+        }
+
         const formData = $(this).serialize();
 
         Swal.fire({
@@ -499,13 +534,12 @@ include '../views/header.php';
                             $("#pawnTable").DataTable().ajax.reload();
                         });
                     } else {
-                        Swal.fire("Error", response.message, "error");
+                        Swal.fire("Error", response.message || "Failed to forfeit pawn", "error");
                     }
                 }, "json");
             }
         });
     });
-
 
 
     // delete pawn
@@ -641,87 +675,78 @@ include '../views/header.php';
         }
     })();
 
+    // Refactored script to format pawn amount inputs inside editPawnModal
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#editPawnModal').on('show.bs.modal', function () {
+            const visible = document.getElementById('editAmountPawnedVisible');
+            const hidden = document.getElementById('editAmountPawned');
 
-    // script to add money separators to input fields in editPawnModal
+            if (!visible || !hidden) return;
 
-    // (function () {
-    //     const visible = document.getElementById('editAmountPawnedVisible');
-    //     const hidden = document.getElementById('editAmountPawned');
+            function formatNumber(value) {
+                if (value === '' || value === null || isNaN(value)) return '';
+                return parseFloat(value).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
 
-    //     function formatNumber(value) {
-    //         if (value === '' || value === null || isNaN(value)) return '';
-    //         return parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    //     }
+            function rawFromFormatted(str) {
+                if (!str) return '';
+                const cleaned = str.replace(/[^0-9.-]/g, '');
+                return cleaned === '' ? '' : parseFloat(cleaned).toFixed(2);
+            }
 
-    //     function rawFromFormatted(str) {
-    //         if (!str) return '';
-    //         const cleaned = str.replace(/[^0-9.-]/g, '');
-    //         return cleaned === '' ? '' : parseFloat(cleaned).toFixed(2);
-    //     }
+            // Format existing raw value when modal opens
+            const raw = hidden.value;
+            visible.value = raw ? formatNumber(raw) : '';
 
-    //     // When modal is shown, format whatever raw value is present (this covers existing data)
-    //     $('#editPawnModal').on('show.bs.modal', function () {
-    //         const raw = hidden.value;
-    //         if (raw !== undefined && raw !== null && raw !== '') {
-    //             visible.value = formatNumber(raw);
-    //         } else {
-    //             visible.value = '';
-    //         }
-    //     });
+            // Format while typing and update hidden input
+            visible.addEventListener('input', function (e) {
+                const pos = this.selectionStart;
+                const oldLen = this.value.length;
 
-    //     // Format while typing and keep hidden raw value updated
-    //     visible.addEventListener('input', function (e) {
-    //         // Keep caret roughly at end after formatting
-    //         const pos = this.selectionStart;
-    //         const oldLen = this.value.length;
+                let raw = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+                const parts = raw.split('.');
+                if (parts.length > 2) {
+                    raw = parts.shift() + '.' + parts.join('');
+                }
 
-    //         // Remove commas and any non-digit/dot chars
-    //         let raw = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
-    //         // Handle multiple dots: keep first
-    //         const parts = raw.split('.');
-    //         if (parts.length > 2) {
-    //             raw = parts.shift() + '.' + parts.join('');
-    //         }
-    //         const split = raw.split('.');
-    //         let integer = split[0] || '0';
-    //         let decimal = split[1] || '';
+                let [integer, decimal] = raw.split('.');
+                integer = integer || '0';
+                decimal = decimal || '';
 
-    //         // Limit decimals to 2
-    //         if (decimal.length > 2) decimal = decimal.slice(0, 2);
+                if (decimal.length > 2) decimal = decimal.slice(0, 2);
+                integer = integer.replace(/^0+(?=\d)/, '');
 
-    //         // Avoid leading zeros like "000" -> "0"
-    //         integer = integer.replace(/^0+(?=\d)/, '');
+                let formatted = integer ? Number(integer).toLocaleString() : '';
+                if (decimal !== '') {
+                    formatted = (formatted === '' ? '0' : formatted) + '.' + decimal;
+                }
 
-    //         let formatted = integer ? Number(integer).toLocaleString() : '';
-    //         if (decimal !== '') {
-    //             // ensure decimal has no extra non-digits
-    //             formatted = (formatted === '' ? '0' : formatted) + '.' + decimal;
-    //         }
+                if (integer === '' && decimal === '') formatted = '';
 
-    //         // If both empty, show empty
-    //         if (integer === '' && decimal === '') formatted = '';
+                this.value = formatted;
+                hidden.value = (raw === '' || isNaN(Number(raw))) ? '' : Number(raw).toFixed(2);
 
-    //         this.value = formatted;
-    //         // Update hidden raw value (fixed to 2 decimals) or empty
-    //         hidden.value = (raw === '' || isNaN(Number(raw))) ? '' : Number(raw).toFixed(2);
+                const newLen = this.value.length;
+                const newPos = Math.max(0, pos + (newLen - oldLen));
+                this.setSelectionRange(newPos, newPos);
+            });
 
-    //         // Restore caret position
-    //         const newLen = this.value.length;
-    //         const newPos = Math.max(0, pos + (newLen - oldLen));
-    //         this.setSelectionRange(newPos, newPos);
-    //     });
+            // Observe changes to hidden input and update visible input
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (m) {
+                    if (m.attributeName === 'value') {
+                        const raw = hidden.value;
+                        visible.value = raw ? formatNumber(raw) : '';
+                    }
+                });
+            });
+            observer.observe(hidden, { attributes: true, attributeFilter: ['value'] });
+        });
+    });
 
-    //     // If code elsewhere programmatically sets hidden value while modal is open,
-    //     // update visible immediately
-    //     const observer = new MutationObserver(function (mutations) {
-    //         mutations.forEach(function (m) {
-    //             if (m.attributeName === 'value') {
-    //                 const raw = hidden.value;
-    //                 visible.value = (raw !== undefined && raw !== null && raw !== '') ? formatNumber(raw) : '';
-    //             }
-    //         });
-    //     });
-    //     observer.observe(hidden, { attributes: true, attributeFilter: ['value'] });
-    // })();
+
 
 </script>

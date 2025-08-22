@@ -1,6 +1,9 @@
-<!-- <footer class='bg-dark text-white text-center py-3 mt-4'>
-    <p class='mb-0'>&copy; <?php echo date('Y'); ?> Pawnshop Information System</p>
-</footer> -->
+<footer class="custom-footer mt-auto">
+  <div class="container text-center">
+    <small>© <?= date("Y") ?> Pawnshop System. All Rights Reserved.</small>
+  </div>
+</footer>
+
 
 <script src="../assets/js/jquery-3.7.1.min.js"></script>
 <script src="../assets/js/bootstrap.bundle.min.js"></script>
