@@ -1,9 +1,30 @@
 // toggle sidebar
-const wrapper = document.getElementById("wrapper");
-document.querySelectorAll("#sidebarToggle, #sidebarToggleTop").forEach(btn => {
-    btn.addEventListener("click", () => {
-        wrapper.classList.toggle("toggled");
-    });
+document.addEventListener("DOMContentLoaded", function () {
+    const wrapper = document.getElementById("wrapper");
+    if (wrapper) {
+        document.querySelectorAll("#sidebarToggle, #sidebarToggleTop").forEach(btn => {
+            if (btn) {
+                btn.addEventListener("click", () => {
+                    wrapper.classList.toggle("toggled");
+                });
+            }
+        });
+    }
+});
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById("sidebar-wrapper");
+    const toggleBtn = document.getElementById("sidebarToggle");
+
+    if (sidebar && toggleBtn) {
+        toggleBtn.addEventListener("click", function () {
+            sidebar.classList.toggle("collapsed");
+        });
+    }
 });
 
 

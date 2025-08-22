@@ -30,13 +30,14 @@ include '../views/header.php';
             </div>
 
             <!-- Add Pawn Modal -->
-            <div class="modal fade" id="addPawnModal" tabindex="-1">
+            <div class="modal fade" id="addPawnModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <form id="addPawnForm" method="POST" action="pawn_add_process.php">
                             <div class="modal-header">
                                 <h5 class="modal-title">Add New Pawn Item</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
 
                             <div class="modal-body">
@@ -45,25 +46,25 @@ include '../views/header.php';
                                     <!-- Owner Details -->
                                     <!-- Customer Selection/Add New -->
                                     <div class="col-md-12">
-                                        <label>Customer</label>
+                                        <label>Pawner</label>
                                         <select id="customer_id" name="customer_id" class="form-control" required>
-                                            <option value="">-- Select Customer --</option>
+                                            <option value="">-- Select Pawner --</option>
                                         </select>
                                     </div>
 
                                     <div class="col-md-12 mt-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="addNewCustomer">
-                                            <label class="form-check-label" for="addNewCustomer">
-                                                Add New Customer
-                                            </label>
-                                        </div>
+
+                                        <input type="checkbox" class="btn-check" id="addNewCustomer" autocomplete="off">
+                                        <label class="btn btn-primary" for="addNewCustomer">Add New Pawner</label>
+
+
+
                                     </div>
 
                                     <div id="newCustomerFields" class="row g-3" style="display:none;">
                                         <div class="col-md-6">
                                             <label>Full Name</label>
-                                            <input type="text" class="form-control" name="customer_name" >
+                                            <input type="text" class="form-control" name="customer_name">
                                         </div>
                                         <div class="col-md-6">
                                             <label>Contact No.</label>
@@ -73,7 +74,7 @@ include '../views/header.php';
                                         <div class="col-md-6">
                                             <label>Address</label>
                                             <input type="text" class="form-control" name="address"
-                                                placeholder="Customer Address">
+                                                placeholder="Pawner Address">
                                         </div>
 
 
@@ -124,13 +125,91 @@ include '../views/header.php';
 
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-success">Save</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                    aria-label="Close">Cancel</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
 
+                
+            <!-- Edit Pawn Modal -->
+<div class="modal fade" id="editPawnModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editPawnForm" method="POST" action="pawn_edit_process.php">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Pawn Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="pawn_id" id="editPawnId">
+
+                    <div class="row g-3">
+                        <!-- Customer (read-only) -->
+                        <div class="col-md-12">
+                            <label>Pawner</label>
+                            <input type="text" class="form-control" id="editCustomerName" readonly>
+                        </div>
+
+                        <!-- Contact (read-only for reference) -->
+                        <div class="col-md-6">
+                            <label>Contact No.</label>
+                            <input type="text" class="form-control" id="editContactNo" readonly>
+                        </div>
+
+                        <!-- Address (read-only for reference) -->
+                        <div class="col-md-6">
+                            <label>Address</label>
+                            <input type="text" class="form-control" id="editAddress" readonly>
+                        </div>
+
+                        <!-- Pawn Item Details -->
+                        <div class="col-md-6">
+                            <label>Unit</label>
+                            <input type="text" class="form-control" name="unit_description" id="editUnitDescription" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Category</label>
+                            <select name="category" id="editCategory" class="form-control" required>
+                                <option value="">-- Select Category --</option>
+                                <option value="Gadgets">Gadgets</option>
+                                <option value="Computer">Computer</option>
+                                <option value="Camera">Camera</option>
+                                <option value="Vehicle">Vehicle</option>
+                                <option value="Appliances">Appliances</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Amount Pawned</label>
+                            <input type="number" class="form-control" name="amount_pawned" id="editAmountPawned" step="0.01" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Note</label>
+                            <input type="text" class="form-control" name="notes" id="editNotes">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Date Pawned</label>
+                            <input type="date" class="form-control" name="date_pawned" id="editDatePawned" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 
@@ -215,77 +294,7 @@ include '../views/header.php';
                 </div>
             </div>
 
-            <!-- Edit Pawn Modal -->
-            <div class="modal fade" id="editPawnModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <form id="editPawnForm" method="POST" enctype="multipart/form-data">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Pawn</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="hidden" name="pawn_id" id="editPawnId">
-
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label>Owner Name</label>
-                                        <input type="text" class="form-control" name="owner_name" id="editOwnerName"
-                                            required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Contact No.</label>
-                                        <input type="text" class="form-control" name="contact_no" id="editContactNo">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Unit</label>
-                                        <input type="text" class="form-control" name="unit_description"
-                                            id="editUnitDesc" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Category</label>
-                                        <select name="category" id="editCategory" class="form-control" required>
-                                            <option value="">-- Select Category --</option>
-                                            <option value="Gadgets">Gadgets</option>
-                                            <option value="Computer">Computer</option>
-                                            <option value="Camera">Camera</option>
-                                            <option value="Vehicle">Vehicle</option>
-                                            <option value="Appliances">Appliances</option>
-                                            <option value="Others">Others</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Amount Pawned</label>
-                                        <!-- Visible formatted input -->
-                                        <input type="text" class="form-control" id="editAmountPawnedVisible"
-                                            placeholder="0.00" required>
-                                        <!-- Hidden raw value for submission -->
-                                        <input type="hidden" name="amount_pawned" id="editAmountPawned">
-
-
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Note</label>
-                                        <input type="text" class="form-control" name="notes" id="editNotes">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Date Pawned</label>
-                                        <input type="date" class="form-control" name="date_pawned" id="editDatePawned"
-                                            required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-success">Save Changes</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+           
 
             <!-- Forfeit Modal -->
             <div class="modal fade" id="forfeitPawnModal" tabindex="-1">
@@ -386,9 +395,9 @@ include '../views/header.php';
     </div>
 </div>
 
-
-
-
+<script src="../assets/js/pawn_add.js"></script>
+<script src="../assets/js/pawn_edit.js"></script>
+<script src="../assets/js/pawn_claim.js"></script>
 
 
 
@@ -419,7 +428,7 @@ include '../views/header.php';
                 { title: "Contact No." },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                            { title: "Actions", orderable: false }
+                                                                                        { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -436,536 +445,8 @@ include '../views/header.php';
 
 
 
-    // add pawn script
-    // $(document).ready(function () {
-    //     // Handle Add Pawn form submission
-    //     $("#addPawnForm").on("submit", function (e) {
-    //         e.preventDefault();
 
-    //         Swal.fire({
-    //             title: "Confirm Add Pawn?",
-    //             text: "This will save the pawned item.",
-    //             icon: "question",
-    //             showCancelButton: true,
-    //             confirmButtonText: "Yes, Save it!",
-    //         }).then((result) => {
-    //             if (result.isConfirmed) {
-    //                 $.ajax({
-    //                     url: "pawn_add_process.php",
-    //                     type: "POST",
-    //                     data: $(this).serialize(),
-    //                     dataType: "json",
-    //                     success: function (response) {
-    //                         if (response.status === "success") {
-    //                             Swal.fire("Success", response.message, "success");
-    //                             $("#addPawnModal").modal("hide");
-    //                             $("#addPawnForm")[0].reset();
-    //                             $("#pawnTable").DataTable().ajax.reload();
-    //                         } else {
-    //                             Swal.fire("Error", response.message, "error");
-    //                         }
-    //                     },
-    //                     error: function () {
-    //                         Swal.fire("Error", "Something went wrong.", "error");
-    //                     }
-    //                 });
-    //             }
-    //         });
-    //     });
-    // });
 
-
-
-    // load customer search with Select2
-    // $(document).ready(function () {
-    //     // Initialize Select2 when modal is shown
-    //     $('#addPawnModal').on('shown.bs.modal', function () {
-    //         if (!$('#customer_id').hasClass("select2-hidden-accessible")) {
-    //             $('#customer_id').select2({
-    //                 placeholder: 'Search or add new customer',
-    //                 dropdownParent: $('#addPawnModal'), // important for modals
-    //                 ajax: {
-    //                     url: 'customer_search.php',
-    //                     dataType: 'json',
-    //                     delay: 250,
-    //                     data: function (params) {
-    //                         return { term: params.term };
-    //                     },
-    //                     processResults: function (data) {
-    //                         return { results: data };
-    //                     }
-    //                 },
-    //                 minimumInputLength: 1,
-    //                 allowClear: true,
-    //                 templateResult: formatCustomer,
-    //                 templateSelection: formatCustomerSelection
-    //             });
-
-    //             console.log("✅ Select2 initialized on #customer_id");
-    //         }
-    //     });
-
-    //     // Format customer in dropdown
-    //     function formatCustomer(customer) {
-    //         if (customer.loading) return customer.text;
-    //         return $('<span>' + customer.text + ' (' + customer.contact_no + ')</span>');
-    //     }
-
-    //     function formatCustomerSelection(customer) {
-    //         return customer.text || customer.id;
-    //     }
-
-    //     // Show new customer fields if adding new
-    //     $('#customer_id').on('select2:select', function (e) {
-    //         let data = e.params.data;
-    //         if (data.isNew) {
-    //             $('#newCustomerFields').show();
-    //             $('input[name="contact_no"]').val('');
-    //             $('input[name="address"]').val('');
-    //         } else {
-    //             $('#newCustomerFields').hide();
-    //             $('input[name="contact_no"]').val(data.contact_no);
-    //             $('input[name="address"]').val(data.address);
-    //         }
-    //     });
-
-    //     // Add Pawn form submission
-    //     $("#addPawnForm").on("submit", function (e) {
-    //         e.preventDefault();
-    //         Swal.fire({
-    //             title: "Confirm Add Pawn?",
-    //             text: "This will save the pawned item.",
-    //             icon: "question",
-    //             showCancelButton: true,
-    //             confirmButtonText: "Yes, Save it!",
-    //         }).then((result) => {
-    //             if (result.isConfirmed) {
-    //                 $.ajax({
-    //                     url: "pawn_add_process.php",
-    //                     type: "POST",
-    //                     data: $(this).serialize(),
-    //                     dataType: "json",
-    //                     success: function (response) {
-    //                         if (response.status === "success") {
-    //                             Swal.fire("Success", response.message, "success");
-    //                             $("#addPawnModal").modal("hide");
-    //                             $("#addPawnForm")[0].reset();
-    //                             $("#pawnTable").DataTable().ajax.reload();
-    //                         } else {
-    //                             Swal.fire("Error", response.message, "error");
-    //                         }
-    //                     },
-    //                     error: function () {
-    //                         Swal.fire("Error", "Something went wrong.", "error");
-    //                     }
-    //                 });
-    //             }
-    //         });
-    //     });
-    // });
-
-
-
-    // $(document).ready(function() {
-
-    //     $('#addPawnModal').on('shown.bs.modal', function () {
-    //         $('#customer_id').select2({
-    //             placeholder: 'Search or add new customer',
-    //             dropdownParent: $('#addPawnModal'),
-    //             ajax: {
-    //                 url: 'customer_search.php',
-    //                 dataType: 'json',
-    //                 delay: 250,
-    //                 data: function (params) {
-    //                     return { term: params.term };
-    //                 },
-    //                 processResults: function (data) {
-    //                     return {
-    //                         results: data.map(function(item) {
-    //                             return {
-    //                                 id: item.id,
-    //                                 text: item.text,
-    //                                 contact_no: item.contact_no,
-    //                                 address: item.address
-    //                             };
-    //                         })
-    //                     };
-    //                 }
-    //             },
-    //             minimumInputLength: 1,
-    //             tags: true,              // <-- enable new entries
-    //             createTag: function (params) {
-    //                 return {
-    //                     id: params.term,
-    //                     text: params.term,
-    //                     isNew: true            // mark it as a new customer
-    //                 };
-    //             },
-    //             allowClear: true
-    //         });
-    //     });
-
-    //     // When selecting a customer
-    //     $('#customer_id').on('select2:select', function (e) {
-    //         let data = e.params.data;
-    //         if (data.isNew) {
-    //             // Show extra fields for new customer
-    //             $('#newCustomerFields').show();
-    //             $('input[name="contact_no"]').val('');
-    //             $('input[name="address"]').val('');
-    //         } else {
-    //             $('#newCustomerFields').hide();
-    //             $('input[name="contact_no"]').val(data.contact_no || '');
-    //             $('input[name="address"]').val(data.address || '');
-    //         }
-    //     });
-
-    //     // When clearing selection
-    //     $('#customer_id').on('select2:clear', function() {
-    //         $('#newCustomerFields').show();
-    //         $('input[name="contact_no"]').val('');
-    //         $('input[name="address"]').val('');
-    //     });
-
-    // });
-
-
-
-
-    $(document).ready(function () {
-
-        $('#addPawnModal').on('shown.bs.modal', function () {
-
-            $('#customer_id').select2({
-                placeholder: 'Search for customer...',
-                dropdownParent: $('#addPawnModal'),
-                ajax: {
-                    url: 'customer_search.php',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return { search: params.term || '' }; // pass search term
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data.map(function (item) {
-                                return {
-                                    id: item.customer_id,
-                                    text: item.full_name,
-                                    contact_no: item.contact_no,
-                                    address: item.address
-                                };
-                            })
-                        };
-                    },
-                    cache: true
-                },
-                minimumInputLength: 0, // show all customers immediately
-                templateResult: formatCustomer,
-                templateSelection: formatCustomerSelection,
-                allowClear: true
-            });
-
-            // Format how each customer appears in the dropdown
-            function formatCustomer(customer) {
-                if (customer.loading) return customer.text;
-
-                // Create a jQuery object so HTML renders correctly
-                var $container = $(
-                    "<div class='select2-result-customer'>" +
-                    "<div class='fw-bold'>" + customer.text + "</div>" +
-                    (customer.address ? "<small>Address: " + customer.address + "</small>" : "") +
-                    (customer.contact_no ? " | <small>Contact: " + customer.contact_no + "</small>" : "") +
-
-                    "</div>"
-                );
-
-                return $container;
-            }
-
-            // Format selected customer (shown in the input)
-            function formatCustomerSelection(customer) {
-                return customer.text || customer.id || '';
-            }
-
-
-        });
-
-        // Toggle new customer fields and required attribute
-        $('#addNewCustomer').change(function () {
-            if ($(this).is(':checked')) {
-                // Show new customer fields
-                $('#newCustomerFields').show();
-                $('#customer_id').prop('disabled', true);
-
-                // Make customer_name required
-                $('input[name="customer_name"]').prop('required', true);
-            } else {
-                // Hide new customer fields
-                $('#newCustomerFields').hide();
-                $('#customer_id').prop('disabled', false);
-
-                // Make customer_name optional
-                $('input[name="customer_name"]').prop('required', false);
-            }
-        });
-
-
-        // Fill contact/address on selection
-        $('#customer_id').on('select2:select', function (e) {
-            let data = e.params.data;
-            $('input[name="contact_no"]').val(data.contact_no || '');
-            $('input[name="address"]').val(data.address || '');
-        });
-
-        $('#customer_id').on('select2:clear', function () {
-            $('input[name="contact_no"]').val('');
-            $('input[name="address"]').val('');
-        });
-
-    });
-
-    // Add Pawn form submission
-    $("#addPawnForm").on("submit", function (e) {
-        e.preventDefault();
-        Swal.fire({
-            title: "Confirm Add Pawn?",
-            text: "This will save the pawned item.",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Save it!",
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "pawn_add_process.php",
-                    type: "POST",
-                    data: $(this).serialize(),
-                    dataType: "json",
-                    success: function (response) {
-                        if (response.status === "success") {
-                            Swal.fire("Success", response.message, "success");
-                            $("#addPawnModal").modal("hide");
-                            $("#addPawnForm")[0].reset();
-                            $("#pawnTable").DataTable().ajax.reload();
-                        } else {
-                            Swal.fire("Error", response.message, "error");
-                        }
-                    },
-                    error: function () {
-                        Swal.fire("Error", "Something went wrong.", "error");
-                    }
-                });
-            }
-        });
-    });
-
-
-
-
-    // When clicking Claim button
-    $(document).ready(function () {
-        $('#customer_id').select2({
-            placeholder: 'Search or add new customer',
-            ajax: {
-                url: 'customer_search.php',
-                dataType: 'json',
-                delay: 250,
-                data: params => ({ term: params.term }),
-                processResults: data => ({ results: data })
-            },
-            minimumInputLength: 1,
-            allowClear: true,
-            tags: true  // allow entering new names
-        });
-
-        // Handle selection
-        $('#customer_id').on('select2:select', function (e) {
-            let data = e.params.data;
-
-            if (data.id) {
-                // Existing customer: hide extra fields, auto-fill contact & address
-                $('#newCustomerFields').hide();
-                $('input[name="contact_no"]').val(data.contact_no || '');
-                $('input[name="address"]').val(data.address || '');
-            } else {
-                // New customer typed: show extra fields
-                $('#newCustomerFields').show();
-                $('input[name="contact_no"]').val('');
-                $('input[name="address"]').val('');
-            }
-        });
-    });
-
-
-
-
-
-
-    $('#addAmountPawnedVisible').on('input', function () {
-        let raw = $(this).val().replace(/[^0-9.]/g, '');
-        $('#addAmountPawned').val(raw);
-    });
-
-
-
-    // Submit claim form
-    $("#claimPawnForm").on("submit", function (e) {
-        e.preventDefault();
-
-        // ✅ Ensure claimant photo is captured
-        if (!$("#claimantPhoto").val()) {
-            Swal.fire("Error", "Please capture claimant photo before submitting.", "error");
-            return false;
-        }
-
-        const formData = $(this).serialize();
-
-        Swal.fire({
-            title: "Confirm Claim?",
-            text: "This action cannot be undone.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Claim it!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.post("pawn_claim_process.php", formData, function (response) {
-                    if (response.status === "success") {
-                        Swal.fire("Claimed!", response.message, "success").then(() => {
-                            $("#claimPawnModal").modal("hide");
-                            $("#pawnTable").DataTable().ajax.reload();
-                        });
-                    } else {
-                        Swal.fire("Error", response.message, "error");
-                    }
-                }, "json");
-            }
-        });
-    });
-
-
-
-
-
-
-    // Webcam Capture for Claimant Photo
-    // Initialize webcam stream and capture functionality
-    let cameraStream = document.getElementById("cameraStream");
-    let capturedCanvas = document.getElementById("capturedCanvas");
-    let capturePhotoBtn = document.getElementById("capturePhotoBtn");
-    let hiddenPhotoInput = document.getElementById("claimantPhoto");
-
-    // Start webcam when modal opens
-    $("#claimPawnModal").on("shown.bs.modal", function () {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then((stream) => {
-                cameraStream.srcObject = stream;
-            })
-            .catch((err) => {
-                Swal.fire("Camera Error", "Unable to access camera: " + err, "error");
-            });
-    });
-
-    // Capture photo
-    capturePhotoBtn.addEventListener("click", () => {
-        let context = capturedCanvas.getContext("2d");
-        context.drawImage(cameraStream, 0, 0, capturedCanvas.width, capturedCanvas.height);
-
-        // Save to hidden input as base64
-        let photoData = capturedCanvas.toDataURL("image/png");
-        hiddenPhotoInput.value = photoData;
-        Swal.fire("Success", "Photo captured!", "success");
-    });
-
-    // Stop camera when modal closes
-    $("#claimPawnModal").on("hidden.bs.modal", function () {
-        let stream = cameraStream.srcObject;
-        if (stream) {
-            let tracks = stream.getTracks();
-            tracks.forEach(track => track.stop());
-        }
-        cameraStream.srcObject = null;
-    });
-
-
-
-
-    // Open Edit Modal and load pawn details
-    $(document).on("click", ".editPawnBtn", function (e) {
-        e.preventDefault();
-        const pawnId = $(this).data("id");
-
-        $.ajax({
-            url: "pawn_get.php",
-            type: "GET",
-            data: { pawn_id: pawnId },
-            dataType: "json",
-            success: function (data) {
-                if (data.error) {
-                    Swal.fire("Error", data.error, "error");
-                    return;
-                }
-
-                // Populate modal fields
-                $("#editPawnId").val(data.pawn_id);
-                $("#editOwnerName").val(data.owner_name);
-                $("#editContactNo").val(data.contact_no);
-                $("#editUnitDesc").val(data.unit_description);
-                $("#editCategory").val(data.category);
-                $("#editAmountPawned").val(data.amount_pawned);
-                $("#editNotes").val(data.notes);
-                $("#editDatePawned").val(data.date_pawned);
-
-                $("#editPawnModal").modal("show");
-            },
-            error: function () {
-                Swal.fire("Error", "Failed to fetch pawn details.", "error");
-            }
-        });
-    });
-
-
-    // Submit Edit Form
-    // Handle Edit Pawn Form Submission
-    $("#editPawnForm").on("submit", function (e) {
-        e.preventDefault();
-
-        Swal.fire({
-            title: "Confirm Edit?",
-            text: "This will adjust Cash on Hand if the amount changes.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Save Changes",
-            cancelButtonText: "Cancel"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "pawn_edit_process.php",
-                    type: "POST",
-                    data: $(this).serialize(),
-                    dataType: "json",
-                    success: function (response) {
-                        if (response.status === "success") {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Updated!",
-                                text: response.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                $("#editPawnModal").modal("hide");
-                                $("#pawnTable").DataTable().ajax.reload();
-                            });
-                        } else {
-                            Swal.fire("Error", response.message, "error");
-                        }
-                    },
-                    error: function () {
-                        Swal.fire("Error", "Something went wrong.", "error");
-                    }
-                });
-            }
-        });
-    });
 
 
     // Open Forfeit Modal
@@ -1163,84 +644,84 @@ include '../views/header.php';
 
     // script to add money separators to input fields in editPawnModal
 
-    (function () {
-        const visible = document.getElementById('editAmountPawnedVisible');
-        const hidden = document.getElementById('editAmountPawned');
+    // (function () {
+    //     const visible = document.getElementById('editAmountPawnedVisible');
+    //     const hidden = document.getElementById('editAmountPawned');
 
-        function formatNumber(value) {
-            if (value === '' || value === null || isNaN(value)) return '';
-            return parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+    //     function formatNumber(value) {
+    //         if (value === '' || value === null || isNaN(value)) return '';
+    //         return parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    //     }
 
-        function rawFromFormatted(str) {
-            if (!str) return '';
-            const cleaned = str.replace(/[^0-9.-]/g, '');
-            return cleaned === '' ? '' : parseFloat(cleaned).toFixed(2);
-        }
+    //     function rawFromFormatted(str) {
+    //         if (!str) return '';
+    //         const cleaned = str.replace(/[^0-9.-]/g, '');
+    //         return cleaned === '' ? '' : parseFloat(cleaned).toFixed(2);
+    //     }
 
-        // When modal is shown, format whatever raw value is present (this covers existing data)
-        $('#editPawnModal').on('show.bs.modal', function () {
-            const raw = hidden.value;
-            if (raw !== undefined && raw !== null && raw !== '') {
-                visible.value = formatNumber(raw);
-            } else {
-                visible.value = '';
-            }
-        });
+    //     // When modal is shown, format whatever raw value is present (this covers existing data)
+    //     $('#editPawnModal').on('show.bs.modal', function () {
+    //         const raw = hidden.value;
+    //         if (raw !== undefined && raw !== null && raw !== '') {
+    //             visible.value = formatNumber(raw);
+    //         } else {
+    //             visible.value = '';
+    //         }
+    //     });
 
-        // Format while typing and keep hidden raw value updated
-        visible.addEventListener('input', function (e) {
-            // Keep caret roughly at end after formatting
-            const pos = this.selectionStart;
-            const oldLen = this.value.length;
+    //     // Format while typing and keep hidden raw value updated
+    //     visible.addEventListener('input', function (e) {
+    //         // Keep caret roughly at end after formatting
+    //         const pos = this.selectionStart;
+    //         const oldLen = this.value.length;
 
-            // Remove commas and any non-digit/dot chars
-            let raw = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
-            // Handle multiple dots: keep first
-            const parts = raw.split('.');
-            if (parts.length > 2) {
-                raw = parts.shift() + '.' + parts.join('');
-            }
-            const split = raw.split('.');
-            let integer = split[0] || '0';
-            let decimal = split[1] || '';
+    //         // Remove commas and any non-digit/dot chars
+    //         let raw = this.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+    //         // Handle multiple dots: keep first
+    //         const parts = raw.split('.');
+    //         if (parts.length > 2) {
+    //             raw = parts.shift() + '.' + parts.join('');
+    //         }
+    //         const split = raw.split('.');
+    //         let integer = split[0] || '0';
+    //         let decimal = split[1] || '';
 
-            // Limit decimals to 2
-            if (decimal.length > 2) decimal = decimal.slice(0, 2);
+    //         // Limit decimals to 2
+    //         if (decimal.length > 2) decimal = decimal.slice(0, 2);
 
-            // Avoid leading zeros like "000" -> "0"
-            integer = integer.replace(/^0+(?=\d)/, '');
+    //         // Avoid leading zeros like "000" -> "0"
+    //         integer = integer.replace(/^0+(?=\d)/, '');
 
-            let formatted = integer ? Number(integer).toLocaleString() : '';
-            if (decimal !== '') {
-                // ensure decimal has no extra non-digits
-                formatted = (formatted === '' ? '0' : formatted) + '.' + decimal;
-            }
+    //         let formatted = integer ? Number(integer).toLocaleString() : '';
+    //         if (decimal !== '') {
+    //             // ensure decimal has no extra non-digits
+    //             formatted = (formatted === '' ? '0' : formatted) + '.' + decimal;
+    //         }
 
-            // If both empty, show empty
-            if (integer === '' && decimal === '') formatted = '';
+    //         // If both empty, show empty
+    //         if (integer === '' && decimal === '') formatted = '';
 
-            this.value = formatted;
-            // Update hidden raw value (fixed to 2 decimals) or empty
-            hidden.value = (raw === '' || isNaN(Number(raw))) ? '' : Number(raw).toFixed(2);
+    //         this.value = formatted;
+    //         // Update hidden raw value (fixed to 2 decimals) or empty
+    //         hidden.value = (raw === '' || isNaN(Number(raw))) ? '' : Number(raw).toFixed(2);
 
-            // Restore caret position
-            const newLen = this.value.length;
-            const newPos = Math.max(0, pos + (newLen - oldLen));
-            this.setSelectionRange(newPos, newPos);
-        });
+    //         // Restore caret position
+    //         const newLen = this.value.length;
+    //         const newPos = Math.max(0, pos + (newLen - oldLen));
+    //         this.setSelectionRange(newPos, newPos);
+    //     });
 
-        // If code elsewhere programmatically sets hidden value while modal is open,
-        // update visible immediately
-        const observer = new MutationObserver(function (mutations) {
-            mutations.forEach(function (m) {
-                if (m.attributeName === 'value') {
-                    const raw = hidden.value;
-                    visible.value = (raw !== undefined && raw !== null && raw !== '') ? formatNumber(raw) : '';
-                }
-            });
-        });
-        observer.observe(hidden, { attributes: true, attributeFilter: ['value'] });
-    })();
+    //     // If code elsewhere programmatically sets hidden value while modal is open,
+    //     // update visible immediately
+    //     const observer = new MutationObserver(function (mutations) {
+    //         mutations.forEach(function (m) {
+    //             if (m.attributeName === 'value') {
+    //                 const raw = hidden.value;
+    //                 visible.value = (raw !== undefined && raw !== null && raw !== '') ? formatNumber(raw) : '';
+    //             }
+    //         });
+    //     });
+    //     observer.observe(hidden, { attributes: true, attributeFilter: ['value'] });
+    // })();
 
 </script>

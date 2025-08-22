@@ -43,8 +43,14 @@ function isAllowed($itemRoles, $currentRole) {
 }
 ?>
 <div id="sidebar-wrapper">
-    <div class="sidebar-heading text-center py-3">
-        <h6 class="mb-0"><strong><?= htmlspecialchars($branchName) ?></strong></h6>
+    <div class="sidebar-heading text-center py-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+            <strong><?= htmlspecialchars($branchName) ?></strong>
+        </h6>
+        <!-- Sidebar toggle button -->
+        <button class="btn btn-sm btn-outline-light d-md-none" id="sidebarToggle">
+            <i class="bi bi-list"></i> <!-- Bootstrap icon: Hamburger -->
+        </button>
     </div>
 
     <div class="list-group list-group-flush">
@@ -58,3 +64,4 @@ function isAllowed($itemRoles, $currentRole) {
         <?php endforeach; ?>
     </div>
 </div>
+
