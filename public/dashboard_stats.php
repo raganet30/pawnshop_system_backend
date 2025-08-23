@@ -46,27 +46,57 @@ $forfeited_stmt->execute(['branch_id' => $branch_id]);
 $forfeited_qty = $forfeited_stmt->fetchColumn();
 
 // ============================
-// DAILY INTEREST (from tubo_payments)
+// DAILY INCOME = interest (tubo_payments) + penalties (claims)
 // ============================
-$daily_stmt = $pdo->prepare("
+
+// Daily interest
+$daily_interest_stmt = $pdo->prepare("
     SELECT COALESCE(SUM(interest_amount), 0)
     FROM tubo_payments
     WHERE branch_id = :branch_id
       AND DATE(date_paid) = CURDATE()
 ");
-$daily_stmt->execute(['branch_id' => $branch_id]);
-$daily_interest = $daily_stmt->fetchColumn();
+$daily_interest_stmt->execute(['branch_id' => $branch_id]);
+$daily_interest = $daily_interest_stmt->fetchColumn();
+
+// Daily penalties
+$daily_penalty_stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(penalty_amount), 0)
+    FROM claims
+    WHERE branch_id = :branch_id
+      AND DATE(date_claimed) = CURDATE()
+");
+$daily_penalty_stmt->execute(['branch_id' => $branch_id]);
+$daily_penalty = $daily_penalty_stmt->fetchColumn();
+
+// Final daily income
+$daily_income = $daily_interest + $daily_penalty;
+
 
 // ============================
-// GRAND TOTAL INTEREST (all time)
+// GRAND TOTAL INCOME = interest (tubo_payments) + penalties (claims)
 // ============================
-$grand_stmt = $pdo->prepare("
+
+// Total interest
+$grand_interest_stmt = $pdo->prepare("
     SELECT COALESCE(SUM(interest_amount), 0)
     FROM tubo_payments
     WHERE branch_id = :branch_id
 ");
-$grand_stmt->execute(['branch_id' => $branch_id]);
-$grand_total_interest = $grand_stmt->fetchColumn();
+$grand_interest_stmt->execute(['branch_id' => $branch_id]);
+$grand_interest = $grand_interest_stmt->fetchColumn();
+
+// Total penalties
+$grand_penalty_stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(penalty_amount), 0)
+    FROM claims
+    WHERE branch_id = :branch_id
+");
+$grand_penalty_stmt->execute(['branch_id' => $branch_id]);
+$grand_penalty = $grand_penalty_stmt->fetchColumn();
+
+// Final grand total income
+$grand_income = $grand_interest + $grand_penalty;
 
 // ============================
 // RETURN JSON
@@ -77,6 +107,6 @@ echo json_encode([
     "cash_on_hand"       => $cash_on_hand,
     "claimed_qty"        => $claimed_qty,
     "forfeited_qty"      => $forfeited_qty,
-    "daily_interest"     => $daily_interest,
-    "grand_total_interest" => $grand_total_interest
+    "daily_interest"     => $daily_income,
+    "grand_total_interest" => $grand_income
 ]);

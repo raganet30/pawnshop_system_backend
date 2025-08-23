@@ -246,3 +246,35 @@
     }
 }
 
+/* amounts input style */
+/* Universal: Larger font inside inputs without enlarging box */
+form .form-control,
+form input,
+form select,
+form textarea {
+    font-size: 1.2rem;   /* Larger text */
+    font-weight: normal; /* Default normal weight */
+}
+
+/* Labels slightly bigger for consistency */
+form label {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Special rule: amount-related fields bold */
+input[name*="amount"],
+input[id*="Amount"],
+input[id*="claimTotal"],
+input[id*="claimInterest"],
+input[id*="claimPenalty"],
+input[name*="cash"],
+input[name*="payment"] {
+    font-weight: bold;      /* Emphasize numbers */
+    font-family: "Roboto Mono", monospace;
+    text-align: left;
+}
+
+
+/* customized select2 */
+/* Adjust the height of the main Select2 box */

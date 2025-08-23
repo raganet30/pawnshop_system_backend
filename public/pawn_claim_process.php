@@ -69,13 +69,31 @@ try {
         exit;
     }
 
+
+    // Sanitize input
+    $penalty = isset($_POST['claimPenalty']) && $_POST['claimPenalty'] !== '' ? floatval($_POST['claimPenalty']) : 0.00;
+    $total_paid = $principal + $interest_amount + $penalty;
+
     // --- Insert into claims ---
     $stmt = $pdo->prepare("
-        INSERT INTO claims 
-        (pawn_id, branch_id, date_claimed, months, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
-        VALUES (?, ?, NOW(), ?, ?, ?, ?, 0, ?, ?, ?, ?, NOW())
-    ");
-    $stmt->execute([$pawn_id, $pawn['branch_id'], $months, $interest_rate, $interest_amount, $principal, $total_paid, $user_id, $notes, $photoPathForDb]);
+    INSERT INTO claims 
+    (pawn_id, branch_id, date_claimed, months, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
+    VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+");
+    $stmt->execute([
+        $pawn_id,               // pawn_id
+        $pawn['branch_id'],     // branch_id
+        $months,                // months
+        $interest_rate,         // interest_rate
+        $interest_amount,       // interest_amount
+        $principal,             // principal_amount
+        $penalty,               // penalty_amount
+        $total_paid,            // total_paid
+        $user_id,               // cashier_id
+        $notes,                 // notes
+        $photoPathForDb         // photo_path
+    ]);
+
     $claim_id = $pdo->lastInsertId();
 
     // --- Update pawned item ---

@@ -88,11 +88,27 @@ try {
             "Edit pawn amount from {$old_amount} to {$new_amount}",
            $user_id
         ]);
+
+         echo json_encode(["status" => "success", "message" => "Pawn item updated successfully. Cash on Hand adjusted."]);
+
+    }
+    else {
+        // No amount change, just log the edit
+        $user_id = $_SESSION['user']['id'] ?? null;
+        $stmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_type, description, branch_id, created_at) 
+            VALUES (?, 'edit_pawn', ?, ?, NOW())");
+        $stmt->execute([
+            $user_id,
+            "Edit pawn ID {$pawn_id} details",
+            $branch_id
+        ]);
+        echo json_encode(["status" => "success", "message" => "Pawn item updated successfully."]);
     }
 
     $pdo->commit();
-    echo json_encode(["status" => "success", "message" => "Pawn item updated successfully. Cash on Hand adjusted."]);
+    
 
+   
 } catch (Exception $e) {
     $pdo->rollBack();
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

@@ -26,7 +26,9 @@ $(function () {
                 const principal = parseFloat(pawn.amount_pawned);
                 const interestRate = parseFloat(data.branch_interest) || 6;
                 const interest = principal * interestRate * months;
-                const total = principal + interest;
+
+                // initial total (no penalty yet)
+                let total = principal + interest;
 
                 // Fill visible fields
                 fillFields({
@@ -47,6 +49,16 @@ $(function () {
                 $("#claimPrincipalValue").val(principal.toFixed(2));
                 $("#claimTotalValue").val(total.toFixed(2));
                 $("#claimMonthsValue").val(months);
+
+                // 🔹 Add live penalty calculation
+                $("#claimPenalty").off("input").on("input", function () {
+                    const penalty = parseFloat($(this).val()) || 0;
+                    const newTotal = principal + interest + penalty;
+
+                    $("#claimTotal").val("₱" + newTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                    $("#claimTotalValue").val(newTotal.toFixed(2)); // hidden field for backend
+                });
+
 
                 // Reset photo
                 $("#claimantPhoto").val('');

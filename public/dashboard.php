@@ -62,13 +62,13 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                 </div>
                 <div class="col-md-3">
                     <div class="card p-3 text-center">
-                        <div class="text-muted">Daily Interest Accumulated</div>
+                        <div class="text-muted">Daily Income</div>
                         <h3 id="dailyInterest">₱0.00</h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="card p-3 text-center">
-                        <div class="text-muted">Grand Total Interest Accumulated</div>
+                        <div class="text-muted">Grand Total Income</div>
                         <h3 id="grandTotalInterest">₱0.00</h3>
                     </div>
                 </div>
@@ -111,125 +111,131 @@ if ($_SESSION['user']['role'] == 'super_admin') {
 
 
 <script>
-// Load Dashboard Stats
-function loadDashboardStats() {
-    $.ajax({
-        url: "dashboard_stats.php",
-        method: "GET",
-        dataType: "json",
-        success: function (data) {
-            $("#pawnedUnits").text(data.pawned_units);
-            $("#pawnedValue").text("₱" + parseFloat(data.pawned_value).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-            $("#cashOnHand").text("₱" + parseFloat(data.cash_on_hand).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-            $("#claimedItems").text(data.claimed_qty);
-            $("#forfeitedItems").text(data.forfeited_qty);
-            $("#dailyInterest").text("₱" + parseFloat(data.daily_interest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-            $("#grandTotalInterest").text("₱" + parseFloat(data.grand_total_interest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-        },
-        error: function () {
-            console.error("Failed to load dashboard stats.");
-        }
-    });
-}
-
-// Load Recent Items + Trends
-function loadDashboardData() {
-    $.ajax({
-        url: "dashboard_data.php",
-        method: "GET",
-        dataType: "json",
-        success: function (data) {
-            /* =====================
-               Fill Recent Items Table
-               ===================== */
-            const table = $("#pawnedItemsTable").DataTable();
-            table.clear();
-
-            data.recent_items.forEach(item => {
-                let statusBadge =
-                    item.status === "pawned"
-                        ? `<span class="badge bg-info">Pawned</span>`
-                        : item.status === "claimed"
-                            ? `<span class="badge bg-success">Claimed</span>`
-                            : `<span class="badge bg-secondary">${item.status}</span>`;
-
-                table.row.add([
-                    item.date_pawned,
-                    item.owner_name,
-                    item.unit_description,
-                    item.category,
-                    "₱" + parseFloat(item.amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }),
-                    statusBadge
-                ]);
-            });
-
-            table.draw();
-
-            /* =====================
-               Update Monthly Trends
-               ===================== */
-            const months = data.trend_data.map(row => row.month);
-            const pawned = data.trend_data.map(row => parseFloat(row.total_pawned));
-            const interest = data.trend_data.map(row => parseFloat(row.total_interest));
-
-            monthlyTrendsChart.data.labels = months.map(m => {
-                const d = new Date(m + "-01");
-                return d.toLocaleString("default", { month: "short", year: "numeric" });
-            });
-            monthlyTrendsChart.data.datasets[0].data = pawned;
-            monthlyTrendsChart.data.datasets[1].data = interest;
-            monthlyTrendsChart.update();
-        },
-        error: function () {
-            console.error("Failed to load dashboard data.");
-        }
-    });
-}
-
-$(document).ready(function () {
-    // DataTable init
-    $("#pawnedItemsTable").DataTable();
-
-    // Load data initially
-    loadDashboardStats();
-    loadDashboardData();
-
-    // Optional auto-refresh
-    setInterval(loadDashboardData, 30000);
-});
-
-/* =====================
-   Chart.js Instance
-   ===================== */
-let ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
-let monthlyTrendsChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: [],
-        datasets: [
-            {
-                label: 'Pawned Items Value',
-                data: [],
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                fill: true,
-                tension: 0.3
+    // Load Dashboard Stats
+    function loadDashboardStats() {
+        $.ajax({
+            url: "dashboard_stats.php",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                $("#pawnedUnits").text(data.pawned_units);
+                $("#pawnedValue").text("₱" + parseFloat(data.pawned_value).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#cashOnHand").text("₱" + parseFloat(data.cash_on_hand).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#claimedItems").text(data.claimed_qty);
+                $("#forfeitedItems").text(data.forfeited_qty);
+                $("#dailyInterest").text("₱" + parseFloat(data.daily_interest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $("#grandTotalInterest").text("₱" + parseFloat(data.grand_total_interest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
             },
-            {
-                label: 'Interest Earned',
-                data: [],
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                fill: true,
-                tension: 0.3
+            error: function () {
+                console.error("Failed to load dashboard stats.");
             }
-        ]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { position: 'top' } },
-        interaction: { mode: 'nearest', axis: 'x', intersect: false },
-        scales: { y: { beginAtZero: true } }
+        });
     }
-});
+
+    // Load Recent Items + Trends
+    function loadDashboardData() {
+        $.ajax({
+            url: "dashboard_data.php",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                /* =====================
+                   Fill Recent Items Table
+                   ===================== */
+                const table = $("#pawnedItemsTable").DataTable();
+                table.clear();
+
+                data.recent_items.forEach(item => {
+                    let statusBadge =
+                        item.status === "pawned"
+                            ? `<span class="badge bg-info">Pawned</span>`
+                            : item.status === "claimed"
+                                ? `<span class="badge bg-success">Claimed</span>`
+                                : `<span class="badge bg-secondary">${item.status}</span>`;
+
+                    table.row.add([
+                        item.date_pawned,
+                        item.owner_name,
+                        item.unit_description,
+                        item.category,
+                        "₱" + parseFloat(item.amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+                        statusBadge
+                    ]);
+                });
+
+                table.draw();
+
+                /* =====================
+       Update Monthly Trends
+       ===================== */
+                const months = data.trend_data.map(row => row.month);
+                const pawned = data.trend_data.map(row => parseFloat(row.total_pawned));
+                const income = data.trend_data.map(row =>
+                    parseFloat(row.total_interest) + parseFloat(row.total_penalty) // Interest + Penalty
+                );
+
+                monthlyTrendsChart.data.labels = months.map(m => {
+                    const d = new Date(m + "-01");
+                    return d.toLocaleString("default", { month: "short", year: "numeric" });
+                });
+
+                // Update datasets
+                monthlyTrendsChart.data.datasets[0].data = pawned; // Pawned amount
+                monthlyTrendsChart.data.datasets[1].data = income; // Total income
+
+                monthlyTrendsChart.update();
+
+            },
+            error: function () {
+                console.error("Failed to load dashboard data.");
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        // DataTable init
+        $("#pawnedItemsTable").DataTable();
+
+        // Load data initially
+        loadDashboardStats();
+        loadDashboardData();
+
+        // Optional auto-refresh
+        setInterval(loadDashboardData, 30000);
+    });
+
+    /* =====================
+       Chart.js Instance
+       ===================== */
+    let ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+    let monthlyTrendsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Pawned Items Value',
+                    data: [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Income',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
 </script>
