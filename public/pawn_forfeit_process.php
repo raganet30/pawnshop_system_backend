@@ -1,12 +1,14 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
+
 
 header('Content-Type: application/json');
 
 // --- Auth ---
 if (!isset($_SESSION['user'])) {
-    echo json_encode(["status"=>"error","message"=>"Unauthorized"]);
+    echo json_encode(["status" => "error", "message" => "Unauthorized"]);
     exit;
 }
 
@@ -16,14 +18,14 @@ $user = $_SESSION['user'];
 
 
 if (!in_array($user['role'], ['admin'])) {
-    echo json_encode(["status"=>"error","message"=>"Access denied: forfeit is admin/super admin only."]);
+    echo json_encode(["status" => "error", "message" => "Access denied: forfeit is admin/super admin only."]);
     exit;
 }
 
-$pawn_id = isset($_POST['pawn_id']) ? (int)$_POST['pawn_id'] : 0;
-$reason  = trim($_POST['forfeitReason'] ?? '');
+$pawn_id = isset($_POST['pawn_id']) ? (int) $_POST['pawn_id'] : 0;
+$reason = trim($_POST['forfeitReason'] ?? '');
 if ($pawn_id <= 0) {
-    echo json_encode(["status"=>"error","message"=>"Pawn ID is required."]);
+    echo json_encode(["status" => "error", "message" => "Pawn ID is required."]);
     exit;
 }
 
@@ -39,13 +41,13 @@ try {
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$pawn) {
-        echo json_encode(["status"=>"error","message"=>"Pawn record not found for ID: $pawn_id"]);
+        echo json_encode(["status" => "error", "message" => "Pawn record not found for ID: $pawn_id"]);
         exit;
     }
 
     // --- Status check ---
     if (strtolower($pawn['status']) !== 'pawned') {
-        echo json_encode(["status"=>"error","message"=>"Only items with status 'pawned' can be forfeited. Current status: {$pawn['status']}"]);
+        echo json_encode(["status" => "error", "message" => "Only items with status 'pawned' can be forfeited. Current status: {$pawn['status']}"]);
         exit;
     }
 
@@ -56,13 +58,13 @@ try {
 
     // --- Restriction: 2-month minimum ---
     if ($months < 2) {
-        echo json_encode(["status"=>"error","message"=>"Pawned item can only be forfeited after 2 months."]);
+        echo json_encode(["status" => "error", "message" => "Pawned item can only be forfeited after 2 months."]);
         exit;
     }
 
-    $amount_pawned = (float)$pawn['amount_pawned'];
-    $branch_id     = (int)$pawn['branch_id'];
-    $user_id       = (int)$user['id'];
+    $amount_pawned = (float) $pawn['amount_pawned'];
+    $branch_id = (int) $pawn['branch_id'];
+    $user_id = (int) $user['id'];
 
     // --- Begin transaction ---
     $pdo->beginTransaction();
@@ -84,38 +86,55 @@ try {
     $stmt->execute([$pawn_id]);
 
     // --- 3) Update branch cash on hand ---
-    $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
-    $stmt->execute([$amount_pawned, $branch_id]);
+    // $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
+    // $stmt->execute([$amount_pawned, $branch_id]);
+
+    updateCOH($pdo, $branch_id, $amount_pawned, 'add');
+
 
     // --- 4) Insert into cash ledger ---
-    $stmt = $pdo->prepare("
-        INSERT INTO cash_ledger (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, user_id, created_at)
-        VALUES (?, 'forfeit', 'in', ?, 'forfeitures', LAST_INSERT_ID(), 'Pawn forfeited', ?, NOW())
-    ");
-    $stmt->execute([$branch_id, $amount_pawned, $user_id]);
+    // Insert into cash ledger
+    insertCashLedger(
+        $pdo,
+        $branch_id,
+        "forfeit",
+        "in",
+        $amount_pawned,
+        "forfeitures",
+        $pawn_id,
+        "Pawn Forfeite",
+        "Pawn ID #$pawn_id forfeited - amount added to COH",
+        $user_id
+    );
 
-    // --- 5) Insert into audit logs ---
-    $stmt = $pdo->prepare("
-        INSERT INTO audit_logs (user_id, action_type, description, branch_id, created_at)
-        VALUES (?, 'forfeit', ?, ?, NOW())
-    ");
+
 
     
-    $stmt->execute([
+   // --- 5) Insert into audit logs ---
+    $description = sprintf(
+        "Forfeited pawn ID: %d, Unit: %s, Total Amount: ₱%s",
+        $pawn_id, $pawn['unit_description'],
+        number_format($amount_pawned, 2)
+    );
+
+    logAudit(
+        $pdo,
         $user_id,
-        "Pawn ID {$pawn_id} forfeited. Reason: {$reason}",
-        $branch_id
-    ]);
+        $pawn['branch_id'],
+        'Forfeit Pawned Item',
+        $description
+    );
 
     // --- Commit transaction ---
     $pdo->commit();
 
     echo json_encode([
-        "status"  => "success",
+        "status" => "success",
         "message" => "Pawn forfeited. Cash on Hand +₱" . number_format($amount_pawned, 2)
     ]);
 
 } catch (Exception $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
-    echo json_encode(["status"=>"error","message"=>"Transaction failed: ".$e->getMessage()]);
+    if ($pdo->inTransaction())
+        $pdo->rollBack();
+    echo json_encode(["status" => "error", "message" => "Transaction failed: " . $e->getMessage()]);
 }

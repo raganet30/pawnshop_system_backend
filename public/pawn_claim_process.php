@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
+
 
 header('Content-Type: application/json');
 
@@ -101,24 +103,53 @@ try {
     $stmt->execute([$pawn_id]);
 
     // --- Update branch cash on hand ---
-    $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
-    $stmt->execute([$total_paid, $pawn['branch_id']]);
+    updateCOH($pdo, $branch_id, $total_paid, 'add');
+
+
+
+
 
     // --- Insert into cash ledger ---
-    $stmt = $pdo->prepare("
-        INSERT INTO cash_ledger 
-        (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, user_id, created_at)
-        VALUES (?, 'claim', 'in', ?, 'claims', ?, 'Pawn claimed', ?, NOW())
-    ");
-    $stmt->execute([$pawn['branch_id'], $total_paid, $claim_id, $user_id]);
+    // Calculate total amount for ledger (penalty + interest)
+    // $total_amount = $penalty + $interest_amount ;
+
+
+
+    // ✅ Ledger entry (Cash IN for total claim amount)
+    if ($total_paid > 0) {
+        $description = "Claim (ID #$claim_id)";
+        $notes = "Pawn ID #$pawn_id claimed with interest + penalty (if any)";
+
+        insertCashLedger(
+            $pdo,
+            $branch_id,
+            "claim",     // txn_type
+            "in",        // direction
+            $total_paid,
+            "claims",    // ref_table
+            $claim_id,
+            $description,
+            $notes,
+            $user_id
+        );
+    }
+
+
 
     // --- Insert into audit_logs ---
-    $stmt = $pdo->prepare("
-        INSERT INTO audit_logs (user_id, action_type, description, branch_id, created_at)
-        VALUES (?, 'claim', ?, ?, NOW())
-    ");
-    $stmt->execute([$user_id, "Claimed pawn ID {$pawn_id}, total ₱" . number_format($total_paid, 2), $pawn['branch_id']]);
+    $description = sprintf(
+        "Claimed pawn ID: %d, Unit: %s, Total Amount Paid: ₱%s",
+        $pawn_id, $pawn['unit_description'],
+        number_format($total_paid, 2)
+    );
 
+    logAudit(
+        $pdo,
+        $user_id,
+        $pawn['branch_id'],
+        'Claim Pawned Item',
+        $description
+    );
 
 
     // --- Insert into tubo_payments ---
@@ -144,7 +175,7 @@ try {
 
     echo json_encode([
         "status" => "success",
-        "message" => "Pawn item successfully claimed! Cash on Hand +₱" . number_format($total_paid, 2)
+        "message" => "Pawn item successfully claimed!<br>Cash on Hand +₱" . number_format($total_paid, 2)
     ]);
 
 } catch (Exception $e) {

@@ -26,6 +26,8 @@ $menuItems = [
     // Admin & Super Admin
     ['href' => 'forfeits.php', 'icon' => 'bi-exclamation-triangle', 'label' => 'Forfeits', 'roles' => ['super_admin', 'admin']],
     ['href' => 'reports.php', 'icon' => 'bi-file-earmark-text', 'label' => 'Reports', 'roles' => ['super_admin', 'admin']],
+        // cash ledger
+    ['href' => 'ledger.php', 'icon' => 'bi bi-journal-text', 'label' => 'Cash Ledger', 'roles' => ['super_admin', 'admin']],
 
     // Admin only (trash available to admin )
     ['href' => 'trash.php', 'icon' => 'bi-trash', 'label' => 'Trash Bin', 'roles' => ['admin']],
