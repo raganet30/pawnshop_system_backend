@@ -14,84 +14,17 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
     exit();
 }
 
-// GLOBAL CASH (sum of all branches cash_on_hand)
-$global_cash = $pdo->query("
-    SELECT COALESCE(SUM(cash_on_hand), 0) 
-    FROM branches 
-")->fetchColumn();
 
-/* =======================
-   BRANCH STATS
-   ======================= */
-$branch_stats = $pdo->query("
-   SELECT 
-    b.branch_id, 
-    b.branch_name,
-    SUM(CASE WHEN p.status = 'pawned' AND p.is_deleted=0 THEN 1 ELSE 0 END) AS total_pawned,
-    SUM(CASE WHEN p.status = 'claimed' AND p.is_deleted=0 THEN 1 ELSE 0 END) AS claimed,
-    SUM(CASE WHEN p.status = 'forfeited' AND p.is_deleted=0 THEN 1 ELSE 0 END) AS forfeited,
-    COALESCE(SUM(CASE WHEN p.status = 'pawned' AND p.is_deleted=0 THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned_value,
-    COALESCE(SUM(tp.interest_amount), 0) AS total_interest_amount,
-    COALESCE(SUM(c.penalty_amount), 0) AS total_penalty_amount,
-    (COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(c.penalty_amount), 0)) AS total_income,
-    b.cash_on_hand
-FROM branches b
-LEFT JOIN pawned_items p 
-    ON b.branch_id = p.branch_id 
-    AND p.is_deleted = 0
-LEFT JOIN tubo_payments tp 
-    ON p.pawn_id = tp.pawn_id 
-LEFT JOIN claims c
-    ON p.pawn_id = c.pawn_id 
-GROUP BY b.branch_id, b.branch_name;
-
-
-
-")->fetchAll(PDO::FETCH_ASSOC);
-
-/* =======================
-   MONTHLY TREND (ALL BRANCHES)
-   ======================= */
-$trend_stmt = $pdo->query("
-   SELECT 
-        DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
-        COALESCE(SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
-        COALESCE(SUM(tp.interest_amount), 0) AS total_interest,
-        COALESCE(SUM(c.penalty_amount), 0) AS total_penalty,
-        (COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(c.penalty_amount), 0)) AS total_income
-    FROM pawned_items p
-    LEFT JOIN tubo_payments tp 
-        ON p.pawn_id = tp.pawn_id
-    LEFT JOIN claims c
-        ON p.pawn_id = c.pawn_id
-    WHERE p.is_deleted = 0
-      AND p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-    GROUP BY month
-    ORDER BY month ASC
-
-");
-$trend_data = $trend_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Prepare arrays for chart
-$trend_months = [];
-$trend_pawned = [];
-$trend_interest = [];
-foreach ($trend_data as $row) {
-    $trend_months[] = date("M Y", strtotime($row['month'] . "-01"));
-    $trend_pawned[] = (float) $row['total_pawned'];
-    $trend_interest[] = (float) $row['total_income'];
-}
 ?>
+
+
 <div class="d-flex" id="wrapper">
     <?php include '../views/sidebar.php'; ?>
-
     <div id="page-content-wrapper">
         <?php include '../views/topbar.php'; ?>
 
         <div class="container-fluid mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4>Super Admin Dashboard</h4>
-            </div>
+            <h4>Main Dashboard</h4>
 
             <!-- Branch Summary Table -->
             <div class="card mb-4">
@@ -109,39 +42,8 @@ foreach ($trend_data as $row) {
                                 <th>Total Income</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php
-                            $grand_pawned = $grand_claimed = $grand_forfeited = $grand_value = $grand_coh = $grand_interest = 0;
-                            foreach ($branch_stats as $branch):
-                                $grand_pawned += $branch['total_pawned'];
-                                $grand_claimed += $branch['claimed'];
-                                $grand_forfeited += $branch['forfeited'];
-                                $grand_value += $branch['total_pawned_value'];
-                                $grand_coh += $branch['cash_on_hand'];
-                                $grand_interest += $branch['total_income'];
-                                ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($branch['branch_name']) ?></td>
-                                    <td><?= number_format($branch['total_pawned']) ?></td>
-                                    <td><?= number_format($branch['claimed']) ?></td>
-                                    <td><?= number_format($branch['forfeited']) ?></td>
-                                    <td>₱<?= number_format($branch['total_pawned_value'], 2) ?></td>
-                                    <td>₱<?= number_format($branch['cash_on_hand'], 2) ?></td>
-                                    <td>₱<?= number_format($branch['total_income'], 2) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                        <tfoot class="table-dark">
-                            <tr>
-                                <th>Totals</th>
-                                <th><?= number_format($grand_pawned) ?></th>
-                                <th><?= number_format($grand_claimed) ?></th>
-                                <th><?= number_format($grand_forfeited) ?></th>
-                                <th>₱<?= number_format($grand_value, 2) ?></th>
-                                <th>₱<?= number_format($grand_coh, 2) ?></th>
-                                <th>₱<?= number_format($grand_interest, 2) ?></th>
-                            </tr>
-                        </tfoot>
+                        <tbody id="branchSummaryBody"></tbody>
+                        <tfoot class="table-dark" id="branchSummaryFooter"></tfoot>
                     </table>
                 </div>
             </div>
@@ -162,79 +64,139 @@ foreach ($trend_data as $row) {
                 </div>
             </div>
         </div>
-
         <?php include '../views/footer.php'; ?>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Monthly Trends Chart
-        new Chart(document.getElementById('monthlyTrendsChart').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: <?= json_encode($trend_months) ?>,
-                datasets: [
-                    {
-                        label: 'Pawned Value',
-                        data: <?= json_encode($trend_pawned) ?>,
-                        borderColor: 'rgba(54,162,235,1)',
-                        backgroundColor: 'rgba(54,162,235,0.2)',
-                        fill: true,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Income',
-                        data: <?= json_encode($trend_interest) ?>,
-                        borderColor: 'rgba(255,99,132,1)',
-                        backgroundColor: 'rgba(255,99,132,0.2)',
-                        fill: true,
-                        tension: 0.3
-                    }
-                ]
-            }
-        });
+    let monthlyChart, branchChart;
 
-        // Branch Comparison Chart
-        new Chart(document.getElementById('branchComparisonChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: <?= json_encode(array_column($branch_stats, 'branch_name')) ?>,
-                datasets: [
-                    {
-                        label: 'Pawned Value',
-                        data: <?= json_encode(array_column($branch_stats, 'total_pawned_value')) ?>,
-                        backgroundColor: 'rgba(54,162,235,0.7)'
-                    },
-                    {
-                        label: 'Cash on Hand',
-                        data: <?= json_encode(array_column($branch_stats, 'cash_on_hand')) ?>,
-                        backgroundColor: 'rgba(75,192,192,0.7)'
-                    },
-                    {
-                        label: 'Income',
-                        data: <?= json_encode(array_column($branch_stats, 'total_income')) ?>,
-                        backgroundColor: 'rgba(255,99,132,0.7)'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    });
-</script>
+    // 🔹 Animate numbers smoothly
+    function animateValue(el, start, end, duration = 800) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            el.innerText = (start + (end - start) * progress).toLocaleString(undefined, { maximumFractionDigits: 0 });
+            if (progress < 1) window.requestAnimationFrame(step);
+        };
+        window.requestAnimationFrame(step);
+    }
 
-<script>
-    $(document).ready(function () {
-        $('#branchSummaryTable').DataTable({
-            paging: true,
-            searching: true,
-            ordering: true,
-            info: true,
-            responsive: true
-        });
-    });
+    async function loadDashboardSuper() {
+        try {
+            const res = await fetch("dashboard_super_data.php");
+            const data = await res.json();
+
+            // Populate Branch Summary Table
+            const tbody = document.getElementById("branchSummaryBody");
+            const tfoot = document.getElementById("branchSummaryFooter");
+            tbody.innerHTML = "";
+            let totals = { pawned: 0, claimed: 0, forfeited: 0, value: 0, coh: 0, income: 0 };
+
+            data.branch_stats.forEach(branch => {
+                totals.pawned += parseInt(branch.total_pawned);
+                totals.claimed += parseInt(branch.claimed);
+                totals.forfeited += parseInt(branch.forfeited);
+                totals.value += parseFloat(branch.total_pawned_value);
+                totals.coh += parseFloat(branch.cash_on_hand);
+                totals.income += parseFloat(branch.total_income);
+
+                tbody.innerHTML += `
+                <tr>
+                    <td>${branch.branch_name}</td>
+                    <td>${branch.total_pawned}</td>
+                    <td>${branch.claimed}</td>
+                    <td>${branch.forfeited}</td>
+                    <td>₱${Number(branch.total_pawned_value).toLocaleString()}</td>
+                    <td>₱${Number(branch.cash_on_hand).toLocaleString()}</td>
+                    <td>₱${Number(branch.total_income).toLocaleString()}</td>
+                </tr>
+            `;
+            });
+
+            // Totals row (with span IDs for animation)
+            tfoot.innerHTML = `
+            <tr>
+                <th>Totals</th>
+                <th><span id="totPawned">0</span></th>
+                <th><span id="totClaimed">0</span></th>
+                <th><span id="totForfeited">0</span></th>
+                <th>₱<span id="totValue">0</span></th>
+                <th>₱<span id="totCoh">0</span></th>
+                <th>₱<span id="totIncome">0</span></th>
+            </tr>
+        `;
+
+
+                
+
+            // Animate totals
+            animateValue(document.getElementById("totPawned"), parseInt(document.getElementById("totPawned").innerText.replace(/,/g, "")) || 0, totals.pawned);
+            animateValue(document.getElementById("totClaimed"), parseInt(document.getElementById("totClaimed").innerText.replace(/,/g, "")) || 0, totals.claimed);
+            animateValue(document.getElementById("totForfeited"), parseInt(document.getElementById("totForfeited").innerText.replace(/,/g, "")) || 0, totals.forfeited);
+            animateValue(document.getElementById("totValue"), parseInt(document.getElementById("totValue").innerText.replace(/,/g, "")) || 0, totals.value);
+            animateValue(document.getElementById("totCoh"), parseInt(document.getElementById("totCoh").innerText.replace(/,/g, "")) || 0, totals.coh);
+            animateValue(document.getElementById("totIncome"), parseInt(document.getElementById("totIncome").innerText.replace(/,/g, "")) || 0, totals.income);
+
+            // Monthly Trends Chart Data
+            const months = data.trend_data.map(r => new Date(r.month + "-01").toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+            const pawnedVals = data.trend_data.map(r => parseFloat(r.total_pawned));
+            const incomeVals = data.trend_data.map(r => parseFloat(r.total_income));
+
+            if (!monthlyChart) {
+                monthlyChart = new Chart(document.getElementById("monthlyTrendsChart"), {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            { label: "Pawned Value", data: pawnedVals, borderColor: "blue", backgroundColor: "rgba(54,162,235,0.2)", fill: true },
+                            { label: "Income", data: incomeVals, borderColor: "red", backgroundColor: "rgba(255,99,132,0.2)", fill: true }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } else {
+                monthlyChart.data.labels = months;
+                monthlyChart.data.datasets[0].data = pawnedVals;
+                monthlyChart.data.datasets[1].data = incomeVals;
+                monthlyChart.update();
+            }
+
+            // Branch Comparison Chart Data
+            const branchNames = data.branch_stats.map(r => r.branch_name);
+            const branchPawned = data.branch_stats.map(r => r.total_pawned_value);
+            const branchCOH = data.branch_stats.map(r => r.cash_on_hand);
+            const branchIncome = data.branch_stats.map(r => r.total_income);
+
+            if (!branchChart) {
+                branchChart = new Chart(document.getElementById("branchComparisonChart"), {
+                    type: "bar",
+                    data: {
+                        labels: branchNames,
+                        datasets: [
+                            { label: "Pawned Value", data: branchPawned, backgroundColor: "rgba(54,162,235,0.7)" },
+                            { label: "Cash on Hand", data: branchCOH, backgroundColor: "rgba(75,192,192,0.7)" },
+                            { label: "Income", data: branchIncome, backgroundColor: "rgba(255,99,132,0.7)" }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } else {
+                branchChart.data.labels = branchNames;
+                branchChart.data.datasets[0].data = branchPawned;
+                branchChart.data.datasets[1].data = branchCOH;
+                branchChart.data.datasets[2].data = branchIncome;
+                branchChart.update();
+            }
+
+        } catch (err) {
+            console.error("Error loading dashboard_super:", err);
+        }
+    }
+
+    // Initial load
+    loadDashboardSuper();
+    // Refresh every 1 min
+    setInterval(loadDashboardSuper, 60000);
 </script>

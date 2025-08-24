@@ -135,6 +135,29 @@ $(function () {
                         Swal.fire("Claimed!", response.message, "success").then(() => {
                             $("#claimPawnModal").modal("hide");
                             $("#pawnTable").DataTable().ajax.reload();
+
+                           
+                            // 🔹 Auto-print receipt after successful claim
+                            if (response.pawn_id) {
+                                // Fetch full claim details before printing
+                                $.ajax({
+                                    url: "../public/claim_view.php",
+                                    type: "GET",
+                                    data: { pawn_id: response.pawn_id },
+                                    dataType: "json",
+                                    success: function (res) {
+                                        if (res.status === "success") {
+                                            printClaimReceipt(res.data);
+                                        } else {
+                                            console.error("Failed to fetch claim details:", res.message);
+                                        }
+                                    },
+                                    error: function () {
+                                        console.error("Error fetching claim details for printing.");
+                                    }
+                                });
+                            }
+
                         });
                     } else {
                         Swal.fire("Error", response.message || "Unable to claim pawn.", "error");

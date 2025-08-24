@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (password_verify($password, $user['password_hash'])) {
             $_SESSION['user'] = [
                 'id' => filter_var($user['user_id'], FILTER_SANITIZE_NUMBER_INT),
-                'name' => htmlspecialchars($user['full_name'], ENT_QUOTES),
+                'full_name' => htmlspecialchars($user['full_name'], ENT_QUOTES),
                 'role' => htmlspecialchars($user['role'], ENT_QUOTES),
                 'branch_id' => filter_var($user['branch_id'], FILTER_SANITIZE_NUMBER_INT)
             ];

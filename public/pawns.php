@@ -418,7 +418,7 @@ include '../views/header.php';
 <script src="../assets/js/pawn_edit.js"></script>
 <script src="../assets/js/pawn_claim.js"></script>
 <script src="../assets/js/money_separator.js"></script>
-
+<script src="../assets/js/receipt.js"></script>
 
 
 <script>
@@ -578,3 +578,4 @@ include '../views/header.php';
 
 
 </script>
+

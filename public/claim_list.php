@@ -27,7 +27,6 @@ $query = "
     c.interest_amount AS `interest_amount`,
     c.total_paid AS `total_paid`,
     cu.contact_no AS `contact_no`,
-    c.notes AS `notes`,
     p.pawn_id,
     c.branch_id
 FROM claims c
@@ -60,7 +59,7 @@ $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     $actions = '';
-    if ($user_role !== 'super_admin') {
+    if ($user_role == 'admin' || $user_role == 'cashier') {
     $actions = '
         <div class="dropdown">
             <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
@@ -69,9 +68,15 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
                     <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                        <i class="bi bi-eye text-info"></i> View
+                        <i class="bi bi-eye text-info"></i> View Details
                     </a>
                 </li>
+                <li>
+                    <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                        <i class="bi bi-printer"></i> Print Receipt
+                    </a>
+                </li>
+
                 <li>
                     <a class="dropdown-item revertClaimBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
                         <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawned

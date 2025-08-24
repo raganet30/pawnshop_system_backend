@@ -175,7 +175,8 @@ try {
 
     echo json_encode([
         "status" => "success",
-        "message" => "Pawn item successfully claimed!<br>Cash on Hand +₱" . number_format($total_paid, 2)
+        "message" => "Pawn item successfully claimed!<br>Cash on Hand +₱" . number_format($total_paid, 2),
+        "pawn_id" => $pawn_id
     ]);
 
 } catch (Exception $e) {

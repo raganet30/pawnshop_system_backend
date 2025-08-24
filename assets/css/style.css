@@ -268,6 +268,9 @@ input[id*="Amount"],
 input[id*="claimTotal"],
 input[id*="claimInterest"],
 input[id*="claimPenalty"],
+input[id*="viewPenalty"],
+input[id*="viewInterest"],
+input[id*="viewTotalPaid"],
 input[name*="cash"],
 input[name*="payment"] {
     font-weight: bold;      /* Emphasize numbers */

@@ -39,12 +39,81 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                 </div>
             <?php endif; ?>
 
+            <!-- View Claim Modal -->
+            <!-- View Claim Modal -->
+            <div class="modal fade" id="viewClaimModal" tabindex="-1" aria-labelledby="viewClaimModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">View Claimed Item</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="viewPawnId">
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label>Owner Name</label>
+                                    <input type="text" class="form-control" id="viewOwnerName" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Unit Description</label>
+                                    <input type="text" class="form-control" id="viewUnitDescription" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Date Pawned</label>
+                                    <input type="text" class="form-control" id="viewDatePawned" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Date Claimed</label>
+                                    <input type="text" class="form-control" id="viewDateClaimed" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Amount Pawned</label>
+                                    <input type="text" class="form-control" id="viewAmountPawned" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Interest</label>
+                                    <input type="text" class="form-control" id="viewInterest" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Penalty (if any)</label>
+                                    <input type="text" class="form-control" id="viewPenalty" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Total Paid</label>
+                                    <input type="text" class="form-control" id="viewTotalPaid" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Contact No.</label>
+                                    <input type="text" class="form-control" id="viewContact" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Claimant Photo</label>
+                                    <img id="viewClaimPhoto" src="" class="img-fluid border rounded"
+                                        alt="Claimant Photo">
+                                </div>
+                            </div>
+
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
 
 
             <div class="card">
                 <div class="card-header">Claimed Items</div>
                 <div class="card-body">
-                    <table id="claimsTable" class="table table-bordered table-striped">
+                    <table id="claimsTable" class="table table-bordered table-striped" style="width:100%">
                         <thead>
                             <tr>
                                 <th>Date Pawned</th>
@@ -69,6 +138,8 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
     </div>
 </div>
 
+<script src="../assets/js/receipt.js"></script>
+
 <script>
     $(document).ready(function () {
         let userRole = "<?= $user_role ?>";
@@ -92,7 +163,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                 { "data": 7 },
                 { "data": 8 },
                 <?php if ($user_role !== 'super_admin'): ?>
-                        { "data": 9, "orderable": false }
+                                                                { "data": 9, "orderable": false }
             <?php endif; ?>
             ]
         });
@@ -103,6 +174,51 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
             });
         <?php endif; ?>
     });
+
+
+    // Handle View button
+    $(document).on("click", ".viewClaimBtn", function (e) {
+        e.preventDefault();
+        const pawnId = $(this).data("id");
+
+        $.ajax({
+            url: "claim_view.php",
+            type: "GET",
+            data: { pawn_id: pawnId },
+            dataType: "json",
+            success: function (response) {
+                if (response.status === "success") {
+                    const d = response.data;
+
+                    $("#viewPawnId").val(d.pawn_id);
+                    $("#viewOwnerName").val(d.full_name);
+                    $("#viewUnitDescription").val(d.unit_description);
+                    $("#viewDatePawned").val(d.date_pawned);
+                    $("#viewDateClaimed").val(d.date_claimed);
+                    $("#viewAmountPawned").val("₱" + parseFloat(d.amount_pawned).toFixed(2));
+                    $("#viewInterest").val("₱" + parseFloat(d.interest_amount).toFixed(2));
+                    $("#viewTotalPaid").val("₱" + parseFloat(d.total_paid).toFixed(2));
+                    $("#viewPenalty").val("₱" + parseFloat(d.penalty_amount).toFixed(2));
+                    $("#viewContact").val(d.contact_no);
+
+
+                    // Show claimant photo if exists
+                    if (d.photo_path && d.photo_path !== "") {
+                        $("#viewClaimPhoto").attr("src", "../" + d.photo_path);
+                    } else {
+                        $("#viewClaimPhoto").attr("src", "assets/img/no-photo.png");
+                    }
+
+                    $("#viewClaimModal").modal("show");
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+
+
+
 
 
 
@@ -131,4 +247,25 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
     // });
 
 
+
+// call print receipt js function
+    $(document).on("click", ".printClaimBtn", function () {
+    const pawn_id = $(this).data("id");
+
+    $.ajax({
+        url: "claim_view.php",
+        type: "GET",
+        data: { pawn_id },
+        dataType: "json",
+        success: function (res) {
+            if (res.status === "success") {
+                printClaimReceipt(res.data);
+            } else {
+                alert(res.message);
+            }
+        }
+    });
+});
+
 </script>
+

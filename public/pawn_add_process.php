@@ -15,7 +15,7 @@ try {
 
     $branch_id = $_SESSION['user']['branch_id'];
     $user_id = $_SESSION['user']['id'];
-    $full_name = $_SESSION['user']['name'];
+    $full_name = $_SESSION['user']['full_name'];
 
     // Pawn item fields
     $unit_description = $_POST['unit_description'] ?? '';
