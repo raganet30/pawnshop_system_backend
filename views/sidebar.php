@@ -22,6 +22,10 @@ $menuItems = [
     // Common items
     ['href' => 'pawns.php', 'icon' => 'bi-box-seam', 'label' => 'Pawns', 'roles' => '*'],
     ['href' => 'claims.php', 'icon' => 'bi-cash-coin', 'label' => 'Claims', 'roles' => '*'],
+    ['href' => 'partial_payments.php', 'icon' => 'bi bi-cash-stack', 'label' => 'Partial Payments', 'roles' => '*'],
+    ['href' => 'pawners.php', 'icon' => 'bi bi-people', 'label' => 'Pawners', 'roles' => '*'],
+    
+
 
     // Admin & Super Admin
     ['href' => 'forfeits.php', 'icon' => 'bi-exclamation-triangle', 'label' => 'Forfeits', 'roles' => ['super_admin', 'admin']],
