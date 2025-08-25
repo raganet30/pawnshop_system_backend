@@ -14,9 +14,10 @@ function printClaimReceipt(d) {
     d.months_duration = months;
 
     let receipt = "";
+    receipt += centerText("LD Pawnshop", 80) + "\n";
     receipt += centerText(d.branch_name, 80) + "\n";
     receipt += centerText(d.branch_address, 80) + "\n";
-    receipt += centerText("Tel: " + d.branch_phone, 80) + "\n";
+    receipt += centerText("Cell: " + d.branch_phone, 80) + "\n";
     receipt += "-".repeat(80) + "\n";
     receipt += pad("OR No.      : " + d.or_no, 80) + "\n";
     receipt += pad("Customer    : " + d.full_name, 80) + "\n";
@@ -29,13 +30,13 @@ function printClaimReceipt(d) {
     receipt += pad("Date Claimed: " + d.date_claimed, 80) + "\n";
     receipt += pad("Period      : " + d.months_duration + " month(s)", 80) + "\n";
     receipt += "-".repeat(80) + "\n";
-    receipt += pad("Description", 40) + pad("Amount (₱)", 40, "right") + "\n";
+    receipt += pad("Description", 40) + pad("Amount", 40, "right") + "\n";
     receipt += "-".repeat(80) + "\n";
     receipt += pad("Amount Pawned", 40) + pad(formatMoney(d.amount_pawned), 40, "right") + "\n";
     receipt += pad("Interest", 40) + pad(formatMoney(d.interest_amount), 40, "right") + "\n";
     receipt += pad("Penalty", 40) + pad(formatMoney(d.penalty_amount), 40, "right") + "\n";
     receipt += "-".repeat(80) + "\n";
-    receipt += pad("TOTAL PAID", 40) + pad(formatMoney(d.total_paid), 40, "right") + "\n";
+    receipt += pad("TOTAL     : ", 40) + pad("₱"+formatMoney(d.total_paid), 40, "right") + "\n";
     receipt += "-".repeat(80) + "\n\n";
     receipt += pad("Cashier   : " + d.cashier, 80) + "\n";
     receipt += pad("Printed   : " + d.printed_at, 80) + "\n\n";

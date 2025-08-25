@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
 
 if (!isset($_SESSION['user'])) {
     echo json_encode(["status" => "error", "message" => "Unauthorized"]);
@@ -40,35 +41,55 @@ try {
             $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($pawn) {
-                $amount = (float)$pawn['amount_pawned'];
-                $branch_id = (int)$pawn['branch_id'];
+                $amount = (float) $pawn['amount_pawned'];
+                $branch_id = (int) $pawn['branch_id'];
 
                 // Restore pawn
                 $pdo->prepare("UPDATE pawned_items SET is_deleted = 0 WHERE pawn_id = ?")
                     ->execute([$pawn_id]);
 
                 // Add back amount to branch COH
-                $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?")
-                    ->execute([$amount, $branch_id]);
+                // $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?")
+                //     ->execute([$amount, $branch_id]);
+
+                updateCOH($pdo, $branch_id, $amount, 'subtract');
+
+
 
                 // Log to cash ledger
-                $pdo->prepare("INSERT INTO cash_ledger 
-                    (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, user_id, created_at)
-                    VALUES (?, 'restore', 'in', ?, 'pawned_items', ?, 'Pawn restored from trash', ?, NOW())")
-                    ->execute([$branch_id, $amount, $pawn_id, $user_id]);
+                // $pdo->prepare("INSERT INTO cash_ledger 
+                //     (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, user_id, created_at)
+                //     VALUES (?, 'restore', 'in', ?, 'pawned_items', ?, 'Pawn restored from trash', ?, NOW())")
+                //     ->execute([$branch_id, $amount, $pawn_id, $user_id]);
+
+                $description = "Restore Pawn (ID #$pawn_id)";
+                $notes = "Deleted Pawn ID(s) #$pawn_id restored.";
+
+                insertCashLedger(
+                    $pdo,
+                    $branch_id,
+                    "restore",     // txn_type
+                    "in",        // direction
+                    $amount,
+                    "claims",    // ref_table
+                    $pawn_id,
+                    $description,
+                    $notes,
+                    $user_id
+                );
+
+
             }
         }
-        echo json_encode(["status" => "success", "message" => "Selected pawn(s) & COH updated. -₱" . number_format($amount, 2)]);
-    } 
-    elseif ($action === "delete") {
+        echo json_encode(["status" => "success", "message" => "Selected pawn(s) & COH updated."]);
+    } elseif ($action === "delete") {
         // Permanently delete records
-        $in  = str_repeat('?,', count($pawn_ids) - 1) . '?';
+        $in = str_repeat('?,', count($pawn_ids) - 1) . '?';
         $stmt = $pdo->prepare("DELETE FROM pawned_items WHERE pawn_id IN ($in)");
         $stmt->execute($pawn_ids);
 
         echo json_encode(["status" => "success", "message" => "Selected pawn(s) permanently deleted."]);
-    } 
-    else {
+    } else {
         echo json_encode(["status" => "error", "message" => "Invalid action"]);
     }
 } catch (Exception $e) {

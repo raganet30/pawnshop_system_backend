@@ -12,7 +12,7 @@ $(function () {
         e.preventDefault();
         const pawnId = $(this).data("id");
 
-        $.getJSON("pawn_get.php", { pawn_id: pawnId })
+        $.getJSON("../api/pawn_get.php", { pawn_id: pawnId })
             .done((data) => {
                 if (data.status !== "success") {
                     return Swal.fire("Error", data.message || "Unable to fetch pawn details.", "error");
@@ -130,7 +130,7 @@ $(function () {
             confirmButtonText: "Yes, Claim it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post("pawn_claim_process.php", formData, function (response) {
+                $.post("../processes/pawn_claim_process.php", formData, function (response) {
                     if (response.status === "success") {
                         Swal.fire("Claimed!", response.message, "success").then(() => {
                             $("#claimPawnModal").modal("hide");
@@ -141,7 +141,7 @@ $(function () {
                             if (response.pawn_id) {
                                 // Fetch full claim details before printing
                                 $.ajax({
-                                    url: "../public/claim_view.php",
+                                    url: "../api/claim_view.php",
                                     type: "GET",
                                     data: { pawn_id: response.pawn_id },
                                     dataType: "json",

@@ -7,7 +7,7 @@
                 placeholder: 'Search for pawner...',
                 dropdownParent: $('#addPawnModal'),
                 ajax: {
-                    url: 'customer_search.php',
+                    url: '../api/customer_search.php',
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
@@ -124,7 +124,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: "pawn_add_process.php",
+                    url: "../processes/pawn_add_process.php",
                     type: "POST",
                     data: $(this).serialize(),
                     dataType: "json",

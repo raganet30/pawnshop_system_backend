@@ -42,7 +42,8 @@ $sql = "
         p.amount_pawned,
         p.notes,
         c.full_name,
-        c.contact_no
+        c.contact_no,
+        c.address
     FROM pawned_items p
     LEFT JOIN customers c ON p.customer_id = c.customer_id
     $where
@@ -113,7 +114,9 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         htmlspecialchars($row['category']),
         '₱' . number_format($row['amount_pawned'], 2),
         htmlspecialchars($row['contact_no']),
-        htmlspecialchars($row['notes'])
+         htmlspecialchars($row['address']),
+        htmlspecialchars($row['notes']),
+       
     ];
 
     // Append Actions column only if applicable

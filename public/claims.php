@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -145,7 +145,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
         let userRole = "<?= $user_role ?>";
         let table = $("#claimsTable").DataTable({
             "ajax": {
-                "url": "claim_list.php",
+                "url": "../api/claim_list.php",
                 "data": function (d) {
                     if (userRole === "super_admin") {
                         d.branch_id = $("#branchFilter").val(); // add branch filter param
@@ -163,7 +163,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                 { "data": 7 },
                 { "data": 8 },
                 <?php if ($user_role !== 'super_admin'): ?>
-                                                                { "data": 9, "orderable": false }
+                                                                        { "data": 9, "orderable": false }
             <?php endif; ?>
             ]
         });
@@ -182,7 +182,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
         const pawnId = $(this).data("id");
 
         $.ajax({
-            url: "claim_view.php",
+            url: "../api/claim_view.php",
             type: "GET",
             data: { pawn_id: pawnId },
             dataType: "json",
@@ -222,50 +222,62 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
 
 
-    // $(document).on("click", ".revertClaimBtn", function(e){
-    //     e.preventDefault();
-    //     let pawn_id = $(this).data("id");
+    //revert claim function
+    $(document).on("click", ".revertClaimBtn", function (e) {
+        e.preventDefault();
+        let pawn_id = $(this).data("id");
 
-    //     Swal.fire({
-    //         title: "Revert Claim?",
-    //         text: "This will move the item back to pawned items and deduct cash on hand.",
-    //         icon: "warning",
-    //         showCancelButton: true,
-    //         confirmButtonText: "Yes, Revert"
-    //     }).then((result) => {
-    //         if(result.isConfirmed){
-    //             $.post("claim_revert_process.php", { pawn_id: pawn_id }, function(resp){
-    //                 if(resp.status === "success"){
-    //                     Swal.fire("Reverted!", resp.message, "success");
-    //                     $("#claimsTable").DataTable().ajax.reload();`
-    //                 } else {
-    //                     Swal.fire("Error", resp.message, "error");
-    //                 }
-    //             }, "json");
-    //         }
-    //     });
-    // });
+        Swal.fire({
+            title: "Revert Claim?",
+            text: "This will move the item back to pawned items and deduct cash on hand.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Revert"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("../processes/claim_revert_process.php", { pawn_id: pawn_id }, function (resp) {
+                    if (resp.status === "success") {
+                        Swal.fire("Reverted!", resp.message, "success").then(() => {
+                            // Reload claims table
+                            $("#claimsTable").DataTable().ajax.reload();
 
-
-
-// call print receipt js function
-    $(document).on("click", ".printClaimBtn", function () {
-    const pawn_id = $(this).data("id");
-
-    $.ajax({
-        url: "claim_view.php",
-        type: "GET",
-        data: { pawn_id },
-        dataType: "json",
-        success: function (res) {
-            if (res.status === "success") {
-                printClaimReceipt(res.data);
-            } else {
-                alert(res.message);
+                            // If pawn table exists (in pawns.php), reload it too
+                            if ($("#pawnTable").length) {
+                                $("#pawnTable").DataTable().ajax.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire("Error", resp.message, "error");
+                    }
+                }, "json");
             }
-        }
+        });
     });
-});
+
+
+
+
+
+
+
+
+    // call print receipt js function
+    $(document).on("click", ".printClaimBtn", function () {
+        const pawn_id = $(this).data("id");
+
+        $.ajax({
+            url: "../api/claim_view.php",
+            type: "GET",
+            data: { pawn_id },
+            dataType: "json",
+            success: function (res) {
+                if (res.status === "success") {
+                    printClaimReceipt(res.data);
+                } else {
+                    alert(res.message);
+                }
+            }
+        });
+    });
 
 </script>
-

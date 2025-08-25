@@ -39,8 +39,12 @@ try {
     // $user_id = $user['user_id'];
 
     // 2. Update branch cash_on_hand (add back pawned amount)
-    $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
-    $stmt->execute([$amount, $branch_id]);
+    // $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
+    // $stmt->execute([$amount, $branch_id]);
+
+     updateCOH($pdo, $branch_id, $amount, 'add');
+
+
 
     // 3. Log transaction in cash_ledger
     // $stmt = $pdo->prepare("INSERT INTO cash_ledger 

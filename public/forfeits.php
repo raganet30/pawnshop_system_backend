@@ -2,7 +2,7 @@
 session_start();
 // Redirect if not logged in
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 include '../views/header.php';
@@ -42,9 +42,8 @@ include '../views/header.php';
                                 <th>Unit</th>
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
-                                <th>Interest Amount</th>
                                 <th>Contact No.</th>
-                                <th>Notes</th>
+                                <th>Reason</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -70,7 +69,7 @@ include '../views/header.php';
             columnDefs: [
                 { className: "text-center", targets: "_all" } // applies to ALL columns
             ],
-            "ajax": "forfeit_list.php",
+            "ajax": "../api/forfeit_list.php",
             "columns": [
                 { "title": "Date Pawned" },
                 { "title": "Date Forfeited" },
@@ -78,13 +77,41 @@ include '../views/header.php';
                 { "title": "Unit" },
                 { "title": "Category" },
                 { "title": "Amount Pawned" },
-                { "title": "Interest Amount"},
                 { "title": "Contact No." },
-                { "title": "Notes" },
+                { "title": "Reason" },
                 { "title": "Actions", "orderable": false }
             ]
         });
     });
+
+
+    // Revert Forfeited Item to Pawned
+$(document).on("click", ".revertForfeitBtn", function(e) {
+    e.preventDefault();
+    let pawn_id = $(this).data("id");
+
+    Swal.fire({
+        title: "Revert Forfeit?",
+        text: "This will move the item back to pawned items and adjust cash on hand.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Revert"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post("../processes/forfeit_revert_process.php", { pawn_id: pawn_id }, function(resp) {
+                if (resp.status === "success") {
+                    Swal.fire("Reverted!", resp.message, "success");
+                    $("#pawnTable").DataTable().ajax.reload();
+                } else {
+                    Swal.fire("Error", resp.message, "error");
+                }
+            }, "json")
+            .fail(() => Swal.fire("Error", "Server error while processing revert.", "error"));
+        }
+    });
+});
+
+
 
 
 

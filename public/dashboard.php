@@ -2,7 +2,7 @@
 // dashboard.php
 session_start();
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -11,7 +11,7 @@ include '../views/header.php';
 
 // role restriction: only admin/cashier allowed here
 if ($_SESSION['user']['role'] == 'super_admin') {
-    header("Location: dashboard_super.php");
+    header("Location: ../public/dashboard_super.php");
     exit();
 }
 ?>
@@ -138,7 +138,7 @@ function animateValue(id, start, end, duration, prefix = "", decimals = 0) {
 // Load Dashboard Stats
 function loadDashboardStats() {
     $.ajax({
-        url: "dashboard_stats.php",
+        url: "../api/dashboard_stats.php",
         method: "GET",
         dataType: "json",
         success: function (data) {
@@ -186,7 +186,7 @@ function loadDashboardStats() {
 // Load Recent Items + Trends
 function loadDashboardData() {
     $.ajax({
-        url: "dashboard_data.php",
+        url: "../api/dashboard_data.php",
         method: "GET",
         dataType: "json",
         success: function (data) {

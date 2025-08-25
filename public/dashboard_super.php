@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -10,7 +10,7 @@ include '../views/header.php';
 
 // role restriction
 if ($_SESSION['user']['role'] !== 'super_admin') {
-    header("Location: dashboard.php");
+    header("Location: ../public/dashboard.php");
     exit();
 }
 
@@ -85,7 +85,7 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
 
     async function loadDashboardSuper() {
         try {
-            const res = await fetch("dashboard_super_data.php");
+            const res = await fetch("../api/dashboard_super_data.php");
             const data = await res.json();
 
             // Populate Branch Summary Table

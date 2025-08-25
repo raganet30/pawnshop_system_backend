@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($username) || empty($password)) {
         $_SESSION['error'] = "Please enter both username and password.";
-        header("Location: login.php");
+        header("Location: ../public/index.php");
         exit;
     }
 
@@ -22,12 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$user) {
             $_SESSION['error'] = "No active user found with username: {$username}";
-            header("Location: login.php");
+            header("Location: ../public/index.php");
             exit;
         }
 
         // Debug: Show fetched user data (excluding hash for security)
-        error_log("DEBUG: Found user - ID: {$user['user_id']}, Role: {$user['role']}, Branch: {$user['branch_id']}");
+        // error_log("DEBUG: Found user - ID: {$user['user_id']}, Role: {$user['role']}, Branch: {$user['branch_id']}");
 
         if (password_verify($password, $user['password_hash'])) {
             $_SESSION['user'] = [
@@ -39,22 +39,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Redirect based on role
             if ($user['role'] === 'super_admin') {
-                header("Location: dashboard_super.php");
+                header("Location: ../public/dashboard_super.php");
             } else {
-                header("Location: dashboard.php");
+                header("Location: ../public/dashboard.php");
             }
             exit;
         } else {
             $_SESSION['error'] = "Password verification failed for username: {$username}";
-            header("Location: login.php");
+            header("Location: ../public/index.php");
             exit;
         }
     } catch (PDOException $e) {
         $_SESSION['error'] = "Database error: " . $e->getMessage();
-        header("Location: login.php");
+        header("Location: ../public/index.php");
         exit;
     }
 } else {
-    header("Location: login.php");
+    header("Location: ../public/index.php");
     exit;
 }
