@@ -8,6 +8,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
 }
 
 include '../views/header.php';
+
 ?>
 <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="card shadow-lg" style="width: 350px;">
