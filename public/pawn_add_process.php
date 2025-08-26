@@ -85,6 +85,11 @@ try {
     $updateCash = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?");
     $updateCash->execute([$amount_pawned, $branch_id]);
 
+
+
+    // insert into cash_ledger
+    
+
     // --- 5. Log Audit ---
     $customerLabel = !empty($customer_name) ? $customer_name : "Customer #$customer_id";
     $description = sprintf(
