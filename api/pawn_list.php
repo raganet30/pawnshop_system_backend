@@ -10,6 +10,7 @@ if (!isset($_SESSION['user'])) {
     echo json_encode(["data" => []]);
     exit();
 }
+
 $user_role = $_SESSION['user']['role'] ?? 'cashier';
 $session_branch_id = $_SESSION['user']['branch_id'] ?? null;
 

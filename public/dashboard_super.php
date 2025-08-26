@@ -30,23 +30,27 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
             <div class="card mb-4">
                 <div class="card-header">Branch Summary</div>
                 <div class="card-body">
-                    <table id="branchSummaryTable" class="table table-bordered table-striped">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Branch</th>
-                                <th>Pawned Items</th>
-                                <th>Claimed</th>
-                                <th>Forfeited</th>
-                                <th>Total Pawned Value</th>
-                                <th>Cash on Hand</th>
-                                <th>Total Income</th>
-                            </tr>
-                        </thead>
-                        <tbody id="branchSummaryBody"></tbody>
-                        <tfoot class="table-dark" id="branchSummaryFooter"></tfoot>
-                    </table>
+                    <!-- Responsive wrapper -->
+                    <div class="table-responsive">
+                        <table id="branchSummaryTable" class="table table-bordered table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Branch</th>
+                                    <th>Pawned Items</th>
+                                    <th>Claimed</th>
+                                    <th>Forfeited</th>
+                                    <th>Total Pawned Value</th>
+                                    <th>Cash on Hand</th>
+                                    <th>Total Income</th>
+                                </tr>
+                            </thead>
+                            <tbody id="branchSummaryBody"></tbody>
+                            <tfoot class="table-dark" id="branchSummaryFooter"></tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
+
 
             <!-- Monthly Trend Chart -->
             <div class="card mb-4">
@@ -129,7 +133,7 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
         `;
 
 
-                
+
 
             // Animate totals
             animateValue(document.getElementById("totPawned"), parseInt(document.getElementById("totPawned").innerText.replace(/,/g, "")) || 0, totals.pawned);

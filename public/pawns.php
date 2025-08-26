@@ -424,7 +424,7 @@ include '../views/header.php';
 
 <script>
 
-
+    // pawns.php
     // DataTables AJAX init
     $(document).ready(function () {
         let pawnTable = $('#pawnTable').DataTable({
@@ -450,7 +450,7 @@ include '../views/header.php';
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
                                                                                                             { title: "Actions", orderable: false }
-            <?php endif; ?>
+                <?php endif; ?>
             ]
         });
 

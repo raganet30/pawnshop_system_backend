@@ -65,7 +65,7 @@ include '../views/header.php';
             columnDefs: [
                 { className: "text-center", targets: "_all" } // applies to ALL columns
             ],
-            "ajax": "audit_logs_list.php",
+            "ajax": "../api/audit_logs_list.php",
             "columns": [
                 { "title": "Date" },
                 { "title": "Activity" },
