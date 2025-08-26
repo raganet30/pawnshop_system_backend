@@ -2,7 +2,7 @@
 session_start();
 // Redirect if not logged in
 if (!isset($_SESSION['user'])) {
-    header("Location: index.php");
+    header("Location: index");
     exit();
 }
 include '../views/header.php';
