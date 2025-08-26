@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 require_once "../config/db.php";
 require_once "../config/helpers.php";
@@ -13,16 +13,16 @@ if (!isset($_SESSION['user'])) {
 try {
     $pdo->beginTransaction();
 
-    $branch_id  = $_SESSION['user']['branch_id'];
-    $user_id    = $_SESSION['user']['id'];
-    $full_name  = $_SESSION['user']['name'];
+    $branch_id = $_SESSION['user']['branch_id'];
+    $user_id = $_SESSION['user']['id'];
+    $full_name = $_SESSION['user']['full_name'];
 
     // Pawn item fields
     $unit_description = $_POST['unit_description'] ?? '';
-    $category         = $_POST['category'] ?? '';
-    $amount_pawned    = (float) ($_POST['amount_pawned'] ?? 0);
-    $notes            = $_POST['notes'] ?? null;
-    $date_pawned      = $_POST['date_pawned'] ?? date("Y-m-d");
+    $category = $_POST['category'] ?? '';
+    $amount_pawned = (float) ($_POST['amount_pawned'] ?? 0);
+    $notes = $_POST['notes'] ?? null;
+    $date_pawned = $_POST['date_pawned'] ?? date("Y-m-d");
 
     // --- 1. Lock COH row ---
     $stmt = $pdo->prepare("SELECT cash_on_hand FROM branches WHERE branch_id = ? FOR UPDATE");
@@ -38,10 +38,10 @@ try {
     }
 
     // --- 2. Handle Customer ---
-    $customer_id   = $_POST['customer_id'] ?? null; // from Select2
+    $customer_id = $_POST['customer_id'] ?? null; // from Select2
     $customer_name = trim($_POST['customer_name'] ?? '');
-    $contact_no    = trim($_POST['contact_no'] ?? '');
-    $address       = trim($_POST['address'] ?? '');
+    $contact_no = trim($_POST['contact_no'] ?? '');
+    $address = trim($_POST['address'] ?? '');
 
     if (!empty($customer_id) && is_numeric($customer_id)) {
         // Existing customer selected
@@ -82,8 +82,10 @@ try {
     ]);
 
     // --- 4. Deduct COH ---
-    $updateCash = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?");
-    $updateCash->execute([$amount_pawned, $branch_id]);
+    updateCOH($pdo, $branch_id, $amount_pawned, 'subtract');
+
+
+
 
 
 
@@ -93,19 +95,41 @@ try {
     // --- 5. Log Audit ---
     $customerLabel = !empty($customer_name) ? $customer_name : "Customer #$customer_id";
     $description = sprintf(
-        "%s added a new pawn item for %s (Unit: %s, Category: %s, Amount: ₱%s)",
-        $full_name,
+        "Added a new pawn item for %s (Unit: %s, Category: %s, Amount: ₱%s)",
         $customerLabel,
         $unit_description,
         $category,
         number_format($amount_pawned, 2)
     );
-
     logAudit($pdo, $user_id, $branch_id, 'Add Pawned Item', $description);
+
+
+
+
+    // After successful pawn insert
+    $pawn_id = $pdo->lastInsertId();
+
+    $pawn_id = $pdo->lastInsertId();
+
+    insertCashLedger(
+        $pdo,
+        $branch_id,
+        'pawn',                              // txn_type
+        'out',                               // direction (cash released)
+        $amount_pawned,
+        'pawned_items',                      // ref_table
+        $pawn_id,                            // ref_id
+        "Pawn Add (ID #{$pawn_id})",         // description
+        $unit_description,                          // notes (e.g. "iPhone 12 128GB")
+        $user_id
+    );
+
+
+
 
     $pdo->commit();
 
-    echo json_encode(["status" => "success", "message" => "Pawn item added successfully."]);
+    echo json_encode(["status" => "success", "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2)]);
 } catch (Exception $e) {
     $pdo->rollBack();
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

@@ -31,7 +31,7 @@ $recent_stmt = $pdo->prepare("
         p.status
     FROM pawned_items p
     INNER JOIN customers c ON p.customer_id = c.customer_id
-    WHERE p.branch_id = :branch_id
+    WHERE p.branch_id = :branch_id and p.is_deleted=0
     ORDER BY p.updated_at DESC
     LIMIT 20
 ");

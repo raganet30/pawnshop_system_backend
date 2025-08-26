@@ -3,7 +3,7 @@ session_start();
 
 // If user already logged in, go directly to dashboard
 if (isset($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
-    header("Location: dashboard.php");
+    header("Location: ../public/dashboard.php");
     exit();
 }
 
@@ -18,18 +18,18 @@ include '../views/header.php';
             </div>
 
             <?php if (!empty($_SESSION['error'])): ?>
-            <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: '<?php echo $_SESSION['error']; ?>',
-                });
-            });
-            </script>
-            <?php unset($_SESSION['error']); endif; ?>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Login Failed',
+                            text: '<?php echo $_SESSION['error']; ?>',
+                        });
+                    });
+                </script>
+                <?php unset($_SESSION['error']); endif; ?>
 
-            <form id="loginForm" method="POST" action="login_process.php">
+            <form id="loginForm" method="POST" action="../processes/login_process.php">
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
                     <input type="text" name="username" id="username" class="form-control" required autofocus>

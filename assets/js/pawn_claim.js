@@ -12,7 +12,7 @@ $(function () {
         e.preventDefault();
         const pawnId = $(this).data("id");
 
-        $.getJSON("pawn_get.php", { pawn_id: pawnId })
+        $.getJSON("../api/pawn_get.php", { pawn_id: pawnId })
             .done((data) => {
                 if (data.status !== "success") {
                     return Swal.fire("Error", data.message || "Unable to fetch pawn details.", "error");
@@ -130,11 +130,34 @@ $(function () {
             confirmButtonText: "Yes, Claim it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post("pawn_claim_process.php", formData, function (response) {
+                $.post("../processes/pawn_claim_process.php", formData, function (response) {
                     if (response.status === "success") {
                         Swal.fire("Claimed!", response.message, "success").then(() => {
                             $("#claimPawnModal").modal("hide");
                             $("#pawnTable").DataTable().ajax.reload();
+
+                           
+                            // 🔹 Auto-print receipt after successful claim
+                            if (response.pawn_id) {
+                                // Fetch full claim details before printing
+                                $.ajax({
+                                    url: "../api/claim_view.php",
+                                    type: "GET",
+                                    data: { pawn_id: response.pawn_id },
+                                    dataType: "json",
+                                    success: function (res) {
+                                        if (res.status === "success") {
+                                            printClaimReceipt(res.data);
+                                        } else {
+                                            console.error("Failed to fetch claim details:", res.message);
+                                        }
+                                    },
+                                    error: function () {
+                                        console.error("Error fetching claim details for printing.");
+                                    }
+                                });
+                            }
+
                         });
                     } else {
                         Swal.fire("Error", response.message || "Unable to claim pawn.", "error");

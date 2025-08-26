@@ -2,7 +2,7 @@
 session_start();
 // Redirect if not logged in
 if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 include '../views/header.php';
@@ -33,7 +33,7 @@ include '../views/header.php';
             <div class="modal fade" id="addPawnModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
-                        <form id="addPawnForm" method="POST" action="pawn_add_process.php">
+                        <form id="addPawnForm" method="POST" action="../processes/pawn_add_process.php">
                             <div class="modal-header">
                                 <h5 class="modal-title">Add New Pawn Item</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
@@ -139,7 +139,7 @@ include '../views/header.php';
             <div class="modal fade" id="editPawnModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
-                        <form id="editPawnForm" method="POST" action="pawn_edit_process.php">
+                        <form id="editPawnForm" method="POST" action="../processes/pawn_edit_process.php">
                             <div class="modal-header">
                                 <h5 class="modal-title">Edit Pawn Item</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
@@ -228,7 +228,7 @@ include '../views/header.php';
                 aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
-                        <form id="claimPawnForm" method="POST" action="pawn_claim_process.php">
+                        <form id="claimPawnForm" method="POST" action="../processes/pawn_claim_process.php">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="claimPawnModalLabel">Claim Pawned Item</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -394,6 +394,7 @@ include '../views/header.php';
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
                                 <th>Contact No.</th>
+                                <th>Address</th>
                                 <th>Notes</th>
                                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
                                     <th>Actions</th>
@@ -418,7 +419,7 @@ include '../views/header.php';
 <script src="../assets/js/pawn_edit.js"></script>
 <script src="../assets/js/pawn_claim.js"></script>
 <script src="../assets/js/money_separator.js"></script>
-
+<script src="../assets/js/receipt.js"></script>
 
 
 <script>
@@ -431,7 +432,7 @@ include '../views/header.php';
                 { className: "text-center", targets: "_all" } // applies to ALL columns
             ],
             ajax: {
-                url: "pawn_list.php",
+                url: "../api/pawn_list.php",
                 data: function (d) {
                     <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
                         d.branch_id = $('#branchFilter').val(); // send selected branch ID
@@ -445,6 +446,7 @@ include '../views/header.php';
                 { title: "Category" },
                 { title: "Amount Pawned" },
                 { title: "Contact No." },
+                { title: "Address"},
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
                                                                                                             { title: "Actions", orderable: false }
@@ -468,7 +470,7 @@ include '../views/header.php';
         e.preventDefault();
         const pawnId = $(this).data("id");
 
-        $.get("pawn_get.php", { pawn_id: pawnId }, function (data) {
+        $.get("../api/pawn_get.php", { pawn_id: pawnId }, function (data) {
             if (data.status !== "success") {
                 Swal.fire("Error", data.message || "Failed to fetch pawn details", "error");
                 return;
@@ -534,7 +536,7 @@ include '../views/header.php';
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post("pawn_forfeit_process.php", formData, function (response) {
+                $.post("../processes/pawn_forfeit_process.php", formData, function (response) {
                     if (response.status === "success") {
                         Swal.fire("Forfeited!", response.message, "success").then(() => {
                             $("#forfeitPawnModal").modal("hide");
@@ -562,7 +564,7 @@ include '../views/header.php';
             confirmButtonText: "Yes, Move it",
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post("pawn_delete.php", { pawn_id: pawnId }, function (response) {
+                $.post("../processes/pawn_delete.php", { pawn_id: pawnId }, function (response) {
                     if (response.status === "success") {
                         Swal.fire("Trashed!", response.message, "success");
                         $("#pawnTable").DataTable().ajax.reload();
@@ -578,3 +580,4 @@ include '../views/header.php';
 
 
 </script>
+

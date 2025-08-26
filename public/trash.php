@@ -4,7 +4,7 @@ require_once "../config/db.php";
 
 // role restriction
 if (!in_array($_SESSION['user']['role'], ['admin','super_admin'])) {
-    header("Location: dashboard.php");
+    header("Location: ../public/dashboard.php");
     exit();
 }
 ?>
@@ -59,7 +59,7 @@ if (!in_array($_SESSION['user']['role'], ['admin','super_admin'])) {
 <script>
 $(document).ready(function(){
     let table = $("#trashTable").DataTable({
-        "ajax": "pawn_trash_list.php",
+        "ajax": "../api/pawn_trash_list.php",
         "columns": [
             { 
                 "data": "pawn_id",
@@ -100,7 +100,7 @@ $(document).ready(function(){
             confirmButtonText: "Yes, Restore"
         }).then((result)=>{
             if(result.isConfirmed){
-                $.post("pawn_trash_action.php", { action: "restore", ids: ids }, function(resp){
+                $.post("../processes/pawn_trash_action.php", { action: "restore", ids: ids }, function(resp){
                     if(resp.status === "success"){
                         Swal.fire("Restored!", resp.message, "success");
                         table.ajax.reload();
@@ -127,7 +127,7 @@ $(document).ready(function(){
             confirmButtonText: "Yes, Delete"
         }).then((result)=>{
             if(result.isConfirmed){
-                $.post("pawn_trash_action.php", { action: "delete", ids: ids }, function(resp){
+                $.post("../processes/pawn_trash_action.php", { action: "delete", ids: ids }, function(resp){
                     if(resp.status === "success"){
                         Swal.fire("Deleted!", resp.message, "success");
                         table.ajax.reload();

@@ -3,7 +3,7 @@ $(document).on("click", ".editPawnBtn", function(e) {
     let pawnId = $(this).data("id");
 
     $.ajax({
-        url: "pawn_get.php",
+        url: "../api/pawn_get.php",
         type: "GET",
         data: { pawn_id: pawnId },
         dataType: "json",
@@ -39,7 +39,7 @@ $("#editPawnForm").on("submit", function(e) {
     e.preventDefault();
 
     $.ajax({
-        url: "pawn_edit_process.php",
+        url: "../processes/pawn_edit_process.php",
         type: "POST",
         data: $(this).serialize(),
         dataType: "json",

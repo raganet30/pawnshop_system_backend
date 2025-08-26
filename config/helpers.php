@@ -33,3 +33,55 @@ function branchFilter($role, $branch_id, &$params) {
 }
 
 
+function insertCashLedger($pdo, $branch_id, $txn_type, $direction, $amount, $ref_table, $ref_id, $description, $notes, $user_id) {
+    $stmt = $pdo->prepare("
+        INSERT INTO cash_ledger 
+            (branch_id, txn_type, direction, amount, ref_table, ref_id, description, notes, created_at, user_id)
+        VALUES 
+            (:branch_id, :txn_type, :direction, :amount, :ref_table, :ref_id, :description, :notes, NOW(), :user_id)
+    ");
+    $stmt->execute([
+        'branch_id'   => $branch_id,
+        'txn_type'    => $txn_type,    // e.g. 'pawn'
+        'direction'   => $direction,   // 'out' or 'in'
+        'amount'      => $amount,
+        'ref_table'   => $ref_table,   // e.g. 'pawned_items'
+        'ref_id'      => $ref_id,
+        'description' => $description, // human readable e.g. "Pawn Add (ID #100)"
+        'notes'       => $notes,       // details e.g. "iPhone 12 128GB"
+        'user_id'     => $user_id
+    ]);
+}
+
+
+// function to adjust branch cash on hand
+/**
+ * Update Cash on Hand (COH) for a branch
+ *
+ * @param PDO    $pdo        Database connection
+ * @param int    $branch_id  Branch ID
+ * @param float  $amount     Amount to update
+ * @param string $operation  "add" or "subtract"
+ *
+ * @return bool True on success, false on failure
+ */
+function updateCOH(PDO $pdo, int $branch_id, float $amount, string $operation = 'add'): bool {
+    if ($amount <= 0) return false; // prevent negative or zero updates
+
+    // Determine SQL operation
+    if ($operation === 'subtract') {
+        $sql = "UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?";
+    } else {
+        $sql = "UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute([$amount, $branch_id]);
+}
+
+
+
+
+
+
+
