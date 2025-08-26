@@ -15,32 +15,32 @@ $role = $_SESSION['user']['role'] ?? 'guest';
 
 $menuItems = [
     // Super admin specific dashboard
-    ['href' => 'dashboard_super.php', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'roles' => ['super_admin']],
+    ['href' => 'dashboard_super', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'roles' => ['super_admin']],
     // Admin / Cashier dashboard
-    ['href' => 'dashboard.php', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'roles' => ['admin', 'cashier']],
+    ['href' => 'dashboard', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'roles' => ['admin', 'cashier']],
 
     // Common items
-    ['href' => 'pawns.php', 'icon' => 'bi-box-seam', 'label' => 'Pawns', 'roles' => '*'],
-    ['href' => 'claims.php', 'icon' => 'bi-cash-coin', 'label' => 'Claims', 'roles' => '*'],
-    ['href' => 'partial_payments.php', 'icon' => 'bi bi-cash-stack', 'label' => 'Partial Payments', 'roles' => '*'],
-    ['href' => 'pawners.php', 'icon' => 'bi bi-people', 'label' => 'Pawners', 'roles' => '*'],
+    ['href' => 'pawns', 'icon' => 'bi-box-seam', 'label' => 'Pawns', 'roles' => '*'],
+    ['href' => 'claims', 'icon' => 'bi-cash-coin', 'label' => 'Claims', 'roles' => '*'],
+    ['href' => 'partial_payments', 'icon' => 'bi bi-cash-stack', 'label' => 'Partial Payments', 'roles' => '*'],
+    ['href' => 'pawners', 'icon' => 'bi bi-people', 'label' => 'Pawners', 'roles' => '*'],
     
 
 
     // Admin & Super Admin
-    ['href' => 'forfeits.php', 'icon' => 'bi-exclamation-triangle', 'label' => 'Forfeits', 'roles' => ['super_admin', 'admin']],
-    ['href' => 'reports.php', 'icon' => 'bi-file-earmark-text', 'label' => 'Reports', 'roles' => ['super_admin', 'admin']],
+    ['href' => 'forfeits', 'icon' => 'bi-exclamation-triangle', 'label' => 'Forfeits', 'roles' => ['super_admin', 'admin']],
+    ['href' => 'reports', 'icon' => 'bi-file-earmark-text', 'label' => 'Reports', 'roles' => ['super_admin', 'admin']],
         // cash ledger
-    ['href' => 'ledger.php', 'icon' => 'bi bi-journal-text', 'label' => 'Cash Ledger', 'roles' => ['super_admin', 'admin']],
+    ['href' => 'ledger', 'icon' => 'bi bi-journal-text', 'label' => 'Cash Ledger', 'roles' => ['super_admin', 'admin']],
 
     // Admin only (trash available to admin )
-    ['href' => 'trash.php', 'icon' => 'bi-trash', 'label' => 'Trash Bin', 'roles' => ['admin']],
+    ['href' => 'trash', 'icon' => 'bi-trash', 'label' => 'Trash Bin', 'roles' => ['admin']],
 
     // Super admin only
-    ['href' => 'branches.php', 'icon' => 'bi-diagram-3', 'label' => 'Branches', 'roles' => ['super_admin']],
-    ['href' => 'users.php', 'icon' => 'bi-people', 'label' => 'Users', 'roles' => ['super_admin']],
-    ['href' => 'audit_logs.php', 'icon' => 'bi-journal-text', 'label' => 'Audit Logs', 'roles' => ['super_admin']],
-    ['href' => 'settings.php', 'icon' => 'bi-gear', 'label' => 'Settings', 'roles' => ['super_admin']],
+    ['href' => 'branches', 'icon' => 'bi-diagram-3', 'label' => 'Branches', 'roles' => ['super_admin']],
+    ['href' => 'users', 'icon' => 'bi-people', 'label' => 'Users', 'roles' => ['super_admin']],
+    ['href' => 'audit_logs', 'icon' => 'bi-journal-text', 'label' => 'Audit Logs', 'roles' => ['super_admin']],
+    ['href' => 'settings', 'icon' => 'bi-gear', 'label' => 'Settings', 'roles' => ['super_admin']],
 ];
 
 function isAllowed($itemRoles, $currentRole) {

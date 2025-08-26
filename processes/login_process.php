@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($username) || empty($password)) {
         $_SESSION['error'] = "Please enter both username and password.";
-        header("Location: ../public/index.php");
+        header("Location: ../public/index");
         exit;
     }
 
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$user) {
             $_SESSION['error'] = "No active user found with username: {$username}";
-            header("Location: ../public/index.php");
+            header("Location: ../public/index");
             exit;
         }
 
@@ -39,22 +39,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Redirect based on role
             if ($user['role'] === 'super_admin') {
-                header("Location: ../public/dashboard_super.php");
+                header("Location: ../public/dashboard_super");
             } else {
-                header("Location: ../public/dashboard.php");
+                header("Location: ../public/dashboard");
             }
             exit;
         } else {
             $_SESSION['error'] = "Password verification failed for username: {$username}";
-            header("Location: ../public/index.php");
+            header("Location: ../public/index");
             exit;
         }
     } catch (PDOException $e) {
         $_SESSION['error'] = "Database error: " . $e->getMessage();
-        header("Location: ../public/index.php");
+        header("Location: ../public/index");
         exit;
     }
 } else {
-    header("Location: ../public/index.php");
+    header("Location: ../public/index");
     exit;
 }
