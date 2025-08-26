@@ -114,10 +114,7 @@ function active($page, $currentPage)
                 <a href="settings" class="list-group-item flex-grow-1 <?= active('settings', $currentPage) ?>">
                     <i class="bi bi-gear"></i> Settings
                 </a>
-                <a class="list-group-item border-0 bg-transparent py-2 px-2" data-bs-toggle="collapse"
-                    href="#submenuSettings">
-                    <i class="bi bi-caret-down-fill"></i>
-                </a>
+                
             </div>
 
         <?php endif; ?>
