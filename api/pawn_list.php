@@ -17,6 +17,10 @@ $session_branch_id = $_SESSION['user']['branch_id'] ?? null;
 // Super admin can filter branch via AJAX request
 $selected_branch_id = $_GET['branch_id'] ?? null;
 
+// Date filters
+$start_date = $_GET['start_date'] ?? null;
+$end_date   = $_GET['end_date'] ?? null;
+
 // Apply branch filter
 $params = [];
 if ($user_role === 'super_admin') {
@@ -24,13 +28,22 @@ if ($user_role === 'super_admin') {
         $where = "WHERE p.status = 'pawned' AND p.is_deleted = 0 AND p.branch_id = ?";
         $params[] = $selected_branch_id;
     } else {
-        // show all branches
         $where = "WHERE p.status = 'pawned' AND p.is_deleted = 0";
     }
 } else {
     // Non-super_admin users are locked to their session branch
     $where = "WHERE p.status = 'pawned' AND p.is_deleted = 0 AND p.branch_id = ?";
     $params[] = $session_branch_id;
+}
+
+// Apply date filters
+if ($start_date) {
+    $where .= " AND DATE(p.date_pawned) >= ?";
+    $params[] = $start_date;
+}
+if ($end_date) {
+    $where .= " AND DATE(p.date_pawned) <= ?";
+    $params[] = $end_date;
 }
 
 // Fetch pawned items
@@ -53,10 +66,12 @@ $sql = "
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 
-
-
 $rows = [];
+$totalPawned = 0;
+
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $totalPawned += floatval($row['amount_pawned']);
+
     // Build actions dropdown (only if user has access)
     $actions = '';
     if (in_array($user_role, ['admin', 'cashier'])) {
@@ -115,9 +130,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         htmlspecialchars($row['category']),
         '₱' . number_format($row['amount_pawned'], 2),
         htmlspecialchars($row['contact_no']),
-         htmlspecialchars($row['address']),
+        htmlspecialchars($row['address']),
         htmlspecialchars($row['notes']),
-       
     ];
 
     // Append Actions column only if applicable
@@ -128,4 +142,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $rows[] = $rowData;
 }
 
-echo json_encode(["data" => $rows]);
+// Return JSON including total pawned
+echo json_encode([
+    "data" => $rows,
+    "total_pawned" => number_format($totalPawned, 2)
+]);

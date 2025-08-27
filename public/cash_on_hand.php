@@ -89,12 +89,13 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <option value="set">Set Exact Amount</option>
                                 </select>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label>Notes</label>
                                 <input id="cashAdjustmentNotes" type="text" class="form-control"
                                     placeholder="Reason for adjustment" required>
                             </div>
-                            <div class="col-md-12 mt-2">
+                            <div class="col-md-6">
+                                <label></label>
                                 <button id="saveCashAdjustment" class="btn btn-primary w-100">Apply Adjustment</button>
                             </div>
                         </div>

@@ -266,9 +266,9 @@ include '../views/header.php';
                                     </div>
 
                                     <div class="col-md-6">
-                                            <label for="claimPenalty">Penalty (optional)</label>
-                                            <input type="number" step="0.01" class="form-control" id="claimPenalty"
-                                                name="claimPenalty" placeholder="Enter penalty amount">
+                                        <label for="claimPenalty">Penalty (optional)</label>
+                                        <input type="number" step="0.01" class="form-control" id="claimPenalty"
+                                            name="claimPenalty" placeholder="Enter penalty amount">
                                     </div>
 
 
@@ -365,25 +365,41 @@ include '../views/header.php';
 
             <!-- add branch filtering when super admin is the user -->
             <!-- DataTable -->
-            <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
-                <div class="mb-3">
-                    <label for="branchFilter" class="form-label">Select Branch</label>
-                    <select id="branchFilter" class="form-select" style="width: 250px;">
-                        <option value="">All Branches</option>
-                        <?php
-                        // Load branches from DB
-                        $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
-                        while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-            <?php endif; ?>
+            <!-- Branch filter for Super Admin -->
+            <!-- Filters -->
+            <div class="row mb-3">
+                <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                    <div class="col-md-3">
+                        <label for="branchFilter" class="form-label">Branch:</label>
+                        <select id="branchFilter" class="form-select">
+                            <option value="">All Branches</option>
+                            <?php
+                            $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                            while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
 
+                <div class="col-md-3">
+                    <label for="fromDate" class="form-label">From:</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label for="toDate" class="form-label">To:</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+
+            <!-- Pawned Items Table -->
             <div class="card">
                 <div class="card-header">Pawned Items</div>
-
                 <div class="card-body">
                     <table id="pawnTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
@@ -396,14 +412,18 @@ include '../views/header.php';
                                 <th>Contact No.</th>
                                 <th>Address</th>
                                 <th>Notes</th>
-                                <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
+                                <?php if (in_array($_SESSION['user']['role'], ['admin', 'cashier'])): ?>
                                     <th>Actions</th>
                                 <?php endif; ?>
                             </tr>
                         </thead>
-                        <tbody>
-                            <!-- Populated dynamically via DataTables AJAX -->
-                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-end">TOTAL PAWNED AMOUNT:</th>
+                                <th id="totalPawned" ></th>
+                                <th colspan="3"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -421,22 +441,61 @@ include '../views/header.php';
 <script src="../assets/js/money_separator.js"></script>
 <script src="../assets/js/receipt.js"></script>
 
-
 <script>
 
     // pawns.php
     // DataTables AJAX init
     $(document).ready(function () {
         let pawnTable = $('#pawnTable').DataTable({
-            columnDefs: [
-                { className: "text-center", targets: "_all" } // applies to ALL columns
+            dom: 'Bfrtip',
+             buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                className: 'btn btn-success btn-sm'
+               
+            },
+            {
+                extend: 'csvHtml5',
+                text: '<i class="bi bi-file-earmark-text"></i> CSV',
+                className: 'btn btn-primary btn-sm'
+               
+            },
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="bi bi-file-pdf"></i> PDF',
+                className: 'btn btn-danger btn-sm'
+            },
+            {
+                extend: 'print',
+                text: '<i class="bi bi-printer"></i> Print',
+                className: 'btn btn-secondary btn-sm'
+                
+            },
+             {
+                extend: 'pageLength',
+                text: '<i class="bi bi-list"></i> Rows',
+                className: 'btn btn-info btn-sm'
+            }
+
+        ],
+
+        columnDefs: [
+                { className: "text-center", targets: "_all" }
             ],
             ajax: {
                 url: "../api/pawn_list.php",
                 data: function (d) {
                     <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
-                        d.branch_id = $('#branchFilter').val(); // send selected branch ID
+                        d.branch_id = $('#branchFilter').val();
                     <?php endif; ?>
+                    d.start_date = $('#fromDate').val();
+                    d.end_date = $('#toDate').val();
+                },
+                dataSrc: function (json) {
+                    // Populate total pawned in footer
+                    $('#totalPawned').text('₱' + json.total_pawned);
+                    return json.data;
                 }
             },
             columns: [
@@ -446,22 +505,34 @@ include '../views/header.php';
                 { title: "Category" },
                 { title: "Amount Pawned" },
                 { title: "Contact No." },
-                { title: "Address"},
+                { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                                                            { title: "Actions", orderable: false }
-                <?php endif; ?>
+                    { title: "Actions", orderable: false }
+            <?php endif; ?>
             ]
         });
 
+        // Filter button click
+        $('#filterBtn').on('click', function () {
+            pawnTable.ajax.reload();
+        });
+
+        // Reset button click
+        $('#resetBtn').on('click', function () {
+            $('#fromDate, #toDate').val('');
+            <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                $('#branchFilter').val('');
+            <?php endif; ?>
+            pawnTable.ajax.reload();
+        });
+
         <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
-            // Reload table when branch is changed
             $('#branchFilter').on('change', function () {
                 pawnTable.ajax.reload();
             });
         <?php endif; ?>
     });
-
 
 
 
@@ -580,4 +651,3 @@ include '../views/header.php';
 
 
 </script>
-
