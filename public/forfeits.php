@@ -27,6 +27,7 @@ include '../views/header.php';
                 </button> -->
             </div>
 
+            <?php include '../views/filters.php'; ?>
 
 
             <!-- DataTable -->
@@ -47,6 +48,14 @@ include '../views/header.php';
                                 <th>Actions</th>
                             </tr>
                         </thead>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5" class="text-end">TOTAL:</th>
+                                <th></th>
+                                <th colspan="3"></th>
+                            </tr>
+                        </tfoot>
+
                         <tbody>
                             <!-- Populated dynamically via DataTables AJAX -->
                         </tbody>
@@ -65,12 +74,44 @@ include '../views/header.php';
 
     // DataTables AJAX init
     $(document).ready(function () {
-        $('#pawnTable').DataTable({
-            columnDefs: [
-                { className: "text-center", targets: "_all" } // applies to ALL columns
+        let table = $('#pawnTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                    className: 'btn btn-success btn-sm',
+                    exportOptions: { columns: ':not(:last-child)' } // exclude Actions
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                    className: 'btn btn-danger btn-sm',
+                    exportOptions: { columns: ':not(:last-child)' }
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer"></i> Print',
+                    className: 'btn btn-secondary btn-sm',
+                    exportOptions: { columns: ':not(:last-child)' }
+                },
+                {
+                    extend: 'pageLength',
+                    className: 'btn btn-info btn-sm'
+                }
             ],
-            "ajax": "../api/forfeit_list.php",
-            "columns": [
+            ajax: {
+                url: '../api/forfeit_list.php',
+                data: function (d) {
+                    d.branch_id = $('#branchFilter').val();
+                    d.fromDate = $('#fromDate').val();
+                    d.toDate = $('#toDate').val();
+                }
+            },
+            columnDefs: [
+                { className: "text-center", targets: "_all" }
+            ],
+            columns: [
                 { "title": "Date Pawned" },
                 { "title": "Date Forfeited" },
                 { "title": "Owner" },
@@ -80,36 +121,73 @@ include '../views/header.php';
                 { "title": "Contact No." },
                 { "title": "Reason" },
                 { "title": "Actions", "orderable": false }
-            ]
+            ],
+            footerCallback: function (row, data, start, end, display) {
+                let api = this.api();
+
+                // remove ₱ and commas then sum
+                let intVal = function (i) {
+                    return typeof i === 'string'
+                        ? i.replace(/[\₱,]/g, '') * 1
+                        : typeof i === 'number'
+                            ? i : 0;
+                };
+
+                // Total of Amount Pawned (column 5)
+                let totalPawned = api
+                    .column(5, { page: 'current' })
+                    .data()
+                    .reduce((a, b) => intVal(a) + intVal(b), 0);
+
+                $(api.column(5).footer()).html('₱' + totalPawned.toLocaleString());
+            }
+        });
+
+        // Auto reload when selecting branch
+        $('#branchFilter').on('change', function () {
+            table.ajax.reload();
+        });
+
+        // Filter button
+        $('#filterBtn').on('click', function () {
+            table.ajax.reload();
+        });
+
+        // Reset button
+        $('#resetBtn').on('click', function () {
+            $('#branchFilter').val('');
+            $('#fromDate').val('');
+            $('#toDate').val('');
+            table.ajax.reload();
         });
     });
 
 
     // Revert Forfeited Item to Pawned
-$(document).on("click", ".revertForfeitBtn", function(e) {
-    e.preventDefault();
-    let pawn_id = $(this).data("id");
+    $(document).on("click", ".revertForfeitBtn", function (e) {
+        e.preventDefault();
+        let pawn_id = $(this).data("id");
 
-    Swal.fire({
-        title: "Revert Forfeit?",
-        text: "This will move the item back to pawned items and adjust cash on hand.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, Revert"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.post("../processes/forfeit_revert_process.php", { pawn_id: pawn_id }, function(resp) {
-                if (resp.status === "success") {
-                    Swal.fire("Reverted!", resp.message, "success");
-                    $("#pawnTable").DataTable().ajax.reload();
-                } else {
-                    Swal.fire("Error", resp.message, "error");
-                }
-            }, "json")
-            .fail(() => Swal.fire("Error", "Server error while processing revert.", "error"));
-        }
+        Swal.fire({
+            title: "Revert Forfeit?",
+            text: "This will move the item back to pawned items and adjust cash on hand.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Revert"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("../processes/forfeit_revert_process.php", { pawn_id: pawn_id }, function (resp) {
+                    if (resp.status === "success") {
+                        Swal.fire("Reverted!", resp.message, "success");
+                        $("#pawnTable").DataTable().ajax.reload();
+                    } else {
+                        Swal.fire("Error", resp.message, "error");
+                    }
+                }, "json")
+                    .fail(() => Swal.fire("Error", "Server error while processing revert.", "error"));
+            }
+        });
     });
-});
 
 
 

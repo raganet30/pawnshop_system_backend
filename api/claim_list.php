@@ -16,24 +16,27 @@ $branch_id  = $_SESSION['user']['branch_id'] ?? null;
 // --- Branch filter for Super Admin ---
 $filter_branch = $_GET['branch_id'] ?? null;
 
+// --- Date filters ---
+$start_date = $_GET['start_date'] ?? null;
+$end_date   = $_GET['end_date'] ?? null;
+
 $query = "
     SELECT 
-    p.date_pawned AS `date_pawned`,
-    c.date_claimed AS `date_claimed`,
-    cu.full_name AS `owner_name`,
-    p.unit_description AS `unit_description`,
-    p.category AS `category`,
-    p.amount_pawned AS `amount_pawned`,
-    c.interest_amount AS `interest_amount`,
-    c.total_paid AS `total_paid`,
-    cu.contact_no AS `contact_no`,
-    p.pawn_id,
-    c.branch_id
-FROM claims c
-JOIN pawned_items p ON c.pawn_id = p.pawn_id
-JOIN customers cu ON p.customer_id = cu.customer_id
-WHERE 1=1
-
+        p.date_pawned AS `date_pawned`,
+        c.date_claimed AS `date_claimed`,
+        cu.full_name AS `owner_name`,
+        p.unit_description AS `unit_description`,
+        p.category AS `category`,
+        p.amount_pawned AS `amount_pawned`,
+        c.interest_amount AS `interest_amount`,
+        c.total_paid AS `total_paid`,
+        cu.contact_no AS `contact_no`,
+        p.pawn_id,
+        c.branch_id
+    FROM claims c
+    JOIN pawned_items p ON c.pawn_id = p.pawn_id
+    JOIN customers cu ON p.customer_id = cu.customer_id
+    WHERE 1=1
 ";
 
 $params = [];
@@ -50,6 +53,16 @@ if ($user_role !== 'super_admin') {
     }
 }
 
+// Apply date filtering
+if (!empty($start_date)) {
+    $query .= " AND c.date_claimed >= ? ";
+    $params[] = $start_date;
+}
+if (!empty($end_date)) {
+    $query .= " AND c.date_claimed <= ? ";
+    $params[] = $end_date;
+}
+
 $query .= " ORDER BY c.date_claimed DESC";
 
 $stmt = $pdo->prepare($query);
@@ -57,60 +70,55 @@ $stmt->execute($params);
 
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
     $actions = '';
     if ($user_role == 'admin' || $user_role == 'cashier') {
-    $actions = '
-        <div class="dropdown">
-            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots fs-5"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                        <i class="bi bi-eye text-info"></i> View Details
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                        <i class="bi bi-printer"></i> Print Receipt
-                    </a>
-                </li>
+        $actions = '
+            <div class="dropdown">
+                <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots fs-5"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                            <i class="bi bi-eye text-info"></i> View Details
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                            <i class="bi bi-printer"></i> Print Receipt
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        ';
+    }
 
-            </ul>
-        </div>
-    ';
-}
-
-if ($user_role == 'admin') {
-    $actions = '
-        <div class="dropdown">
-            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots fs-5"></i>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                        <i class="bi bi-eye text-info"></i> View Details
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                        <i class="bi bi-printer"></i> Print Receipt
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item revertClaimBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
-                        <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawned
-                    </a>
-                </li>
-            </ul>
-        </div>
-    ';
-}
-
-
+    if ($user_role == 'admin') {
+        $actions = '
+            <div class="dropdown">
+                <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots fs-5"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                            <i class="bi bi-eye text-info"></i> View Details
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                            <i class="bi bi-printer"></i> Print Receipt
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item revertClaimBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
+                            <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawned
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        ';
+    }
 
     $rows[] = [
         htmlspecialchars($row['date_pawned']),
@@ -122,7 +130,6 @@ if ($user_role == 'admin') {
         '₱'.number_format($row['interest_amount'],2),
         '₱'.number_format($row['total_paid'],2),
         htmlspecialchars($row['contact_no']),
-        // htmlspecialchars($row['notes']),
         $actions
     ];
 }

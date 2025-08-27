@@ -16,6 +16,9 @@ $branch_id  = $_SESSION['user']['branch_id'] ?? null;
 // Branch filter (if super admin)
 $filter_branch = $_GET['branch_id'] ?? null;
 
+
+
+
 $query = "
     SELECT 
         f.pawn_id,
@@ -46,6 +49,19 @@ if ($user_role !== 'super_admin') {
         $params[] = $filter_branch;
     }
 }
+
+$fromDate = $_GET['fromDate'] ?? null;
+$toDate   = $_GET['toDate'] ?? null;
+
+if (!empty($fromDate)) {
+    $query .= " AND f.date_forfeited >= ? ";
+    $params[] = $fromDate;
+}
+if (!empty($toDate)) {
+    $query .= " AND f.date_forfeited <= ? ";
+    $params[] = $toDate;
+}
+
 
 $query .= " ORDER BY f.date_forfeited DESC";
 

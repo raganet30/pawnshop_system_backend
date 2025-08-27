@@ -15,7 +15,7 @@ $user = $_SESSION['user'];
 $stmt = $pdo->prepare("
     SELECT ledger_id, amount, direction, notes, created_at
     FROM cash_ledger
-    WHERE branch_id = ? AND txn_type = 'adjustment'
+    WHERE branch_id = ? AND txn_type = 'coh_adjustment'
     ORDER BY created_at DESC
     LIMIT 10
 ");

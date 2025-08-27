@@ -22,24 +22,11 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Claims</h4>
-            </div>
-            <?php if ($user_role === 'super_admin'): ?>
-                <!-- Branch filter dropdown for super admin -->
-                <div class="mb-3">
-                    <label for="branchFilter" class="form-label">Select Branch</label>
-                    <select id="branchFilter" class="form-select" style="width: 200px; ">
-                        <option value="">All Branches</option>
-                        <?php
-                        $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name ASC");
-                        while ($b = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo '<option value="' . $b['branch_id'] . '">' . htmlspecialchars($b['branch_name']) . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-            <?php endif; ?>
 
-            <!-- View Claim Modal -->
+            </div>
+
+            <?php include '../views/filters.php'; ?>
+
             <!-- View Claim Modal -->
             <div class="modal fade" id="viewClaimModal" tabindex="-1" aria-labelledby="viewClaimModalLabel"
                 aria-hidden="true">
@@ -106,11 +93,8 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
 
 
-
-
-
-
             <div class="card">
+
                 <div class="card-header">Claimed Items</div>
                 <div class="card-body">
                     <table id="claimsTable" class="table table-bordered table-striped" style="width:100%">
@@ -130,9 +114,20 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                 <?php endif; ?>
                             </tr>
                         </thead>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5" class="text-end">TOTAL:</th>
+                                <th id="totalPawned">₱0.00</th>
+                                <th id="totalInterest">₱0.00</th>
+                                <th id="totalPaid">₱0.00</th>
+                                <th colspan="<?php echo ($user_role !== 'super_admin') ? '2' : '1'; ?>"></th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </div>
+
+
         </div>
         <?php include '../views/footer.php'; ?>
     </div>
@@ -143,36 +138,99 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 <script>
     $(document).ready(function () {
         let userRole = "<?= $user_role ?>";
-        let table = $("#claimsTable").DataTable({
-            "ajax": {
-                "url": "../api/claim_list.php",
-                "data": function (d) {
+
+        let claimsTable = $("#claimsTable").DataTable({
+            dom: 'Bfrtip',
+            ajax: {
+                url: "../api/claim_list.php",
+                data: function (d) {
+                    // Branch filter for super admin
                     if (userRole === "super_admin") {
-                        d.branch_id = $("#branchFilter").val(); // add branch filter param
+                        d.branch_id = $("#branchFilter").val();
                     }
-                }
+                    // Date filter
+                    d.start_date = $("#fromDate").val();
+                    d.end_date = $("#toDate").val();
+                },
+                dataSrc: function(json) {
+                // Calculate totals for footer
+                let totalPawned = 0, totalInterest = 0, totalPaid = 0;
+                json.data.forEach(row => {
+                    // Remove currency formatting
+                    totalPawned += parseFloat(row[5].replace(/[^0-9.-]+/g,"")) || 0;
+                    totalInterest += parseFloat(row[6].replace(/[^0-9.-]+/g,"")) || 0;
+                    totalPaid += parseFloat(row[7].replace(/[^0-9.-]+/g,"")) || 0;
+                });
+
+                $("#totalPawned").text('₱' + totalPawned.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
+                $("#totalInterest").text('₱' + totalInterest.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
+                $("#totalPaid").text('₱' + totalPaid.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
+
+                return json.data;
+            }
             },
-            "columns": [
-                { "data": 0 },
-                { "data": 1 },
-                { "data": 2 },
-                { "data": 3 },
-                { "data": 4 },
-                { "data": 5 },
-                { "data": 6 },
-                { "data": 7 },
-                { "data": 8 },
+            columns: [
+                { data: 0 }, // Date Pawned
+                { data: 1 }, // Date Claimed
+                { data: 2 }, // Owner Name
+                { data: 3 }, // Unit
+                { data: 4 }, // Category
+                { data: 5 }, // Amount Pawned
+                { data: 6 }, // Interest Amount
+                { data: 7 }, // Total Paid
+                { data: 8 }, // Contact No.
                 <?php if ($user_role !== 'super_admin'): ?>
-                                                                        { "data": 9, "orderable": false }
+                        { data: 9, orderable: false } // Action column
             <?php endif; ?>
+            ],
+            columnDefs: [
+                { className: "text-center", targets: "_all" }
+            ],
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                    className: 'btn btn-success btn-sm',
+                    exportOptions: { columns: ':not(:last)' } // exclude Action
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-pdf"></i> PDF',
+                    className: 'btn btn-danger btn-sm',
+                    exportOptions: { columns: ':not(:last)' } // exclude Action
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer"></i> Print',
+                    className: 'btn btn-secondary btn-sm',
+                    exportOptions: { columns: ':not(:last)' } // exclude Action
+                },
+                {
+                    extend: 'pageLength',
+                    text: '<i class="bi bi-list"></i> Rows',
+                    className: 'btn btn-info btn-sm'
+                }
             ]
         });
 
+        // Branch filter (super admin only)
         <?php if ($user_role === 'super_admin'): ?>
             $("#branchFilter").on("change", function () {
-                table.ajax.reload();
+                claimsTable.ajax.reload();
             });
         <?php endif; ?>
+
+        // Date filters
+        $("#filterBtn").on("click", function () {
+            claimsTable.ajax.reload();
+        });
+        $("#resetBtn").on("click", function () {
+            $("#fromDate, #toDate").val('');
+            <?php if ($user_role === 'super_admin'): ?>
+                $("#branchFilter").val('');
+            <?php endif; ?>
+            claimsTable.ajax.reload();
+        });
     });
 
 

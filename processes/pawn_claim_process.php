@@ -127,7 +127,7 @@ try {
             "in",        // direction
             $total_paid,
             "claims",    // ref_table
-            $claim_id,
+            $pawn_id,
             $description,
             $notes,
             $user_id

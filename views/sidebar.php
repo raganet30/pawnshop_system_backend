@@ -99,6 +99,13 @@ function active($page, $currentPage)
             </a>
         <?php endif; ?>
 
+         <?php if (in_array($role, ['admin'])): ?>
+            <a href="trash" class="list-group-item <?= active('cash_on_hand', $currentPage) ?>">
+        <i class="bi bi-trash"></i> Trash Items
+            </a>
+        <?php endif; ?>
+
+
 
         <!-- Super Admin only -->
         <?php if ($role === 'super_admin'): ?>

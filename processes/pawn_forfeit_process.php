@@ -86,9 +86,6 @@ try {
     $stmt->execute([$pawn_id]);
 
     // --- 3) Update branch cash on hand ---
-    // $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
-    // $stmt->execute([$amount_pawned, $branch_id]);
-
     updateCOH($pdo, $branch_id, $amount_pawned, 'add');
 
 
@@ -102,7 +99,7 @@ try {
         $amount_pawned,
         "forfeitures",
         $pawn_id,
-        "Pawn Forfeite",
+        "Pawn Forfeiture",
         "Pawn ID #$pawn_id forfeited - amount added to COH",
         $user_id
     );

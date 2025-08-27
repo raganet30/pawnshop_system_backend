@@ -80,16 +80,15 @@ try {
         $date_pawned,
         $user_id
     ]);
+    $pawn_id = $pdo->lastInsertId();
+
+
 
     // --- 4. Deduct COH ---
     updateCOH($pdo, $branch_id, $amount_pawned, 'subtract');
 
 
 
-
-
-
-    // insert into cash_ledger
     
 
     // --- 5. Log Audit ---
@@ -107,9 +106,8 @@ try {
 
 
     // After successful pawn insert
-    $pawn_id = $pdo->lastInsertId();
+    // insert into cash_ledger
 
-    $pawn_id = $pdo->lastInsertId();
 
     insertCashLedger(
         $pdo,

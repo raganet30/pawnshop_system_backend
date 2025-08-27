@@ -62,8 +62,7 @@ try {
     // 5. update cash ledger (to log reversal)
     // Delete any previous ledger entry for this claim (optional safety)
     $del = $pdo->prepare("DELETE FROM cash_ledger 
-          WHERE ref_table = 'claims' 
-            AND ref_id = :pawn_id 
+          WHERE ref_id = :pawn_id 
             AND branch_id = :branch_id");
     $del->execute([
         'pawn_id' => $pawn_id,
@@ -86,7 +85,7 @@ try {
         $branch_id,
         "claim",       // txn_type
         $direction,    // in/out
-        $amount,
+        $pricipal_amount,
         "claims",      // ref_table
         $pawn_id,
         $description,

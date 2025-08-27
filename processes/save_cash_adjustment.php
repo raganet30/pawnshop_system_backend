@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
+
 
 header('Content-Type: application/json');
 
@@ -55,14 +57,24 @@ try {
     $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = ? WHERE branch_id = ?");
     $stmt->execute([$newCOH, $branch_id]);
 
-    // Insert into cash_ledger
-    // Insert COH adjustment into ledger
-    $stmt = $pdo->prepare("
-    INSERT INTO cash_ledger 
-    (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, created_at, user_id)
-    VALUES (?, 'adjustment', ?, ?, 'coh_adjustment', 0, ?, NOW(), ?)
-");
-    $stmt->execute([$branch_id, $direction, $amount, $notes, $user_id]);
+    
+
+
+     // Insert into cash ledger
+    insertCashLedger(
+        $pdo,
+        $branch_id,
+        "coh_adjustment",
+        $direction,
+        $amount,
+        "coh_adjustment",
+        "",
+        "COH Adjustment",
+        "COH Adjustment",
+        $user_id
+    );
+
+
 
     // Get the new ledger_id
     $ledgerId = $pdo->lastInsertId();
@@ -74,13 +86,19 @@ try {
 
 
 
-    // Insert into audit_logs
-    $stmt = $pdo->prepare("
-        INSERT INTO audit_logs (user_id, action_type, description, branch_id, created_at)
-        VALUES (?, 'cash on hand_adjustment', ?, ?, NOW())
-    ");
-    $desc = "Cash on Hand {$action}: ₱" . number_format($amount, 2) . " (New COH: ₱" . number_format($newCOH, 2) . ")";
-    $stmt->execute([$user_id, $desc, $branch_id]);
+
+// insert to audit logs
+    $description = "Cash on Hand {$action}: ₱" . number_format($amount, 2) . " (New COH: ₱" . number_format($newCOH, 2) . ")";
+    logAudit(
+        $pdo,
+        $user_id,
+        $branch_id,
+        'Cash On Hand Adjustment',
+        $description
+    );
+
+
+
 
     $pdo->commit();
 

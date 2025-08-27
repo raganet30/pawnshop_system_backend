@@ -31,14 +31,16 @@ $stmt = $pdo->prepare("UPDATE branches SET interest_rate = ? WHERE branch_id = ?
 if ($stmt->execute([$newRate, $branch_id])) {
     
     
-    // Insert into audit logs
-    $stmtLog = $pdo->prepare("INSERT INTO audit_logs (user_id, action_type, description, branch_id, created_at) 
-                              VALUES (?, 'update', ?, ?, NOW())");
-    $stmtLog->execute([
+    
+
+    $description ="Updated interest rate to {$newRate}%";
+    logAudit(
+        $pdo,
         $user_id,
-        "Updated interest rate to {$newRate}%",
-        $branch_id
-    ]);
+        $branch_id,
+        'Interest Rate Adjustment',
+        $description
+    );
 
 
 

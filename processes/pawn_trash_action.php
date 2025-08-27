@@ -49,18 +49,12 @@ try {
                     ->execute([$pawn_id]);
 
                 // Add back amount to branch COH
-                // $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand - ? WHERE branch_id = ?")
-                //     ->execute([$amount, $branch_id]);
 
                 updateCOH($pdo, $branch_id, $amount, 'subtract');
 
 
 
                 // Log to cash ledger
-                // $pdo->prepare("INSERT INTO cash_ledger 
-                //     (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, user_id, created_at)
-                //     VALUES (?, 'restore', 'in', ?, 'pawned_items', ?, 'Pawn restored from trash', ?, NOW())")
-                //     ->execute([$branch_id, $amount, $pawn_id, $user_id]);
 
                 $description = "Restore Pawn (ID #$pawn_id)";
                 $notes = "Deleted Pawn ID(s) #$pawn_id restored.";
@@ -78,15 +72,56 @@ try {
                     $user_id
                 );
 
+                // insert into audit_logs
+                // --- Insert into audit logs ---
+                logAudit(
+                    $pdo,
+                    $user_id,
+                    $branch_id,
+                    'Restored Deleted Item',
+                    $description
+                );
 
             }
         }
         echo json_encode(["status" => "success", "message" => "Selected pawn(s) & COH updated."]);
     } elseif ($action === "delete") {
-        // Permanently delete records
+        // First fetch details for logging before delete
         $in = str_repeat('?,', count($pawn_ids) - 1) . '?';
+        $stmt = $pdo->prepare("SELECT pawn_id, unit_description, branch_id FROM pawned_items WHERE pawn_id IN ($in)");
+        $stmt->execute($pawn_ids);
+        $pawns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($pawns as $pawn) {
+            $description = sprintf(
+                "Permanently Deleted Pawn ID: %d (%s)",
+                $pawn['pawn_id'],
+                $pawn['unit_description']
+            );
+
+            logAudit(
+                $pdo,
+                $user_id,
+                $pawn['branch_id'],
+                'Permanently Deleted Pawned Item',
+                $description
+            );
+        }
+
+        // Delete related cash_ledger entries first
+        $del = $pdo->prepare("DELETE FROM cash_ledger WHERE ref_id IN ($in)");
+        $del->execute($pawn_ids);
+
+
+        // Now delete permanently
         $stmt = $pdo->prepare("DELETE FROM pawned_items WHERE pawn_id IN ($in)");
         $stmt->execute($pawn_ids);
+
+        // Also delete related cash_ledger entries
+
+
+
+
 
         echo json_encode(["status" => "success", "message" => "Selected pawn(s) permanently deleted."]);
     } else {

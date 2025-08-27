@@ -137,15 +137,12 @@ try {
         ]);
 
     } else {
-        // No amount change, just log the edit
+       
+        // insert into audit_logs
         $user_id = $_SESSION['user']['id'] ?? null;
-        $stmt = $pdo->prepare("INSERT INTO audit_logs (user_id, action_type, description, branch_id, created_at) 
-            VALUES (?, 'edit_pawn', ?, ?, NOW())");
-        $stmt->execute([
-            $user_id,
-            "Edit pawn ID {$pawn_id} details",
-            $branch_id
-        ]);
+        $description = "Edit pawn ID: $pawn_id details";
+        logAudit($pdo, $user_id, $branch_id, 'Edit Pawn Item', $description);
+
         echo json_encode(["status" => "success", "message" => "Pawn item updated successfully."]);
     }
 

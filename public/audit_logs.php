@@ -27,6 +27,45 @@ include '../views/header.php';
                 </button> -->
             </div>
 
+            <!-- Filters -->
+            <div class="row mb-3">
+                <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                    <div class="col-md-3">
+                        <label for="branchFilter" class="form-label">Branch:</label>
+                        <select id="branchFilter" class="form-select">
+                            <option value="">All Branches</option>
+                            <?php
+                            $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                            while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+
+                <div class="col-md-2">
+                    <label for="fromDate" class="form-label">From:</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="toDate" class="form-label">To:</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="actionTypeFilter" class="form-label">Action Type:</label>
+                    <select id="actionTypeFilter" class="form-select">
+                        <option value="">All Actions</option>
+                        <!-- Options will be loaded dynamically via AJAX -->
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
 
 
             <!-- DataTable -->
@@ -40,7 +79,7 @@ include '../views/header.php';
                                 <th>Activity</th>
                                 <th>Logs</th>
                                 <th>Branch</th>
-                                
+
                             </tr>
                         </thead>
                         <tbody>
@@ -58,25 +97,58 @@ include '../views/header.php';
 
 <script>
 
-
     // DataTables AJAX init
-    $(document).ready(function () {
-        $('#pawnTable').DataTable({
-            columnDefs: [
-                { className: "text-center", targets: "_all" } // applies to ALL columns
-            ],
-            "ajax": "../api/audit_logs_list.php",
-            "columns": [
-                { "title": "Date" },
-                { "title": "Activity" },
-                { "title": "Logs" },
-                { "title": "Branch" }
-            ]
-        });
+   $(document).ready(function () {
+    // Populate Action Type selector once
+    $.ajax({
+        url: "../api/audit_logs_list.php?action_types=1", // special param to fetch distinct types
+        method: "GET",
+        success: function (response) {
+            if (response.actionTypes) {
+                let select = $("#actionTypeFilter");
+                response.actionTypes.forEach(type => {
+                    select.append(`<option value="${type}">${type}</option>`);
+                });
+            }
+        }
     });
 
+    // Init DataTable
+    let table = $('#pawnTable').DataTable({
+        columnDefs: [
+            { className: "text-center", targets: "_all" }
+        ],
+        ajax: {
+            url: "../api/audit_logs_list.php",
+            type: "GET",
+            data: function (d) {
+                d.branch_id   = $('#branchFilter').val();
+                d.fromDate    = $('#fromDate').val();
+                d.toDate      = $('#toDate').val();
+                d.action_type = $('#actionTypeFilter').val();
+            }
+        }
+    });
 
+    // Filter button
+    $('#filterBtn').on('click', function () {
+        table.ajax.reload();
+    });
 
+    // Reset button
+    $('#resetBtn').on('click', function () {
+        $('#branchFilter').val('');
+        $('#fromDate').val('');
+        $('#toDate').val('');
+        $('#actionTypeFilter').val('');
+        table.ajax.reload();
+    });
+
+    // Optional: auto reload when selecting branch/action type
+    $('#branchFilter, #actionTypeFilter').on('change', function () {
+        table.ajax.reload();
+    });
+});
 
 
 </script>

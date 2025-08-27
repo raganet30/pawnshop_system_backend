@@ -36,48 +36,49 @@ try {
 
     $amount = (float) $pawn['amount_pawned'];
     $branch_id = (int) $pawn['branch_id'];
-    // $user_id = $user['user_id'];
 
-    // 2. Update branch cash_on_hand (add back pawned amount)
-    // $stmt = $pdo->prepare("UPDATE branches SET cash_on_hand = cash_on_hand + ? WHERE branch_id = ?");
-    // $stmt->execute([$amount, $branch_id]);
-
-     updateCOH($pdo, $branch_id, $amount, 'add');
+    // update COH
+    updateCOH($pdo, $branch_id, $amount, 'add');
 
 
 
-    // 3. Log transaction in cash_ledger
-    // $stmt = $pdo->prepare("INSERT INTO cash_ledger 
-    //     (branch_id, txn_type, direction, amount, ref_table, ref_id, notes, user_id, created_at) 
-    //     VALUES (?, 'delete', 'in', ?, 'pawned_items', ?, 'Pawn deleted - moved to trash, amount refunded to COH', ?, NOW())");
-    // $stmt->execute([$branch_id, $amount, $pawn_id, $user_id]);
+    //  Log transaction in cash_ledger
 
-
+    // update cash ledger (to log reversal)
+    // Delete any previous ledger entry for this item
+    $del = $pdo->prepare("DELETE FROM cash_ledger 
+          WHERE ref_id = :pawn_id 
+            AND branch_id = :branch_id");
+    $del->execute([
+        'pawn_id' => $pawn_id,
+        'branch_id' => $branch_id
+    ]);
 
     // ✅ Log the pawn deletion in cash ledger
-    if ($amount > 0) {
-        $description = "Pawn Deleted (ID #$pawn_id)";
-        $notes = "Pawn ID #$pawn_id deleted - amount refunded to cash on hand";
+    // if ($amount > 0) {
+    //     $description = "Pawn Deleted (ID #$pawn_id)";
+    //     $notes = "Pawn ID #$pawn_id deleted - amount refunded to cash on hand";
 
-        insertCashLedger(
-            $pdo,
-            $branch_id,
-            "delete",       // txn_type
-            "in",           // direction
-            $amount,
-            "pawned_items", // ref_table
-            $pawn_id,
-            $description,
-            $notes,
-            $user_id
-        );
-    }
+    //     insertCashLedger(
+    //         $pdo,
+    //         $branch_id,
+    //         "delete",       // txn_type
+    //         "in",           // direction
+    //         $amount,
+    //         "pawned_items", // ref_table
+    //         $pawn_id,
+    //         $description,
+    //         $notes,
+    //         $user_id
+    //     );
+    // }
 
 
     // --- Insert into audit logs ---
     $description = sprintf(
         "Deleted pawn ID: %d, Unit: %s",
-        $pawn_id, $pawn['unit_description']
+        $pawn_id,
+        $pawn['unit_description']
     );
 
     logAudit(

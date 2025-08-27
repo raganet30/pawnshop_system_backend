@@ -36,7 +36,7 @@ if (!in_array($_SESSION['user']['role'], ['admin','super_admin'])) {
 
                    
                     <hr>
-                    <table id="trashTable" class="table table-bordered table-striped">
+                    <table id="trashTable" class="table table-bordered table-striped" style="width:100%;">
                         <thead>
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>

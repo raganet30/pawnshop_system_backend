@@ -1,6 +1,7 @@
 <?php
 require_once "../config/db.php";
 require_once "../config/app.php";
+require_once "../config/helpers.php";
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -39,8 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
             // Update last_login to current datetime
-        $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
-        $updateStmt->execute([$user['user_id']]);
+            $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE user_id = ?");
+            $updateStmt->execute([$user['user_id']]);
+
+
+            // --- Insert into audit_logs ---
+            $user_id = $_SESSION['user']['id'] ?? null;
+            $session_branch_id = $_SESSION['user']['branch_id'] ?? null;
+
+            if ($user_id) {
+                $description = "Logged In";
+                logAudit($pdo, $user_id, $session_branch_id, 'Login', $description);
+            }
 
 
             // Redirect based on role

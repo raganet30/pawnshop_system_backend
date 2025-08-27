@@ -60,8 +60,7 @@ try {
 
     // 5. Update cash ledger (log reversal)
     $del = $pdo->prepare("DELETE FROM cash_ledger 
-        WHERE ref_table = 'forfeitures' 
-          AND ref_id = :pawn_id 
+        WHERE ref_id = :pawn_id 
           AND branch_id = :branch_id");
     $del->execute([
         'pawn_id' => $pawn_id,

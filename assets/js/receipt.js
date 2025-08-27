@@ -3,15 +3,28 @@ function printClaimReceipt(d) {
     const start = new Date(d.date_pawned);
     const end = new Date(d.date_claimed);
 
+    // Difference in milliseconds
+    const diffTime = end - start;
+
+    // Convert to days
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+    // Calculate full months
     let months = (end.getFullYear() - start.getFullYear()) * 12 +
         (end.getMonth() - start.getMonth());
 
-    // If 0 or negative, force minimum 1 month
+    // If there are extra days beyond full months, add 1 month
+    if (end.getDate() - start.getDate() > 0) {
+        months += 1;
+    }
+
+    // Ensure minimum 1 month
     if (months <= 0) {
         months = 1;
     }
 
     d.months_duration = months;
+
 
     let receipt = "";
     receipt += centerText("LD Pawnshop", 80) + "\n";
@@ -36,7 +49,7 @@ function printClaimReceipt(d) {
     receipt += pad("Interest", 40) + pad(formatMoney(d.interest_amount), 40, "right") + "\n";
     receipt += pad("Penalty", 40) + pad(formatMoney(d.penalty_amount), 40, "right") + "\n";
     receipt += "-".repeat(80) + "\n";
-    receipt += pad("TOTAL     : ", 40) + pad("₱"+formatMoney(d.total_paid), 40, "right") + "\n";
+    receipt += pad("TOTAL     : ", 40) + pad("₱" + formatMoney(d.total_paid), 40, "right") + "\n";
     receipt += "-".repeat(80) + "\n\n";
     receipt += pad("Cashier   : " + d.cashier, 80) + "\n";
     receipt += pad("Printed   : " + d.printed_at, 80) + "\n\n";

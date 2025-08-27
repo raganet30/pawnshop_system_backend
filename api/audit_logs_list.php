@@ -10,25 +10,56 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
+// If request is for distinct action types
+if (isset($_GET['action_types'])) {
+    $stmt = $pdo->query("SELECT DISTINCT action_type FROM audit_logs ORDER BY action_type");
+    $types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    echo json_encode(["actionTypes" => $types]);
+    exit();
+}
 
+// --- Normal logs fetch ---
+$branchId   = $_GET['branch_id']   ?? null;
+$fromDate   = $_GET['fromDate']    ?? null;
+$toDate     = $_GET['toDate']      ?? null;
+$actionType = $_GET['action_type'] ?? null;
 
-// branch id is set in the session for branch-specific views
-// $branch_id = $_SESSION['user']['branch_id'] ?? 1; // Default to branch 1 if not set
-
-
-// Fetch pawned items (only status = 'claimed')
-$stmt = $pdo->query("
-    SELECT audit_logs.*, branches.branch_name AS branch_name
+$query = "
+    SELECT audit_logs.*, branches.branch_name 
     FROM audit_logs
     LEFT JOIN branches ON audit_logs.branch_id = branches.branch_id
-    ORDER BY audit_logs.created_at DESC
-");
+    WHERE 1=1
+";
 
+$params = [];
+
+if (!empty($branchId)) {
+    $query .= " AND audit_logs.branch_id = ? ";
+    $params[] = $branchId;
+}
+
+if (!empty($fromDate)) {
+    $query .= " AND DATE(audit_logs.created_at) >= ? ";
+    $params[] = $fromDate;
+}
+
+if (!empty($toDate)) {
+    $query .= " AND DATE(audit_logs.created_at) <= ? ";
+    $params[] = $toDate;
+}
+
+if (!empty($actionType)) {
+    $query .= " AND audit_logs.action_type = ? ";
+    $params[] = $actionType;
+}
+
+$query .= " ORDER BY audit_logs.created_at DESC";
+
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
 
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-
-
     $rows[] = [
         $row['created_at'],
         $row['action_type'],
