@@ -78,9 +78,11 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label>Adjustment Amount (₱)</label>
-                                <input id="cashAdjustmentAmount" type="number" class="form-control" step="0.01"
-                                    required>
+                                <input id="cashAdjustmentAmountVisible" type="text" class="form-control"
+                                    placeholder="0.00" required>
+                                <input type="hidden" id="cashAdjustmentAmount" name="amount">
                             </div>
+
                             <div class="col-md-6">
                                 <label>Action</label>
                                 <select id="cashAdjustmentType" class="form-control">
@@ -138,6 +140,8 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
+<script src="../assets/js/money_separator.js"></script>
+
 <script>
 
     // script to save insterest rate
@@ -185,7 +189,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 const tbody = document.getElementById('adjustmentsBody');
                 tbody.innerHTML = '';
 
-                if (data.length === 0) {
+                if (!data || data.length === 0) {
                     tbody.innerHTML = `<tr>
                     <td colspan="4" class="text-center text-muted">No recent adjustments</td>
                 </tr>`;
@@ -193,29 +197,50 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
 
                 data.forEach(adj => {
-                    let badgeClass = adj.direction === 'in' ? 'bg-success'
-                        : adj.direction === 'out' ? 'bg-danger'
-                            : 'bg-primary';
+                    let displayAmount = parseFloat(adj.amount).toFixed(2);
+                    let badgeClass = 'bg-primary';
+                    let sign = '';
 
-                    let row = `
-                    <tr>
-                        <td>${new Date(adj.created_at).toLocaleString()}</td>
-                        <td>₱${parseFloat(adj.amount).toFixed(2)}</td>
-                        <td><span class="badge ${badgeClass}">${adj.direction}</span></td>
-                        <td>${adj.notes ?? ''}</td>
-                    </tr>
-                `;
+                    const dir = (adj.direction || '').toLowerCase(); // normalize
+
+                    if (dir === 'in' || dir === 'add') {
+                        badgeClass = 'bg-success';
+                        sign = '+';
+                    } else if (dir === 'out' || dir === 'subtract') {
+                        badgeClass = 'bg-danger';
+                        sign = '−';
+                    }
+
+                    // Show delta for 'set' adjustments if needed
+                    if (dir === 'set') {
+                        badgeClass = 'bg-warning';
+                        // optionally calculate delta if passed from backend
+                    }
+
+                    const row = `
+        <tr title="${adj.notes ?? ''}">
+            <td>${new Date(adj.created_at).toLocaleString()}</td>
+            <td>${sign}₱${displayAmount}</td>
+            <td><span class="badge ${badgeClass}">${adj.direction}</span></td>
+            <td>${adj.notes ?? ''}</td>
+        </tr>
+    `;
                     tbody.innerHTML += row;
                 });
+
             })
             .catch(err => {
                 console.error("Error fetching adjustments:", err);
             });
     }
 
+    attachCurrencyFormatter(
+    document.getElementById('cashAdjustmentAmountVisible'),
+    document.getElementById('cashAdjustmentAmount')
+);
+
     // Load adjustments on page load
     document.addEventListener('DOMContentLoaded', loadAdjustments);
-
 
 
     // update cash on hand management
@@ -224,7 +249,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
         let action = document.getElementById('cashAdjustmentType').value;
         let notes = document.getElementById('cashAdjustmentNotes').value.trim();
 
-        if (!amount || parseFloat(amount) <= 0) {
+        if (!amount || parseFloat(amount) <= 0 && action !== 'set') {
             Swal.fire("Invalid Amount", "Please enter a valid adjustment amount.", "warning");
             return;
         }
@@ -234,9 +259,24 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return;
         }
 
+        // Compute delta for 'set'
+        let currentCOH = parseFloat(document.getElementById('currentCashDisplay').innerText.replace(/[₱,]/g, ''));
+        let delta = amount;
+        let direction = action;
+
+        if (action === 'set') {
+            delta = Math.abs(amount - currentCOH);
+            if (delta === 0) {
+                Swal.fire("No Change", "COH is already the specified amount.", "info");
+                return;
+            }
+            direction = amount > currentCOH ? 'in' : 'out';
+        }
+
         Swal.fire({
             title: "Confirm Adjustment",
-            text: `Are you sure you want to ${action} ₱${amount.toFixed(2)}?`,
+            html: `Action: <b>${action}</b><br>
+               Amount: <b>₱${delta.toFixed(2)}</b> (<b>${direction}</b>)`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Yes, proceed",
@@ -277,6 +317,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         });
     });
+
 
 
 

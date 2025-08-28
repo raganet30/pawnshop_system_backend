@@ -100,7 +100,7 @@ function active($page, $currentPage)
         <?php endif; ?>
 
          <?php if (in_array($role, ['admin'])): ?>
-            <a href="trash" class="list-group-item <?= active('cash_on_hand', $currentPage) ?>">
+            <a href="trash" class="list-group-item <?= active('trash', $currentPage) ?>">
         <i class="bi bi-trash"></i> Trash Items
             </a>
         <?php endif; ?>

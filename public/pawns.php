@@ -621,6 +621,16 @@ include '../views/header.php';
     });
 
 
+attachCurrencyFormatter(
+    document.getElementById('addAmountPawnedVisible'),
+    document.getElementById('addAmountPawned')
+);
 
+
+
+attachCurrencyFormatter(
+    document.getElementById('editAmountPawnedVisible'),
+    document.getElementById('editAmountPawned')
+);
 
 </script>

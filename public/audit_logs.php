@@ -76,8 +76,8 @@ include '../views/header.php';
                         <thead>
                             <tr>
                                 <th>Date </th>
-                                <th>Activity</th>
-                                <th>Logs</th>
+                                <th>Action Type</th>
+                                <th>Description</th>
                                 <th>Branch</th>
 
                             </tr>

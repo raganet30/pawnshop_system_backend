@@ -78,14 +78,14 @@ try {
 
         //   update cash ledger
         // 1. Remove old ledger entry for this pawn
-        $del = $pdo->prepare("DELETE FROM cash_ledger 
-                      WHERE ref_table = 'pawned_items' 
-                        AND ref_id = :pawn_id 
-                        AND branch_id = :branch_id");
-        $del->execute([
-            'pawn_id' => $pawn_id,
-            'branch_id' => $branch_id
-        ]);
+        // $del = $pdo->prepare("DELETE FROM cash_ledger 
+        //               WHERE ref_table = 'pawned_items' 
+        //                 AND ref_id = :pawn_id 
+        //                 AND branch_id = :branch_id");
+        // $del->execute([
+        //     'pawn_id' => $pawn_id,
+        //     'branch_id' => $branch_id
+        // ]);
 
         // 2. Determine direction based on change
         $direction = ($new_amount >= $old_amount) ? "out" : "in";
