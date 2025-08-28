@@ -82,34 +82,6 @@ include '../views/header.php';
 <script>
     $(document).ready(function () {
         let table = $('#cashLedgerTable').DataTable({
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-                    className: 'btn btn-success btn-sm',
-                    exportOptions: { columns: ':not(:last)' } // exclude Action
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: '<i class="bi bi-file-pdf"></i> PDF',
-                    className: 'btn btn-danger btn-sm',
-                    exportOptions: { columns: ':not(:last)' } // exclude Action
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="bi bi-printer"></i> Print',
-                    className: 'btn btn-secondary btn-sm',
-                    exportOptions: { columns: ':not(:last)' } // exclude Action
-                },
-                {
-                    extend: 'pageLength',
-                    text: '<i class="bi bi-list"></i> Rows',
-                    className: 'btn btn-info btn-sm',
-                    exportOptions: { columns: ':not(:last)' } // exclude Action
-                }
-
-            ],
             columnDefs: [{ className: "text-center", targets: "_all" }],
             ajax: {
                 url: "../api/cash_ledger_list.php",

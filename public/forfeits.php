@@ -75,31 +75,6 @@ include '../views/header.php';
     // DataTables AJAX init
     $(document).ready(function () {
         let table = $('#pawnTable').DataTable({
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: '<i class="bi bi-file-earmark-excel"></i> Excel',
-                    className: 'btn btn-success btn-sm',
-                    exportOptions: { columns: ':not(:last-child)' } // exclude Actions
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
-                    className: 'btn btn-danger btn-sm',
-                    exportOptions: { columns: ':not(:last-child)' }
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="bi bi-printer"></i> Print',
-                    className: 'btn btn-secondary btn-sm',
-                    exportOptions: { columns: ':not(:last-child)' }
-                },
-                {
-                    extend: 'pageLength',
-                    className: 'btn btn-info btn-sm'
-                }
-            ],
             ajax: {
                 url: '../api/forfeit_list.php',
                 data: function (d) {
@@ -163,6 +138,8 @@ include '../views/header.php';
     });
 
 
+
+    
     // Revert Forfeited Item to Pawned
     $(document).on("click", ".revertForfeitBtn", function (e) {
         e.preventDefault();

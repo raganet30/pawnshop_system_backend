@@ -1,0 +1,8 @@
+DELETE from audit_logs;
+DELETE FROM cash_ledger;
+DELETE from claims;
+DELETE FROM forfeitures;
+DELETE from tubo_payments;
+DELETE FROM pawned_items;
+DELETE FROM customers;
+UPDATE branches SET cash_on_hand=0;

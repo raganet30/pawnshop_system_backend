@@ -22,9 +22,9 @@ include '../views/header.php';
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2>Pawners</h2>
-                <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPawnModal">
-                    <i class="bi bi-plus-circle"></i> 
-                </button> -->
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPawner">
+                    <i class="bi bi-plus-circle"></i> Add Pawner
+                </button>
             </div>
 
 
