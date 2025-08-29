@@ -221,15 +221,13 @@
 
 /* footer */
 .custom-footer {
-    background-color: var(--sidebar-bg, #343a40); /* same as sidebar */
-    color: #fff;
+    background-color: var(--sidebar-bg, #faf9f9); /* same as sidebar */
+    color: black;
     padding: 15px 0;
     border-radius: 2px;  /* rounded top corners */
-    opacity: 0.95; /* slightly transparent */
-    box-shadow: 0 -3px 10px rgba(0,0,0,0.2); /* subtle top shadow */
     position: relative;
     z-index: 5;
-  
+    
 }
 
 .custom-footer small {
@@ -282,3 +280,17 @@ input[name*="payment"] {
 
 
 
+/* settings UI */
+.theme-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.theme-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.theme-card.active {
+    border: 2px solid #0d6efd;
+}

@@ -28,7 +28,22 @@ include '../views/header.php';
                         });
                     });
                 </script>
-                <?php unset($_SESSION['error']); endif; ?>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <?php if (!empty($_SESSION['expired'])): ?>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Session Expired',
+                            text: '<?php echo $_SESSION['expired']; ?>',
+                        });
+                    });
+                </script>
+                <?php unset($_SESSION['expired']); ?>
+            <?php endif; ?>
+
 
             <form id="loginForm" method="POST" action="../processes/login_process.php">
                 <div class="mb-3">

@@ -9,6 +9,13 @@ if (!isset($_SESSION['user'])) {
 require_once "../config/db.php";
 include '../views/header.php';
 
+// session cheker
+// require_once "../processes/session_check.php"; 
+// checkSessionTimeout($pdo);
+
+
+
+
 // role restriction: only admin/cashier allowed here
 if ($_SESSION['user']['role'] == 'super_admin') {
     header("Location: ../public/dashboard_super.php");
@@ -249,11 +256,11 @@ $(document).ready(function () {
     loadDashboardStats();
     loadDashboardData();
 
-    // Auto-refresh every 1 min.
+    // Auto-refresh every 5 min.
     setInterval(() => {
         loadDashboardStats();
         loadDashboardData();
-    }, 60000);
+    }, 300000);
 });
 
 /* =====================

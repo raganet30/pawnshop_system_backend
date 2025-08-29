@@ -16,6 +16,7 @@ $user_id = $_POST['user_id'] ?? '';
 $full_name = trim($_POST['full_name'] ?? '');
 $username = trim($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';
+$confirmPassword = $_POST['confirm_password'] ?? '';
 $branch_id = $_POST['branch_id'] ?? '';
 $role = $_POST['role'] ?? '';
 $status = $_POST['status'] ?? '';
@@ -58,10 +59,25 @@ if($stmt->fetchColumn() > 0){
     exit();
 }
 
+// If password fields filled, validate strong password
+if($password || $confirmPassword){
+    if($password !== $confirmPassword){
+        echo json_encode(["success"=>false,"message"=>"Passwords do not match"]);
+        exit();
+    }
+    if(!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)){
+        echo json_encode([
+            "success"=>false,
+            "message"=>"Password must be at least 8 characters, include uppercase, lowercase, number, and special character."
+        ]);
+        exit();
+    }
+    $hash = password_hash($password, PASSWORD_DEFAULT);
+}
+
 // Update
 try {
-    if($password){
-        $hash = password_hash($password, PASSWORD_DEFAULT);
+    if(!empty($hash)){
         $stmt = $pdo->prepare("UPDATE users SET full_name=?, username=?, password_hash=?, branch_id=?, role=?, status=? WHERE user_id=?");
         $stmt->execute([$full_name, $username, $hash, $branch_id, $role, $status, $user_id]);
     } else {

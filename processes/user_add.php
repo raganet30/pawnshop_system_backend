@@ -15,12 +15,28 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST'){
 $full_name = trim($_POST['full_name'] ?? '');
 $username = trim($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';
+$confirmPassword = $_POST['confirm_password'] ?? '';
 $branch_id = $_POST['branch_id'] ?? '';
 $role = $_POST['role'] ?? '';
 $status = $_POST['status'] ?? '';
 
-if(!$full_name || !$username || !$password || !$branch_id || !$role || !$status){
+if(!$full_name || !$username || !$password || !$confirmPassword || !$branch_id || !$role || !$status){
     echo json_encode(["success"=>false,"message"=>"All fields are required"]);
+    exit();
+}
+
+// Password match
+if($password !== $confirmPassword){
+    echo json_encode(["success"=>false,"message"=>"Passwords do not match"]);
+    exit();
+}
+
+// Strong password
+if(!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)){
+    echo json_encode([
+        "success"=>false,
+        "message"=>"Password must be at least 8 characters, include uppercase, lowercase, number, and special character."
+    ]);
     exit();
 }
 
@@ -44,6 +60,7 @@ if($role === 'super_admin'){
 // Hash password
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
+// Insert
 try {
     $stmt = $pdo->prepare("INSERT INTO users (branch_id, username, password_hash, role, full_name, status, created_at) 
                            VALUES (?, ?, ?, ?, ?, ?, NOW())");

@@ -201,6 +201,6 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
 
     // Initial load
     loadDashboardSuper();
-    // Refresh every 1 min
-    setInterval(loadDashboardSuper, 60000);
+    // Refresh every 5 min
+    setInterval(loadDashboardSuper, 300000);
 </script>
