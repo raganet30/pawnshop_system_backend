@@ -122,6 +122,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $actions .= '</ul>';
     }
 
+
     // Build row for DataTable
     $rowData = [
         $row['date_pawned'],

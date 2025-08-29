@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
 }
 
 try {
-    $stmt = $pdo->query("SELECT id, fullname, contact, address, created_at FROM customers ORDER BY id DESC");
+    $stmt = $pdo->query("SELECT * FROM customers ORDER BY created_at DESC");
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([

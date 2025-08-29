@@ -4,5 +4,8 @@ DELETE from claims;
 DELETE FROM forfeitures;
 DELETE from tubo_payments;
 DELETE FROM pawned_items;
-DELETE FROM customers;
 UPDATE branches SET cash_on_hand=0;
+
+
+
+DELETE FROM customers;
