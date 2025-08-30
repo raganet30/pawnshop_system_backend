@@ -8,6 +8,10 @@ if (!isset($_SESSION['user'])) {
 include '../views/header.php';
 ?>
 
+<?php
+$highlightPawnId = $_GET['id'] ?? '';
+?>
+
 
 <div class="d-flex" id="wrapper">
     <!-- Sidebar -->
@@ -195,6 +199,7 @@ include '../views/header.php';
                                             placeholder="0.00" required>
                                         <!-- Hidden input for raw numeric value -->
                                         <input type="hidden" name="amount_pawned" id="editAmountPawned">
+
                                     </div>
 
                                     <div class="col-md-6">

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // ✅ Sanitize inputs
 $cash_threshold   = isset($_POST['cash_threshold']) ? floatval($_POST['cash_threshold']) : 0;
-$maturity_days    = isset($_POST['maturity_days']) ? intval($_POST['maturity_days']) : 3;
+$pawn_maturity_reminder_days    = isset($_POST['pawn_maturity_reminder_days']) ? intval($_POST['pawn_maturity_reminder_days']) : 3;
 $export_format    = isset($_POST['export_format']) ? trim($_POST['export_format']) : 'excel';
 $report_info      = isset($_POST['report_info']) ? trim($_POST['report_info']) : '';
 $backup_frequency = isset($_POST['backup_frequency']) ? trim($_POST['backup_frequency']) : 'manual';
@@ -41,12 +41,12 @@ try {
 
     $stmt = $pdo->prepare("
     UPDATE settings 
-    SET cash_threshold=?, maturity_days=?, export_format=?, report_info=?, backup_frequency=?, session_timeout=?, updated_at=NOW() 
+    SET cash_threshold=?, pawn_maturity_reminder_days=?, export_format=?, report_info=?, backup_frequency=?, session_timeout=?, updated_at=NOW() 
     WHERE id=1
 ");
 $ok = $stmt->execute([
     $cash_threshold,
-    $maturity_days,
+    $pawn_maturity_reminder_days,
     $export_format,
     $report_info,
     $backup_frequency,

@@ -53,7 +53,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 value="<?= htmlspecialchars($branch['interest_rate']) ?>" min="1" step="0.1">
                         </div>
                         <div class="col-md-6">
-                            <?php if ($user['role'] === 'cashier'): ?>
+                            <?php if ($_SESSION['user']['role'] === 'cashier'): ?>
                                 <button id="saveInterestBtn" class="btn btn-primary w-100" disabled>Save Rate</button>
                                 <!-- <small class="text-muted">Only Admin can update rate</small> -->
                             <?php else: ?>

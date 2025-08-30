@@ -132,8 +132,8 @@ try {
         // 3. Build JSON response
         echo json_encode([
             "status" => "success",
-            "message" => "Pawn item updated successfully.<br>"
-                . $adjustment_text
+            "message" => "Pawn item updated successfully."
+                .$adjustment_text
         ]);
 
     } else {

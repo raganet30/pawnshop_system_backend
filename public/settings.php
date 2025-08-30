@@ -24,31 +24,31 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
             <form id="settingsForm" class="row g-3">
 
                 <!-- Low Cash Alert Threshold -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Low Cash Alert Threshold (₱)</label>
                     <input type="number" class="form-control" name="cash_threshold" min="0" required>
                 </div>
 
                 <!-- Pawn Maturity Reminder -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Pawn Maturity Reminder (days before)</label>
-                    <input type="number" class="form-control" name="maturity_days" min="1" required>
+                    <input type="number" class="form-control" name="pawn_maturity_reminder_days" min="1" required>
                 </div>
 
                 <!-- Default Export Format -->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label class="form-label">Default Export Format</label>
                     <select class="form-select" name="export_format">
                         <option value="excel">Excel</option>
                         <option value="pdf">PDF</option>
                         <option value="csv">CSV</option>
                     </select>
-                </div>
+                </div> -->
 
                
 
                 <!-- Backup Frequency -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Backup Frequency</label>
                     <select class="form-select" name="backup_frequency">
                         <option value="daily">Daily</option>
@@ -59,15 +59,15 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Session Timeout -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="session_timeout" class="form-label">Session Timeout (minutes)</label>
                     <input type="number" class="form-control" id="session_timeout" name="session_timeout" min="5">
                 </div>
                  <!-- Report Header/Footer -->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <label class="form-label">Report Header/Footer Info</label>
                     <textarea class="form-control" name="report_info" rows="2"></textarea>
-                </div>
+                </div> -->
 
 
                 <!-- Save Button -->
@@ -91,7 +91,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
             if (res.success) {
                 let s = res.data;
                 $("input[name='cash_threshold']").val(s.cash_threshold);
-                $("input[name='maturity_days']").val(s.maturity_days);
+                $("input[name='pawn_maturity_reminder_days']").val(s.pawn_maturity_reminder_days);
                 $("select[name='export_format']").val(s.export_format);
                 $("textarea[name='report_info']").val(s.report_info);
                 $("select[name='backup_frequency']").val(s.backup_frequency);

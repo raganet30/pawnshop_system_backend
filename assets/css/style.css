@@ -294,3 +294,133 @@ input[name*="payment"] {
 .theme-card.active {
     border: 2px solid #0d6efd;
 }
+
+
+
+
+
+
+
+/* Custom responsive notification bar styles */
+        .navbar-nav {
+            flex-direction: row;
+        }
+        
+        .notification-dropdown {
+            min-width: 300px;
+            max-width: 500px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: normal;
+        }
+        
+        /* Mobile-first responsive adjustments */
+        @media (max-width: 992px) {
+            .notification-dropdown {
+                width: 90vw;
+                max-width: 90vw;
+                left: 5vw !important;
+                right: 5vw !important;
+                transform: translate(0, 10px) !important;
+            }
+            
+            .navbar-brand {
+                margin-right: 0.5rem;
+            }
+            
+            .fs-4 {
+                font-size: 1.5rem !important;
+            }
+            
+            .fs-5 {
+                font-size: 1.2rem !important;
+            }
+            
+            .notification-badge {
+                font-size: 0.6rem;
+                padding: 0.25em 0.5em;
+            }
+            
+            .container-fluid {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem;
+            }
+            
+            .dropdown-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .dropdown-header {
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .navbar-nav.ms-auto {
+                margin-left: auto !important;
+            }
+            
+            .me-3 {
+                margin-right: 0.5rem !important;
+            }
+            
+            .notification-dropdown {
+                min-width: unset;
+                width: 95vw !important;
+                max-width: 95vw !important;
+                left: 2.5vw !important;
+                right: 2.5vw !important;
+            }
+            
+            .dropdown-menu-end {
+                left: 0 !important;
+                right: 0 !important;
+            }
+            
+            /* Hide user name on smallest screens */
+            .user-name {
+                display: none;
+            }
+        }
+        
+        /* Improve notification dropdown readability */
+        .notification-item {
+            border-left: 3px solid transparent;
+            margin-bottom: 0.25rem;
+        }
+        
+        .notification-item.overdue {
+            border-left-color: #dc3545;
+        }
+        
+        .notification-item.nearing {
+            border-left-color: #ffc107;
+        }
+        
+        /* Better spacing for dropdown items */
+        .dropdown-item-text {
+            line-height: 1.4;
+        }
+        
+        /* Make the sidebar toggle more touch-friendly on mobile */
+        /* @media (max-width: 768px) {
+            #sidebarToggleTop {
+                padding: 0.5rem;
+            }
+        } */
+        
+        /* Notification badge animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }

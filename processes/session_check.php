@@ -13,13 +13,13 @@ function checkSessionTimeout($pdo)
     $timeout = isset($settings['session_timeout']) ? intval($settings['session_timeout']) : 15; // default 15 mins
 
     if (isset($_SESSION['last_activity'])) {
-        $timeout = 1800; // 30 minutes
+        // $timeout = 30; // 30 minutes
 
         if ((time() - $_SESSION['last_activity']) > $timeout) {
             session_unset();
             session_destroy();
             session_start();
-            $_SESSION['expired'] = "Your session has expired due to inactivity.<br>Please log in again.";
+            $_SESSION['expired'] = "Your session has expired due to inactivity.\nPlease log in again.";
             header("Location: index");
             exit();
         }
