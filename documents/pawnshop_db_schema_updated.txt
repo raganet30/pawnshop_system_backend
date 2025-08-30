@@ -115,6 +115,7 @@ role (super_admin, admin, cashier)
 full_name
 status (active, inactive)
 last_login
+photo_path
 created_at
 
 10. audit_logs

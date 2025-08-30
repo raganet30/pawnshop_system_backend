@@ -7,7 +7,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'super_admin') {
     exit();
 }
 
-$sql = "SELECT u.user_id, u.full_name, u.username, u.role, u.status, u.last_login, u.created_at,
+$sql = "SELECT u.user_id, u.photo_path, u.full_name, u.username, u.role, u.status, u.last_login, u.created_at,
         b.branch_name, b.branch_id
         FROM users u
         LEFT JOIN branches b ON u.branch_id = b.branch_id

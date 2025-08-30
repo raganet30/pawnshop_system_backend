@@ -57,14 +57,42 @@ if($role === 'super_admin'){
     }
 }
 
+// Handle profile picture upload
+$photo_path = null;
+if (!empty($_FILES['photo']['name'])) {
+    $uploadDir = "../uploads/avatars/";
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
+    $allowed = ['jpg','jpeg','png','gif','webp'];
+    if (!in_array(strtolower($ext), $allowed)) {
+        echo json_encode(["success"=>false,"message"=>"Invalid file type. Allowed: jpg, jpeg, png, gif, webp"]);
+        exit();
+    }
+
+    $newName = uniqid("user_") . "." . $ext;
+    $targetFile = $uploadDir . $newName;
+
+    if (move_uploaded_file($_FILES['photo']['tmp_name'], $targetFile)) {
+        $photo_path = "uploads/avatars/" . $newName; // store relative path in DB
+    } else {
+        echo json_encode(["success"=>false,"message"=>"Failed to upload profile picture"]);
+        exit();
+    }
+}
+
 // Hash password
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
 // Insert
 try {
-    $stmt = $pdo->prepare("INSERT INTO users (branch_id, username, password_hash, role, full_name, status, created_at) 
-                           VALUES (?, ?, ?, ?, ?, ?, NOW())");
-    $stmt->execute([$branch_id, $username, $hash, $role, $full_name, $status]);
+    $stmt = $pdo->prepare("INSERT INTO users 
+        (branch_id, username, password_hash, role, full_name, status, photo_path, created_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->execute([$branch_id, $username, $hash, $role, $full_name, $status, $photo_path]);
+    
     echo json_encode(["success"=>true,"message"=>"User added successfully"]);
 }catch(PDOException $e){
     echo json_encode(["success"=>false,"message"=>$e->getMessage()]);

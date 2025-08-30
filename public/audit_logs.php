@@ -6,6 +6,12 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 include '../views/header.php';
+// session checker
+require_once "../processes/session_check.php"; 
+checkSessionTimeout($pdo);
+// session checker
+require_once "../processes/session_check.php"; 
+checkSessionTimeout($pdo);
 ?>
 
 
@@ -76,6 +82,7 @@ include '../views/header.php';
                         <thead>
                             <tr>
                                 <th>Date </th>
+                                <th>User</th>
                                 <th>Action Type</th>
                                 <th>Description</th>
                                 <th>Branch</th>

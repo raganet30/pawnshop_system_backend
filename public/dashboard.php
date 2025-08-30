@@ -8,10 +8,13 @@ if (!isset($_SESSION['user'])) {
 
 require_once "../config/db.php";
 include '../views/header.php';
+// session checker
+require_once "../processes/session_check.php"; 
+checkSessionTimeout($pdo);
 
-// session cheker
-// require_once "../processes/session_check.php"; 
-// checkSessionTimeout($pdo);
+// session checker
+require_once "../processes/session_check.php"; 
+checkSessionTimeout($pdo);
 
 
 

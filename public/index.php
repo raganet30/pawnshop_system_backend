@@ -37,12 +37,13 @@ include '../views/header.php';
                         Swal.fire({
                             icon: 'warning',
                             title: 'Session Expired',
-                            text: '<?php echo $_SESSION['expired']; ?>',
+                            html: <?php echo json_encode($_SESSION['expired']); ?>, // allow <br>
                         });
                     });
                 </script>
                 <?php unset($_SESSION['expired']); ?>
             <?php endif; ?>
+
 
 
             <form id="loginForm" method="POST" action="../processes/login_process.php">

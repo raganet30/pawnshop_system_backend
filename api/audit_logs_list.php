@@ -19,16 +19,21 @@ if (isset($_GET['action_types'])) {
 }
 
 // --- Normal logs fetch ---
-$branchId   = $_GET['branch_id']   ?? null;
-$fromDate   = $_GET['fromDate']    ?? null;
-$toDate     = $_GET['toDate']      ?? null;
+$branchId = $_GET['branch_id'] ?? null;
+$fromDate = $_GET['fromDate'] ?? null;
+$toDate = $_GET['toDate'] ?? null;
 $actionType = $_GET['action_type'] ?? null;
 
 $query = "
-    SELECT audit_logs.*, branches.branch_name 
-    FROM audit_logs
-    LEFT JOIN branches ON audit_logs.branch_id = branches.branch_id
-    WHERE 1=1
+    SELECT 
+    audit_logs.*, 
+    branches.branch_name, 
+    users.full_name
+FROM audit_logs
+LEFT JOIN branches ON audit_logs.branch_id = branches.branch_id
+LEFT JOIN users ON audit_logs.user_id = users.user_id
+WHERE 1=1
+
 ";
 
 $params = [];
@@ -62,6 +67,7 @@ $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $rows[] = [
         $row['created_at'],
+        $row['full_name'],
         $row['action_type'],
         $row['description'],
         $row['branch_name']

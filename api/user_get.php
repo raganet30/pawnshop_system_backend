@@ -13,7 +13,7 @@ if (!$id) {
     exit();
 }
 
-$stmt = $pdo->prepare("SELECT user_id, full_name, username, branch_id, role, status FROM users WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT photo_path, user_id, full_name, username, branch_id, role, status FROM users WHERE user_id = ?");
 $stmt->execute([$id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
