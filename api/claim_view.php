@@ -10,6 +10,7 @@ if (!isset($_SESSION['user'])) {
 
 
 
+
 $pawn_id = $_GET['pawn_id'] ?? null;
 if (!$pawn_id) {
     echo json_encode(["status" => "error", "message" => "Missing pawn_id"]);
@@ -61,3 +62,4 @@ if ($data) {
 } else {
     echo json_encode(["status" => "error", "message" => "Claim not found"]);
 }
+ 

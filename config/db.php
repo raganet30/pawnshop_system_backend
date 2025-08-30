@@ -3,6 +3,7 @@
  * Database configuration for Localhost & InfinityFree
  * Auto-detects based on domain/host
  */
+date_default_timezone_set('Asia/Manila');
 
 $serverHost = $_SERVER['HTTP_HOST'] ?? 'cli'; // fallback for CLI (artisan, cron, etc.)
 
