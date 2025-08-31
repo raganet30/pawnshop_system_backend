@@ -11,7 +11,8 @@ if (!in_array($_SESSION['user']['role'], ['admin','super_admin'])) {
 <?php include '../views/header.php';
 // session checker
 require_once "../processes/session_check.php"; 
-checkSessionTimeout($pdo); ?>
+checkSessionTimeout($pdo);
+ ?>
 <div class="d-flex" id="wrapper">
     <?php include '../views/sidebar.php'; ?>
     <div id="page-content-wrapper">

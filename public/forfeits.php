@@ -7,8 +7,9 @@ if (!isset($_SESSION['user'])) {
 }
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
+
 ?>
 
 
@@ -40,6 +41,7 @@ checkSessionTimeout($pdo);
                     <table id="pawnTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Date Pawned</th>
                                 <th>Date Forfeited/th>
                                 <th>Owner</th>
@@ -53,11 +55,12 @@ checkSessionTimeout($pdo);
                         </thead>
                         <tfoot>
                             <tr>
-                                <th colspan="5" class="text-end">TOTAL:</th>
-                                <th></th>
-                                <th colspan="3"></th>
+                                <th colspan="6" class="text-end">TOTAL:</th> <!-- Adjust colspan for auto-number -->
+                                <th></th> <!-- This is where the total will go -->
+                                <th colspan="3"></th> <!-- Remaining columns -->
                             </tr>
                         </tfoot>
+
 
                         <tbody>
                             <!-- Populated dynamically via DataTables AJAX -->
@@ -90,6 +93,14 @@ checkSessionTimeout($pdo);
                 { className: "text-center", targets: "_all" }
             ],
             columns: [
+                {
+                    title: "#",
+                    data: null,
+                    className: "text-center",
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1; // Auto-increment
+                    }
+                },
                 { "title": "Date Pawned" },
                 { "title": "Date Forfeited" },
                 { "title": "Owner" },
@@ -103,7 +114,6 @@ checkSessionTimeout($pdo);
             footerCallback: function (row, data, start, end, display) {
                 let api = this.api();
 
-                // remove ₱ and commas then sum
                 let intVal = function (i) {
                     return typeof i === 'string'
                         ? i.replace(/[\₱,]/g, '') * 1
@@ -111,15 +121,23 @@ checkSessionTimeout($pdo);
                             ? i : 0;
                 };
 
-                // Total of Amount Pawned (column 5)
+                // Amount Pawned is now column index 6
                 let totalPawned = api
-                    .column(5, { page: 'current' })
+                    .column(6, { page: 'current' })
                     .data()
                     .reduce((a, b) => intVal(a) + intVal(b), 0);
 
-                $(api.column(5).footer()).html('₱' + totalPawned.toLocaleString());
+                $(api.column(6).footer()).html('₱' + totalPawned.toLocaleString());
             }
+
         });
+
+
+
+
+
+
+
 
         // Auto reload when selecting branch
         $('#branchFilter').on('change', function () {
@@ -142,7 +160,7 @@ checkSessionTimeout($pdo);
 
 
 
-    
+
     // Revert Forfeited Item to Pawned
     $(document).on("click", ".revertForfeitBtn", function (e) {
         e.preventDefault();

@@ -6,8 +6,9 @@ if (!isset($_SESSION['user'])) {
 }
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
+
 ?>
 
 <div class="d-flex" id="wrapper">
@@ -151,24 +152,28 @@ checkSessionTimeout($pdo);
                                             <option value="cashier">Cashier</option>
                                         </select>
                                     </div>
+
                                     <div class="col-md-3">
                                         <label>Status</label>
-                                        <select class="form-control" name="status" id="edit_status" required>
+                                        <select class="form-select" name="status" id="edit_status" required>
                                             <option value="active">Active</option>
                                             <option value="inactive">Inactive</option>
                                         </select>
                                     </div>
+
+                                    <!-- Profile Picture -->
                                     <div class="col-md-6 text-center">
                                         <label class="form-label d-block">Profile Picture</label>
-                                        <img id="edit_preview" src="../assets/img/avatar.png"
-                                            class="rounded-circle mb-2" width="80" height="80">
-
-                                        <!-- Hidden input to keep current photo if no new file uploaded -->
-                                        <input type="hidden" id="current_photo_path" name="current_photo_path">
-
                                         <input type="file" class="form-control" id="edit_photo" name="photo">
                                         <small class="text-muted">Leave blank to keep current photo.</small>
+                                        <div class="mt-2">
+                                            <img id="edit_preview" src="../assets/img/avatar.png" class="img-thumbnail"
+                                                style="max-width:120px; border-radius:50%;">
+                                        </div>
                                     </div>
+
+
+
 
                                 </div>
                             </div>
@@ -189,6 +194,7 @@ checkSessionTimeout($pdo);
                     <table id="userTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Profile</th>
                                 <th>Full Name</th>
                                 <th>Username</th>
@@ -217,6 +223,14 @@ checkSessionTimeout($pdo);
         },
         columns: [
             {
+                title: "#",
+                data: null,
+                className: 'text-center',
+                render: function (data, type, row, meta) {
+                    return meta.row + 1; // auto-increment
+                }
+            },
+            {
                 data: 'photo_path',
                 className: 'text-center',
                 render: function (data, type, row) {
@@ -234,7 +248,7 @@ checkSessionTimeout($pdo);
             { data: 'role', className: 'text-center' },
             {
                 data: 'status', className: 'text-center',
-                render: function (d) { return `<span class="badge bg-${d === 'active' ? 'success' : 'secondary'}">${d}</span>`; }
+                render: function (d) { return `<span class="badge bg-${d === 'active' ? 'success' : 'danger'}">${d}</span>`; }
             },
             { data: 'last_login', className: 'text-center' },
             {
@@ -244,22 +258,27 @@ checkSessionTimeout($pdo);
                 className: 'text-center',
                 render: function (d, t, row) {
                     if (row.role === 'super_admin') {
-                        return `<button class="btn btn-sm btn-secondary" disabled title="Super Admin cannot be edited">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </button>`;
+                        return `<i class="bi bi-pencil-square text-secondary" title="Super Admin cannot be edited" style="cursor: not-allowed;"></i>`;
                     } else {
-                        return `<button class="btn btn-sm btn-secondary editBtn" data-id="${row.user_id}">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </button>`;
+                        return `<i class="bi bi-pencil-square editBtn" data-id="${row.user_id}" title="Edit User" style="cursor: pointer;"></i>`;
                     }
+
                 }
             }
         ]
     });
 
 
+    // --- Strong password check ---
+    function isStrongPassword(pwd) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(pwd);
+    }
+
+
+    // Open Edit User Modal
     $('#userTable').on('click', '.editBtn', function () {
         let id = $(this).data('id');
+
         $.getJSON('../api/user_get.php', { id: id }, function (data) {
             $('#edit_user_id').val(data.user_id);
             $('#edit_fullname').val(data.full_name);
@@ -270,24 +289,42 @@ checkSessionTimeout($pdo);
             $('#edit_password').val('');
             $('#edit_confirm_password').val('');
 
-            // Set preview image
-            let avatar = data.photo_path ? '../' + data.photo_path : '../assets/img/avatar.png';
+            let avatar = data.photo_path
+                ? window.location.origin + '/pawnshop-system/' + data.photo_path
+                : '../assets/img/avatar.png';
             $('#edit_preview').attr('src', avatar);
 
-            // Save current path in hidden input
+
+            // Save DB path (without ../) for form submission
             $('#current_photo_path').val(data.photo_path);
+
+
 
             $('#editUserModal').modal('show');
         });
     });
 
+    // Live preview for newly selected photo
+    $('#edit_photo').on('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#edit_preview').attr('src', e.target.result);
+            }
+            reader.readAsDataURL(file);
+        } else {
+            let current = $('#current_photo_path').val();
+            let avatar = current ? window.location.origin + '/pawnshop-system/' + current : '../assets/img/avatar.png';
+            $('#edit_preview').attr('src', avatar);
+        }
+    });
 
-    // Strong password check function
+
+    // Strong password validation
     function isStrongPassword(pwd) {
         return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(pwd);
     }
-
-
 
     // Submit Edit Form
     $('#editUserForm').on('submit', function (e) {
@@ -314,14 +351,14 @@ checkSessionTimeout($pdo);
             confirmButtonText: 'Yes, save'
         }).then((result) => {
             if (result.isConfirmed) {
-                let formData = new FormData($('#editUserForm')[0]); // 🔑 use FormData
+                let formData = new FormData($('#editUserForm')[0]);
 
                 $.ajax({
                     url: '../processes/user_update.php',
                     type: 'POST',
                     data: formData,
-                    processData: false, // prevent jQuery from messing with FormData
-                    contentType: false, // tell server we’re sending files
+                    processData: false,
+                    contentType: false,
                     success: function (resp) {
                         let res = JSON.parse(resp);
                         if (res.success) {
@@ -348,11 +385,12 @@ checkSessionTimeout($pdo);
 
 
 
+    //add user script
     $('#addUserForm').on('submit', function (e) {
         e.preventDefault();
 
-        let password = $('#add_password').val();
-        let confirmPassword = $('#add_confirm_password').val();
+        const password = $('#add_password').val();
+        const confirmPassword = $('#add_confirm_password').val();
 
         if (password !== confirmPassword) {
             Swal.fire('Error', 'Passwords do not match', 'error');
@@ -368,9 +406,9 @@ checkSessionTimeout($pdo);
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Yes, add'
-        }).then((result) => {
+        }).then(result => {
             if (result.isConfirmed) {
-                let formData = new FormData(this); // includes file + inputs
+                const formData = new FormData(this);
 
                 $.ajax({
                     url: '../processes/user_add.php',
@@ -379,7 +417,7 @@ checkSessionTimeout($pdo);
                     processData: false,
                     contentType: false,
                     success: function (resp) {
-                        let res = JSON.parse(resp);
+                        const res = JSON.parse(resp);
                         if (res.success) {
                             Swal.fire({
                                 icon: 'success',
@@ -390,7 +428,7 @@ checkSessionTimeout($pdo);
                             });
                             $('#addUserModal').modal('hide');
                             $('#addUserForm')[0].reset();
-                            $('#add_preview').attr('src', '../assets/img/avatar.png'); // reset preview
+                            $('#add_preview').attr('src', '../assets/img/avatar.png');
                             userTable.ajax.reload();
                         } else {
                             Swal.fire('Error', res.message, 'error');
@@ -402,22 +440,6 @@ checkSessionTimeout($pdo);
                 });
             }
         });
-
-        // Preview for Add User
-        $('#add_photo').on('change', function () {
-            let file = this.files[0];
-            if (file) {
-                let reader = new FileReader();
-                reader.onload = function (e) {
-                    $('#add_preview').attr('src', e.target.result);
-                }
-                reader.readAsDataURL(file);
-            } else {
-                // reset to default avatar if cleared
-                $('#add_preview').attr('src', '../assets/img/avatar.png');
-            }
-        });
-
     });
 
 

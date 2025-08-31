@@ -12,6 +12,7 @@ include '../views/header.php';
 require_once "../processes/session_check.php"; 
 checkSessionTimeout($pdo);
 
+
 $user = $_SESSION['user'];
 $branch_id = $user['branch_id'];
 

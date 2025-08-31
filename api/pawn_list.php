@@ -125,6 +125,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     // Build row for DataTable
     $rowData = [
+        null,
         $row['date_pawned'],
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),

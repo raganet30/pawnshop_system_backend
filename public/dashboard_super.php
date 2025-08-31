@@ -11,6 +11,7 @@ include '../views/header.php';
 require_once "../processes/session_check.php"; 
 checkSessionTimeout($pdo);
 
+
 // role restriction
 if ($_SESSION['user']['role'] !== 'super_admin') {
     header("Location: ../public/dashboard.php");

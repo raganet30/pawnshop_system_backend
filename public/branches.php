@@ -7,8 +7,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'super_admin') {
 }
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
+
 ?>
 
 <div class="d-flex" id="wrapper">
@@ -33,6 +34,7 @@ checkSessionTimeout($pdo);
             <table id="branchTable" class="table table-bordered table-striped" style="width: 100%">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Name</th>
                         <th>Address</th>
                         <th>Phone</th>
@@ -52,7 +54,7 @@ checkSessionTimeout($pdo);
 
 <!-- Add Branch Modal -->
 <div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <form id="addBranchForm">
             <div class="modal-content">
                 <div class="modal-header">
@@ -60,34 +62,32 @@ checkSessionTimeout($pdo);
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Branch Name</label>
-                        <input type="text" class="form-control" name="branch_name" required>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Branch Name</label>
+                            <input type="text" class="form-control" name="branch_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" name="branch_phone" pattern="\d{11}" placeholder="09123456789" minlength="11" maxlength="11" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="branch_address" required></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" name="interest_rate" required>
+                        </div>
+                        <!-- You can add more fields here if needed -->
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea class="form-control" name="branch_address" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone</label>
-                        <input type="text" class="form-control" name="branch_phone" pattern="\d{11}"
-                            placeholder="09123456789" minlength="11" maxlength="11"  required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status" required>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Interest Rate (%)</label>
-                        <input type="number" step="0.01" class="form-control" name="interest_rate" required>
-                    </div>
-                    <!-- <div class="mb-3">
-                        <label class="form-label">Cash on Hand</label>
-                        <input type="number" step="0.01" class="form-control" name="cash_on_hand" required>
-                    </div> -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -98,9 +98,11 @@ checkSessionTimeout($pdo);
     </div>
 </div>
 
+
+
 <!-- Edit Branch Modal -->
 <div class="modal fade" id="editBranchModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <form id="editBranchForm">
             <div class="modal-content">
                 <div class="modal-header">
@@ -109,36 +111,34 @@ checkSessionTimeout($pdo);
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="branch_id" id="edit_branch_id">
-                    <div class="mb-3">
-                        <label class="form-label">Branch Name</label>
-                        <input type="text" class="form-control" name="branch_name" id="edit_branch_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea class="form-control" name="branch_address" id="edit_branch_address"
-                            required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone</label>
-                        <input type="text" class="form-control" name="branch_phone" id="edit_branch_phone"
-                            pattern="\d{11}" placeholder="09123456789" minlength="11" maxlength="11" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status" id="edit_status" required>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Interest Rate (%)</label>
-                        <input type="number" step="0.01" class="form-control" name="interest_rate"
-                            id="edit_interest_rate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Cash on Hand</label>
-                        <input type="number" step="0.01" class="form-control" name="cash_on_hand" id="edit_cash_on_hand"
-                            required readonly>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Branch Name</label>
+                            <input type="text" class="form-control" name="branch_name" id="edit_branch_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" name="branch_phone" id="edit_branch_phone" pattern="\d{11}" placeholder="09123456789" minlength="11" maxlength="11" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="branch_address" id="edit_branch_address" required></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" id="edit_status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Interest Rate (%)</label>
+                            <input type="number" step="0.01" class="form-control" name="interest_rate" id="edit_interest_rate" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cash on Hand</label>
+                            <input type="number" step="0.01" class="form-control" name="cash_on_hand" id="edit_cash_on_hand" required readonly>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -150,12 +150,21 @@ checkSessionTimeout($pdo);
     </div>
 </div>
 
+
 <script>
     $(document).ready(function () {
         // Load Branches
         let branchTable = $('#branchTable').DataTable({
             ajax: '../api/branch_list.php',
             columns: [
+                {
+                    title: "#",
+                    data: null,
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1; // auto-increment numbering
+                    },
+                    className: "text-center"
+                },
                 { data: 'branch_name', className: 'text-center' },
                 { data: 'branch_address', className: 'text-center' },
                 { data: 'branch_phone', className: 'text-center' },
@@ -189,12 +198,9 @@ checkSessionTimeout($pdo);
                     className: 'text-center',
                     orderable: false,
                     render: function (data, type, row) {
-                        return `
-                        <button class="btn btn-sm btn-secondary editBtn" data-id="${row.branch_id}">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </button>
-                    `;
+                        return `<i class="bi bi-pencil-square editBtn" data-id="${row.branch_id}" title="Edit Branch" style="cursor: pointer;"></i>`;
                     }
+
                 }
             ]
         });
@@ -262,5 +268,6 @@ checkSessionTimeout($pdo);
                 }
             });
         });
+
     });
 </script>

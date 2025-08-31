@@ -19,13 +19,22 @@ $password  = $_POST['password'] ?? '';
 $confirmPassword = $_POST['confirm_password'] ?? '';
 $branch_id = $_POST['branch_id'] ?? '';
 $role      = $_POST['role'] ?? '';
-$status    = $_POST['status'] ?? '';
+// $status    = $_POST['status'] ?? '';
 $currentPhoto = $_POST['current_photo_path'] ?? ''; // hidden input from form
+$status        = trim($_POST['status'] ?? 'active');
+
+if (!in_array($status, ['active','inactive'])) {
+    $status = 'active'; // fallback
+}
+
+
 
 if (!$user_id || !$full_name || !$username || !$branch_id || !$role || !$status) {
     echo json_encode(["success"=>false,"message"=>"All fields except password are required"]);
     exit();
 }
+
+
 
 // Fetch target user
 $stmt = $pdo->prepare("SELECT role FROM users WHERE user_id=?");

@@ -7,10 +7,11 @@ if (!isset($_SESSION['user'])) {
 }
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
+
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
 ?>
 
@@ -81,6 +82,7 @@ checkSessionTimeout($pdo);
                     <table id="pawnTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Date </th>
                                 <th>User</th>
                                 <th>Action Type</th>
@@ -105,57 +107,73 @@ checkSessionTimeout($pdo);
 <script>
 
     // DataTables AJAX init
-   $(document).ready(function () {
-    // Populate Action Type selector once
-    $.ajax({
-        url: "../api/audit_logs_list.php?action_types=1", // special param to fetch distinct types
-        method: "GET",
-        success: function (response) {
-            if (response.actionTypes) {
-                let select = $("#actionTypeFilter");
-                response.actionTypes.forEach(type => {
-                    select.append(`<option value="${type}">${type}</option>`);
-                });
+    $(document).ready(function () {
+        // Populate Action Type selector once
+        $.ajax({
+            url: "../api/audit_logs_list.php?action_types=1", // special param to fetch distinct types
+            method: "GET",
+            success: function (response) {
+                if (response.actionTypes) {
+                    let select = $("#actionTypeFilter");
+                    response.actionTypes.forEach(type => {
+                        select.append(`<option value="${type}">${type}</option>`);
+                    });
+                }
             }
-        }
-    });
+        });
 
-    // Init DataTable
-    let table = $('#pawnTable').DataTable({
-        columnDefs: [
-            { className: "text-center", targets: "_all" }
-        ],
-        ajax: {
-            url: "../api/audit_logs_list.php",
-            type: "GET",
-            data: function (d) {
-                d.branch_id   = $('#branchFilter').val();
-                d.fromDate    = $('#fromDate').val();
-                d.toDate      = $('#toDate').val();
-                d.action_type = $('#actionTypeFilter').val();
-            }
-        }
-    });
+        // Init DataTable
+        let table = $('#pawnTable').DataTable({
+            columnDefs: [
+                { className: "text-center", targets: "_all" }
+            ],
+            ajax: {
+                url: "../api/audit_logs_list.php",
+                type: "GET",
+                data: function (d) {
+                    d.branch_id = $('#branchFilter').val();
+                    d.fromDate = $('#fromDate').val();
+                    d.toDate = $('#toDate').val();
+                    d.action_type = $('#actionTypeFilter').val();
+                }
+            },
+            columns: [
+                {
+                    title: "#",
+                    data: null,
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1; // auto-increment numbering
+                    },
+                    className: "text-center"
+                },
+                { title: "Date" },
+                { title: "User" },
+                { title: "Action Type" },
+                { title: "Description" },
+                { title: "Branch" }
+            ]
+        });
 
-    // Filter button
-    $('#filterBtn').on('click', function () {
-        table.ajax.reload();
-    });
 
-    // Reset button
-    $('#resetBtn').on('click', function () {
-        $('#branchFilter').val('');
-        $('#fromDate').val('');
-        $('#toDate').val('');
-        $('#actionTypeFilter').val('');
-        table.ajax.reload();
-    });
+        // Filter button
+        $('#filterBtn').on('click', function () {
+            table.ajax.reload();
+        });
 
-    // Optional: auto reload when selecting branch/action type
-    $('#branchFilter, #actionTypeFilter').on('change', function () {
-        table.ajax.reload();
+        // Reset button
+        $('#resetBtn').on('click', function () {
+            $('#branchFilter').val('');
+            $('#fromDate').val('');
+            $('#toDate').val('');
+            $('#actionTypeFilter').val('');
+            table.ajax.reload();
+        });
+
+        // Optional: auto reload when selecting branch/action type
+        $('#branchFilter, #actionTypeFilter').on('change', function () {
+            table.ajax.reload();
+        });
     });
-});
 
 
 </script>

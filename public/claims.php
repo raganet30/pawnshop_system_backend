@@ -8,8 +8,9 @@ if (!isset($_SESSION['user'])) {
 require_once "../config/db.php";
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
+
 
 $user_role = $_SESSION['user']['role'];
 $branch_id = $_SESSION['user']['branch_id'] ?? null;
@@ -100,33 +101,37 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
                 <div class="card-header">Claimed Items</div>
                 <div class="card-body">
-                    <table id="claimsTable" class="table table-bordered table-striped" style="width:100%">
+                    <table id="claimsTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th>#</th> <!-- Auto-increment -->
                                 <th>Date Pawned</th>
                                 <th>Date Claimed</th>
-                                <th>Owner Name</th>
+                                <th>Owner</th>
                                 <th>Unit</th>
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
                                 <th>Interest Amount</th>
                                 <th>Total Paid</th>
                                 <th>Contact No.</th>
-                                <?php if ($user_role !== 'super_admin'): ?>
-                                    <th>Action</th>
+                                <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
+                                    <th>Actions</th>
                                 <?php endif; ?>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
-                                <th colspan="5" class="text-end">TOTAL:</th>
-                                <th id="totalPawned">₱0.00</th>
-                                <th id="totalInterest">₱0.00</th>
-                                <th id="totalPaid">₱0.00</th>
-                                <th colspan="<?php echo ($user_role !== 'super_admin') ? '2' : '1'; ?>"></th>
+                                <th colspan="6" class="text-end">TOTALS:</th>
+                                <th id="totalPawned"></th>
+                                <th id="totalInterest"></th>
+                                <th id="totalPaid"></th>
+                                <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
+                                    <th></th>
+                                <?php endif; ?>
                             </tr>
                         </tfoot>
                     </table>
+
                 </div>
             </div>
 
@@ -143,52 +148,67 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
         let userRole = "<?= $user_role ?>";
 
         let claimsTable = $("#claimsTable").DataTable({
+            processing: true,
+            serverSide: false,
             ajax: {
                 url: "../api/claim_list.php",
                 data: function (d) {
-                    // Branch filter for super admin
                     if (userRole === "super_admin") {
                         d.branch_id = $("#branchFilter").val();
                     }
-                    // Date filter
                     d.start_date = $("#fromDate").val();
                     d.end_date = $("#toDate").val();
                 },
-                dataSrc: function(json) {
-                // Calculate totals for footer
-                let totalPawned = 0, totalInterest = 0, totalPaid = 0;
-                json.data.forEach(row => {
-                    // Remove currency formatting
-                    totalPawned += parseFloat(row[5].replace(/[^0-9.-]+/g,"")) || 0;
-                    totalInterest += parseFloat(row[6].replace(/[^0-9.-]+/g,"")) || 0;
-                    totalPaid += parseFloat(row[7].replace(/[^0-9.-]+/g,"")) || 0;
-                });
+                dataSrc: function (json) {
+                    // Calculate totals
+                    let totalPawned = 0, totalInterest = 0, totalPaid = 0;
+                    json.data.forEach(row => {
+                        totalPawned += parseFloat(row[5].replace(/[^0-9.-]+/g, "")) || 0;
+                        totalInterest += parseFloat(row[6].replace(/[^0-9.-]+/g, "")) || 0;
+                        totalPaid += parseFloat(row[7].replace(/[^0-9.-]+/g, "")) || 0;
+                    });
 
-                $("#totalPawned").text('₱' + totalPawned.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
-                $("#totalInterest").text('₱' + totalInterest.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
-                $("#totalPaid").text('₱' + totalPaid.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}));
+                    $("#totalPawned").text('₱' + totalPawned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                    $("#totalInterest").text('₱' + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                    $("#totalPaid").text('₱' + totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
-                return json.data;
-            }
+                    return json.data;
+                }
             },
             columns: [
-                { data: 0 }, // Date Pawned
-                { data: 1 }, // Date Claimed
-                { data: 2 }, // Owner Name
+                {
+                    title: "#",
+                    data: null,
+                    className: "text-center",
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1; // Auto-increment
+                    }
+                },
+                { data: 0, className: "text-center" }, // Date Pawned
+                { data: 1, className: "text-center" }, // Date Claimed
+                { data: 2 }, // Owner
                 { data: 3 }, // Unit
                 { data: 4 }, // Category
-                { data: 5 }, // Amount Pawned
-                { data: 6 }, // Interest Amount
-                { data: 7 }, // Total Paid
-                { data: 8 }, // Contact No.
-                <?php if ($user_role !== 'super_admin'): ?>
-                        { data: 9, orderable: false } // Action column
+                { data: 5, className: "text-end" }, // Amount Pawned
+                { data: 6, className: "text-end" }, // Interest Amount
+                { data: 7, className: "text-end" }, // Total Paid
+                { data: 8, className: "text-center" }, // Contact No.
+                <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
+                    { data: 9, orderable: false, className: "text-center" } // Actions
             <?php endif; ?>
             ],
+            order: [[1, "desc"]],
+            responsive: true,
             columnDefs: [
-                { className: "text-center", targets: "_all" }
-            ],
+                { targets: "_all", className: "align-middle" }
+            ]
         });
+
+
+
+
+
+
 
         // Branch filter (super admin only)
         <?php if ($user_role === 'super_admin'): ?>

@@ -9,6 +9,7 @@ include '../views/header.php';
 // session checker
 require_once "../processes/session_check.php"; 
 checkSessionTimeout($pdo);
+
 ?>
 
 <?php
@@ -384,6 +385,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                     <table id="pawnTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Date Pawned</th>
                                 <th>Owner</th>
                                 <th>Unit</th>
@@ -399,7 +401,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                         </thead>
                         <tfoot>
                             <tr>
-                                <th colspan="4" class="text-end">TOTAL PAWNED AMOUNT:</th>
+                                <th colspan="5" class="text-end">TOTAL PAWNED AMOUNT:</th>
                                 <th id="totalPawned" ></th>
                                 <?php if (in_array($_SESSION['user']['role'], ['admin', 'cashier'])): ?>
                                     <th colspan="4"></th>
@@ -451,6 +453,14 @@ $highlightPawnId = $_GET['id'] ?? '';
                 }
             },
             columns: [
+                { 
+                title: "#",
+                data: null,
+                className: "text-center",
+                render: function(data, type, row, meta) {
+                    return meta.row + 1; // Auto-increment
+                }
+            },
                 { title: "Date Pawned" },
                 { title: "Owner" },
                 { title: "Unit" },

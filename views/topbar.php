@@ -218,7 +218,7 @@ $notifCount = count($nearing) + count($overdue);
 
                         <!-- Preview -->
                         <div class="mt-2 text-center">
-                            <img id="edit_preview" src="<?php echo !empty($user['photo_path'])
+                            <img id="edit_profile_preview" src="<?php echo !empty($user['photo_path'])
                                 ? '../' . htmlspecialchars($user['photo_path'])
                                 : '../assets/img/avatar.png'; ?>" alt="Profile Preview" class="img-thumbnail"
                                 style="max-width: 120px; border-radius: 50%;">
@@ -326,7 +326,7 @@ $notifCount = count($nearing) + count($overdue);
     // ✅ Preview for Edit User (vanilla JS only)
     document.getElementById("edit_profile_photo").addEventListener("change", function (event) {
         const file = event.target.files[0];
-        const preview = document.getElementById("edit_preview");
+        const preview = document.getElementById("edit_profile_preview");
 
         if (file) {
             const reader = new FileReader();

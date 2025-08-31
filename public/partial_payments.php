@@ -9,6 +9,7 @@ include '../views/header.php';
 // session checker
 require_once "../processes/session_check.php"; 
 checkSessionTimeout($pdo);
+
 ?>
 
 

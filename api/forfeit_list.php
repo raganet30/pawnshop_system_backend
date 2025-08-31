@@ -89,6 +89,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
     $rows[] = [
+        null, // placeholder for auto-increment numbering
         htmlspecialchars($row['date_pawned']),
         htmlspecialchars($row['date_forfeited']),
         htmlspecialchars($row['owner_name']),

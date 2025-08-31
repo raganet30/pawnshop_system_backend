@@ -66,6 +66,7 @@ $stmt->execute($params);
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $rows[] = [
+        null,
         $row['created_at'],
         $row['full_name'],
         $row['action_type'],

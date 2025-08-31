@@ -10,6 +10,7 @@ include '../views/header.php';
 require_once "../processes/session_check.php"; 
 checkSessionTimeout($pdo);
 
+
 // Fetch settings (get the first row)
 $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
 $settings = $stmt->fetch(PDO::FETCH_ASSOC);

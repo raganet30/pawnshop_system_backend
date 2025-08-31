@@ -69,6 +69,7 @@ $stmt->execute($params);
 $rows = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $rows[] = [
+         null,
         $row['created_at'],
         $row['branch_name'],
         ucfirst($row['txn_type']),

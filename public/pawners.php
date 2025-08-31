@@ -9,6 +9,7 @@ include '../views/header.php';
 // session checker
 require_once "../processes/session_check.php"; 
 checkSessionTimeout($pdo);
+
 ?>
 
 
@@ -116,6 +117,7 @@ checkSessionTimeout($pdo);
                     <table id="pawnerTable" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Full Name</th>
                                 <th>Contact No.</th>
                                 <th>Address</th>
@@ -148,6 +150,14 @@ checkSessionTimeout($pdo);
                 dataSrc: 'data'
             },
             columns: [
+                {
+                    title: "#",
+                    data: null,
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1; // auto-increment numbering
+                    },
+                    className: "text-center"
+                },
                 { data: 'full_name' },
                 { data: 'contact_no' },
                 { data: 'address' },
