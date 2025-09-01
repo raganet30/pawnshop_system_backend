@@ -15,9 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $stmt = $pdo->prepare("SELECT user_id, full_name, username, password_hash, role, branch_id, status 
-                               FROM users 
-                               WHERE username = ? AND status = 'active' LIMIT 1");
+        $stmt = $pdo->prepare("SELECT u.user_id, u.full_name, u.username, u.password_hash, u.role, 
+                                        u.branch_id, b.branch_name, u.status
+                                    FROM users u
+                                    LEFT JOIN branches b ON u.branch_id = b.branch_id
+                                    WHERE u.username = ? AND u.status = 'active'
+                                    LIMIT 1
+                                    ");
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -35,8 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'id' => filter_var($user['user_id'], FILTER_SANITIZE_NUMBER_INT),
                 'full_name' => htmlspecialchars($user['full_name'], ENT_QUOTES),
                 'role' => htmlspecialchars($user['role'], ENT_QUOTES),
-                'branch_id' => filter_var($user['branch_id'], FILTER_SANITIZE_NUMBER_INT)
+                'branch_id' => filter_var($user['branch_id'], FILTER_SANITIZE_NUMBER_INT),
+                'branch_name' => htmlspecialchars($user['branch_name'] ?? '', ENT_QUOTES)
             ];
+
 
             // Initialize last activity timestamp for session timeout
             $_SESSION['last_activity'] = time();

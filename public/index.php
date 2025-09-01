@@ -10,7 +10,9 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
 include '../views/header.php';
 
 ?>
+
 <div class="container d-flex justify-content-center align-items-center vh-100">
+
     <div class="card shadow-lg" style="width: 350px;">
         <div class="card-body">
             <div class="text-center mb-4">
@@ -44,7 +46,7 @@ include '../views/header.php';
                 <?php unset($_SESSION['expired']); ?>
             <?php endif; ?>
 
-
+          
 
             <form id="loginForm" method="POST" action="../processes/login_process.php">
                 <div class="mb-3">
