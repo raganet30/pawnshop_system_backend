@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 }
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
 
 ?>
@@ -229,9 +229,6 @@ $highlightPawnId = $_GET['id'] ?? '';
             </div>
 
 
-
-
-
             <!-- Claim Pawn Modal -->
             <div class="modal fade" id="claimPawnModal" tabindex="-1" aria-labelledby="claimPawnModalLabel"
                 aria-hidden="true">
@@ -317,6 +314,35 @@ $highlightPawnId = $_GET['id'] ?? '';
                 </div>
             </div>
 
+            <!-- Partial Payment Modal -->
+            <div class="modal fade" id="partialPaymentModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add Partial Payment</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="partialPaymentForm">
+                                <input type="hidden" id="partialPawnId" name="pawn_id">
+
+                                <div class="mb-3">
+                                    <label for="amountPaid" class="form-label">Amount Paid</label>
+                                    <input type="number" class="form-control" id="amountPaid" name="amount_paid"
+                                        required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="notes" name="notes"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Save Payment</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
             <!-- Forfeit Modal -->
@@ -371,7 +397,6 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
 
-
             <!-- add branch filtering when super admin is the user -->
             <!-- DataTable -->
             <!-- Branch filter for Super Admin -->
@@ -402,7 +427,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                         <tfoot>
                             <tr>
                                 <th colspan="5" class="text-end">TOTAL PAWNED AMOUNT:</th>
-                                <th id="totalPawned" ></th>
+                                <th id="totalPawned"></th>
                                 <?php if (in_array($_SESSION['user']['role'], ['admin', 'cashier'])): ?>
                                     <th colspan="4"></th>
                                 <?php endif; ?>
@@ -434,7 +459,7 @@ $highlightPawnId = $_GET['id'] ?? '';
     // DataTables AJAX init
     $(document).ready(function () {
         let pawnTable = $('#pawnTable').DataTable({
-        columnDefs: [
+            columnDefs: [
                 { className: "text-center", targets: "_all" }
             ],
             ajax: {
@@ -453,14 +478,14 @@ $highlightPawnId = $_GET['id'] ?? '';
                 }
             },
             columns: [
-                { 
-                title: "#",
-                data: null,
-                className: "text-center",
-                render: function(data, type, row, meta) {
-                    return meta.row + 1; // Auto-increment
-                }
-            },
+                {
+                    title: "#",
+                    data: null,
+                    className: "text-center",
+                    render: function (data, type, row, meta) {
+                        return meta.row + 1; // Auto-increment
+                    }
+                },
                 { title: "Date Pawned" },
                 { title: "Owner" },
                 { title: "Unit" },
@@ -470,7 +495,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                    { title: "Actions", orderable: false }
+                        { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -609,17 +634,33 @@ $highlightPawnId = $_GET['id'] ?? '';
         });
     });
 
+    // money separator script
+    attachCurrencyFormatter(
+        document.getElementById('addAmountPawnedVisible'),
+        document.getElementById('addAmountPawned')
+    );
 
-attachCurrencyFormatter(
-    document.getElementById('addAmountPawnedVisible'),
-    document.getElementById('addAmountPawned')
-);
+
+    //money separator script
+    attachCurrencyFormatter(
+        document.getElementById('editAmountPawnedVisible'),
+        document.getElementById('editAmountPawned')
+    );
+
+
+    //add partial payments
+    $(document).on("click", ".addPartialPaymentBtn", function (e) {
+        e.preventDefault();
+        let pawnId = $(this).data("id");
+
+        // Open modal
+        $("#partialPaymentModal").modal("show");
+
+        // Populate hidden field with pawn_id
+        $("#partialPawnId").val(pawnId);
+    });
 
 
 
-attachCurrencyFormatter(
-    document.getElementById('editAmountPawnedVisible'),
-    document.getElementById('editAmountPawned')
-);
 
 </script>

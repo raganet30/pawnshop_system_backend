@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 }
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
 
 ?>
@@ -26,16 +26,30 @@ checkSessionTimeout($pdo);
         <div class="container-fluid mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2>Partial Payments</h2>
-                <!-- <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPawnModal">
-                    <i class="bi bi-plus-circle"></i> 
-                </button> -->
             </div>
 
-
-
             <!-- DataTable -->
-            
+            <table id="partialPaymentsTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Item</th>
+                        <th>Payment</th>
+                        <th>Interest</th>
+                        <th>Principal</th>
+                        <th>Remaining Balance</th>
+                        <th>Cashier</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
+
+
+
+
 
         <?php include '../views/footer.php'; ?>
     </div>
@@ -43,10 +57,20 @@ checkSessionTimeout($pdo);
 
 
 <script>
+// Load DataTable
+$('#partialPaymentsTable').DataTable({
+    ajax: 'api/partial_payments_list.php',
+    columns: [
+        { data: 'date_paid' },
+        { data: 'customer' },
+        { data: 'item' },
+        { data: 'amount_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'interest_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'principal_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'remaining_balance', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'cashier' }
+    ]
+});
 
 
-
-
-
-
-script>
+<script>

@@ -19,7 +19,7 @@ $selected_branch_id = $_GET['branch_id'] ?? null;
 
 // Date filters
 $start_date = $_GET['start_date'] ?? null;
-$end_date   = $_GET['end_date'] ?? null;
+$end_date = $_GET['end_date'] ?? null;
 
 // Apply branch filter
 $params = [];
@@ -100,6 +100,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     <i class="bi bi-cash-coin text-success"></i> Claim
                 </a>
             </li>
+            <li>
+                <a class="dropdown-item addPartialPaymentBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                    <i class="bi bi-wallet2 text-info"></i> Partial Payment
+                </a>
+            </li>
         ';
 
         // Forfeit + Delete (admin only)
@@ -110,6 +115,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         <i class="bi bi-exclamation-triangle text-warning"></i> Forfeit
                     </a>
                 </li>
+              
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">

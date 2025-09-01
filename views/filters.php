@@ -1,5 +1,4 @@
-
- <!-- Date Filters -->
+<!-- Date Filters -->
             <div class="row mb-3">
                 <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
                     <div class="col-md-3">

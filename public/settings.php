@@ -65,7 +65,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                 <!-- Session Timeout -->
                 <div class="col-md-3">
                     <label for="session_timeout" class="form-label">Session Timeout (minutes)</label>
-                    <input type="number" class="form-control" id="session_timeout" name="session_timeout" min="1">
+                    <input type="number" class="form-control" id="session_timeout" name="session_timeout" min="5" max="60">
                 </div>
                  <!-- Report Header/Footer -->
                 <!-- <div class="col-md-4">

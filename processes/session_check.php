@@ -21,7 +21,7 @@ function checkSessionTimeout($pdo)
             session_unset();
             session_destroy();
             session_start(); // restart session to set expired message
-            $_SESSION['expired'] = "Your session has expired due to inactivity.<br>Please log in again.";
+            $_SESSION['expired'] = "Your session has expired due to inactivity. Please log in again.";
             header("Location: index");
             exit();
         }

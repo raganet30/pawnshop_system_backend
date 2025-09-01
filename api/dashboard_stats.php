@@ -95,6 +95,9 @@ $grand_penalty_stmt = $pdo->prepare("
 $grand_penalty_stmt->execute(['branch_id' => $branch_id]);
 $grand_penalty = $grand_penalty_stmt->fetchColumn();
 
+
+
+
 // Final grand total income
 $grand_income = $grand_interest + $grand_penalty;
 

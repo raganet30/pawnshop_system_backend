@@ -11,8 +11,17 @@ include '../views/header.php';
 
 ?>
 
-<div class="container d-flex justify-content-center align-items-center vh-100">
+<?php if (!empty($_SESSION['expired'])): ?>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert" style="text-align:center">
+        <strong>Session Expired!</strong> <?php echo $_SESSION['expired']; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <?php unset($_SESSION['expired']); ?>
+<?php endif; ?>
 
+
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="card shadow-lg" style="width: 350px;">
         <div class="card-body">
             <div class="text-center mb-4">
@@ -33,20 +42,8 @@ include '../views/header.php';
                 <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
 
-            <?php if (!empty($_SESSION['expired'])): ?>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Session Expired',
-                            html: <?php echo json_encode($_SESSION['expired']); ?>, // allow <br>
-                        });
-                    });
-                </script>
-                <?php unset($_SESSION['expired']); ?>
-            <?php endif; ?>
 
-          
+
 
             <form id="loginForm" method="POST" action="../processes/login_process.php">
                 <div class="mb-3">

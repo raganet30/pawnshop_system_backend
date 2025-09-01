@@ -51,11 +51,9 @@ function active($page, $currentPage)
                 <i class="bi bi-caret-down-fill"></i>
             </a>
         </div>
-        <div class="collapse ps-3 <?= in_array($currentPage, ['partial_payments', 'pawners']) ? 'show' : '' ?>"
+        <div class="collapse ps-3 <?= in_array($currentPage, ['pawners']) ? 'show' : '' ?>"
             id="submenuPawns">
-            <a href="partial_payments" class="list-group-item <?= active('partial_payments', $currentPage) ?>">
-                <i class="bi bi-cash-stack"></i> Partial Payments
-            </a>
+            
             <a href="pawners" class="list-group-item <?= active('pawners', $currentPage) ?>">
                 <i class="bi bi-people"></i> Pawners
             </a>
@@ -81,14 +79,17 @@ function active($page, $currentPage)
                 <i class="bi bi-caret-down-fill"></i>
             </a>
         </div>
-        <div class="collapse ps-3 <?= in_array($currentPage, ['ledger', 'audit_logs']) ? 'show' : '' ?>"
+        <div class="collapse ps-3 <?= in_array($currentPage, ['ledger', 'audit_logs','partial_payments']) ? 'show' : '' ?>"
             id="submenuReports">
             <a href="ledger" class="list-group-item <?= active('ledger', $currentPage) ?>">
                 <i class="bi bi-journal-text"></i> Cash Ledger
             </a>
+            <a href="partial_payments" class="list-group-item <?= active('partial_payments', $currentPage) ?>">
+                <i class="bi bi-cash-stack"></i> Partial Payments
+            </a>
             <?php if (in_array($role, ['super_admin', 'admin'])): ?>
                 <a href="audit_logs" class="list-group-item <?= active('audit_logs', $currentPage) ?>">
-                    <i class="bi bi-journal-text"></i> Audit Logs
+                    <i class="bi bi-card-list"></i> Audit Logs
                 </a>
             <?php endif; ?>
         </div>
