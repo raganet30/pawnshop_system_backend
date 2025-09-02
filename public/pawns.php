@@ -275,6 +275,9 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label for="claimPenalty">Penalty (optional)</label>
                                         <input type="number" step="0.01" class="form-control" id="claimPenalty"
                                             name="claimPenalty" placeholder="Enter penalty amount">
+
+                                        <input type="number" step="0.01" class="form-control" id="claimPenaltyHidden"
+                                            name="claimPenaltyHidden" hidden>
                                     </div>
 
 
@@ -351,6 +354,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <div class="col-md-6">
                                         <label class="form-label">Amount Pawned</label>
                                         <input type="text" class="form-control" id="ppAmountPawned" readonly>
+
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Months Covered</label>
@@ -367,6 +371,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="number" class="form-control" id="ppAmount" name="partial_amount"
                                             min="1" required>
 
+                                              
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Notes</label>
@@ -551,7 +556,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                { title: "Actions", orderable: false }
+                                                                    { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -690,20 +695,20 @@ $highlightPawnId = $_GET['id'] ?? '';
         });
     });
 
-    // money separator script
+    // money separator script add pawn
     attachCurrencyFormatter(
         document.getElementById('addAmountPawnedVisible'),
         document.getElementById('addAmountPawned')
     );
 
 
-    //money separator script
+    //money separator script edit pawn
     attachCurrencyFormatter(
         document.getElementById('editAmountPawnedVisible'),
         document.getElementById('editAmountPawned')
     );
 
-
+   
 
 
     // partial payment function
@@ -791,7 +796,7 @@ $highlightPawnId = $_GET['id'] ?? '';
         });
 
 
-        
+
         // Handle form submit (save partial payment)
         $("#partialPaymentForm").on("submit", function (e) {
             e.preventDefault();
@@ -840,7 +845,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     icon: "success"
                                 });
 
-                                 $("#pawnTable").DataTable().ajax.reload();
+                                $("#pawnTable").DataTable().ajax.reload();
                             } else {
                                 Swal.fire("Error", response.message, "error");
                             }
@@ -856,6 +861,8 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
     });
+
+
 
 
 

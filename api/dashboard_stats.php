@@ -69,12 +69,25 @@ $daily_penalty_stmt = $pdo->prepare("
 $daily_penalty_stmt->execute(['branch_id' => $branch_id]);
 $daily_penalty = $daily_penalty_stmt->fetchColumn();
 
+
+//Daily Partial Interest
+$daily_partial_interest_stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(interest_paid), 0)
+    FROM partial_payments
+    WHERE branch_id = :branch_id
+    AND DATE(created_at) = CURDATE()
+");
+$daily_partial_interest_stmt->execute(['branch_id' => $branch_id]);
+$daily_partial_interest = $daily_partial_interest_stmt->fetchColumn();
+
+
+
 // Final daily income
-$daily_income = $daily_interest + $daily_penalty;
+$daily_income = $daily_interest + $daily_penalty + $daily_partial_interest;
 
 
 // ============================
-// GRAND TOTAL INCOME = interest (tubo_payments) + penalties (claims)
+// GRAND TOTAL INCOME = interest (tubo_payments) + penalties (claims) + partial payments (min. interest)
 // ============================
 
 // Total interest
@@ -96,10 +109,20 @@ $grand_penalty_stmt->execute(['branch_id' => $branch_id]);
 $grand_penalty = $grand_penalty_stmt->fetchColumn();
 
 
+// Total partial payment interests
+$grand_partial_interest_stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(interest_paid), 0)
+    FROM partial_payments
+    WHERE branch_id = :branch_id
+");
+$grand_partial_interest_stmt->execute(['branch_id' => $branch_id]);
+$grand_partial_interest = $grand_partial_interest_stmt->fetchColumn();
+
+
 
 
 // Final grand total income
-$grand_income = $grand_interest + $grand_penalty;
+$grand_income = $grand_interest + $grand_penalty + $grand_partial_interest;
 
 // ============================
 // RETURN JSON

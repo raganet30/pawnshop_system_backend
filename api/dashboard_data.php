@@ -43,33 +43,42 @@ $recent_items = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 // Shows total pawned amount + total tubo interest collected
 // ============================
 $trend_stmt = $pdo->prepare("
-    SELECT 
-        DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
+   SELECT 
+    DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
 
-        -- Total pawned items
-        COALESCE(SUM(CASE WHEN p.status = 'pawned' AND is_deleted = 0 THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
+    -- Total pawned items
+    COALESCE(SUM(CASE WHEN p.status = 'pawned' AND is_deleted = 0 THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
 
-        -- Total interest (from tubo_payments)
-        (
-            SELECT COALESCE(SUM(t.interest_amount), 0)
-            FROM tubo_payments t
-            WHERE t.branch_id = :branch_id
-              AND DATE_FORMAT(t.date_paid, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
-        ) AS total_interest,
+    -- Total interest (from tubo_payments)
+    (
+        SELECT COALESCE(SUM(t.interest_amount), 0)
+        FROM tubo_payments t
+        WHERE t.branch_id = :branch_id
+          AND DATE_FORMAT(t.date_paid, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
+    ) AS total_interest,
 
-        -- Total penalties (from claims)
-        (
-            SELECT COALESCE(SUM(c.penalty_amount), 0)
-            FROM claims c
-            WHERE c.branch_id = :branch_id
-              AND DATE_FORMAT(c.date_claimed, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
-        ) AS total_penalty
+    -- Total interest (from partial payments)
+    (
+        SELECT COALESCE(SUM(pp.interest_paid), 0)
+        FROM partial_payments pp
+        WHERE pp.branch_id = :branch_id
+          AND DATE_FORMAT(pp.created_at, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
+    ) AS total_partial_interest,
 
-    FROM pawned_items p
-    WHERE p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-      AND p.branch_id = :branch_id
-    GROUP BY month
-    ORDER BY month ASC
+    -- Total penalties (from claims)
+    (
+        SELECT COALESCE(SUM(c.penalty_amount), 0)
+        FROM claims c
+        WHERE c.branch_id = :branch_id
+          AND DATE_FORMAT(c.date_claimed, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
+    ) AS total_penalty
+
+FROM pawned_items p
+WHERE p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+  AND p.branch_id = :branch_id
+GROUP BY month
+ORDER BY month ASC;
+
 ");
 $trend_stmt->execute(['branch_id' => $branch_id]);
 $trend_data = $trend_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -79,5 +88,5 @@ $trend_data = $trend_stmt->fetchAll(PDO::FETCH_ASSOC);
 // ============================
 echo json_encode([
     "recent_items" => $recent_items,
-    "trend_data"   => $trend_data
+    "trend_data" => $trend_data
 ]);

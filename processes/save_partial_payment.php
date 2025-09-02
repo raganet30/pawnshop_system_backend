@@ -87,7 +87,7 @@ try {
     $stmt->execute([$new_principal, $user_id, $pawn_id]);
 
     // --- Update branch cash on hand ---
-    updateCOH($pdo, $branch_id, $partial_amount, 'add');
+    updateCOH($pdo, $branch_id, $total_paid, 'add');
 
     // --- Ledger entry ---
     $ledgerNotes = "Partial payment: Principal ₱" . number_format($total_paid, 2) ."Partial Payment ₱:" . number_format($partial_amount, 2) . "Interest ₱" . number_format($interest_due, 2);
@@ -117,7 +117,7 @@ try {
 
     echo json_encode([
         "status" => "success",
-        "message" => "Partial payment of ₱" . number_format($partial_amount, 2) . " saved!<br>Remaining Principal: ₱" . number_format($new_principal, 2),
+        "message" => "Partial payment of ₱" . number_format($partial_amount, 2) . " saved!<br>Remaining Principal: ₱" . number_format($new_principal, 2) . "<br>Cash On Hand: +₱" . number_format($total_paid, 2),
         "pawn_id" => $pawn_id,
         "new_principal" => $new_principal
     ]);

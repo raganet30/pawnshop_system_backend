@@ -40,6 +40,7 @@ checkSessionTimeout($pdo);
                         <th>Interest</th>
                         <th>Principal</th>
                         <th>Remaining Balance</th>
+                        <th>Status</th>
                         <th>Cashier</th>
                     </tr>
                 </thead>
@@ -66,6 +67,18 @@ $(document).ready(function () {
         { data: 'interest_paid', title: 'Interest', render: d => '₱' + parseFloat(d).toFixed(2) },
         { data: 'principal_paid', title: 'Principal', render: d => '₱' + parseFloat(d).toFixed(2) },
         { data: 'remaining_balance', title: 'Remaining Balance', render: d => '₱' + parseFloat(d).toFixed(2) },
+        {
+                data: 'status',
+                title: 'Status',
+                render: function (data) {
+                    if (data === 'active') {
+                        return '<span class="badge bg-success">Active</span>';
+                    } else if (data === 'settled') {
+                        return '<span class="badge bg-info">Settled</span>';
+                    }
+                    return '<span class="badge bg-dark">Unknown</span>';
+                }
+            },
         { data: 'cashier', title: 'Cashier' }
     ],
     order: [[1, 'desc']], // default order by date_paid descending

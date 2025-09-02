@@ -126,7 +126,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
     document.getElementById('resetSettingsBtn').addEventListener('click', function() {
-    if (confirm('Are you sure you want to reset all settings?')) {
+    if (confirm('Are you sure you want to reset the database?')) {
         fetch('../processes/reset_db.php', { // replace with your backend URL
             method: 'POST'
         })

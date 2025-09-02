@@ -107,8 +107,6 @@ try {
 
 
 
-
-
     // --- Insert into cash ledger ---
     // Calculate total amount for ledger (penalty + interest)
     // $total_amount = $penalty + $interest_amount ;
@@ -139,7 +137,8 @@ try {
     // --- Insert into audit_logs ---
     $description = sprintf(
         "Claimed pawn ID: %d, Unit: %s, Total Amount Paid: ₱%s",
-        $pawn_id, $pawn['unit_description'],
+        $pawn_id,
+        $pawn['unit_description'],
         number_format($total_paid, 2)
     );
 
@@ -168,6 +167,13 @@ try {
         "Claim payment"       // notes
     ]);
 
+
+
+
+    //update partial_payments status to settled
+    // --- Update partial payments ---
+    $stmt = $pdo->prepare("UPDATE partial_payments SET status = 'settled', remaining_principal = 0  WHERE pawn_id = ? AND status = 'active'");
+    $stmt->execute([$pawn_id]);
 
 
 

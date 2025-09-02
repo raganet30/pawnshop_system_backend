@@ -19,6 +19,7 @@ try {
             pp.interest_paid,
             pp.principal_paid,
             pp.remaining_principal AS remaining_balance,
+            pp.status,
             u.username AS cashier
         FROM partial_payments pp
         INNER JOIN pawned_items pi ON pp.pawn_id = pi.pawn_id

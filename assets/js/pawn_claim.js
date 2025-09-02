@@ -50,14 +50,27 @@ $(function () {
                 $("#claimTotalValue").val(total.toFixed(2));
                 $("#claimMonthsValue").val(months);
 
-                // 🔹 Add live penalty calculation
+                //  Add live penalty calculation with validation
                 $("#claimPenalty").off("input").on("input", function () {
-                    const penalty = parseFloat($(this).val()) || 0;
+                    let penalty = parseFloat($(this).val()) || 0;
+
+                    // Validation: penalty should be less than pawned amount
+                    if (penalty >= principal) {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Invalid Penalty",
+                            text: "Penalty should be less than the claim amount pawned.",
+                        });
+                        penalty = 0; // reset invalid value
+                        $(this).val(''); // clear the input field
+                    }
+
                     const newTotal = principal + interest + penalty;
 
                     $("#claimTotal").val("₱" + newTotal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
                     $("#claimTotalValue").val(newTotal.toFixed(2)); // hidden field for backend
                 });
+
 
 
                 // Reset photo
@@ -136,7 +149,7 @@ $(function () {
                             $("#claimPawnModal").modal("hide");
                             $("#pawnTable").DataTable().ajax.reload();
 
-                           
+
                             // 🔹 Auto-print receipt after successful claim
                             if (response.pawn_id) {
                                 // Fetch full claim details before printing
