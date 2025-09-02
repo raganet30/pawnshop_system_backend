@@ -35,7 +35,7 @@ try {
     $counter = 1;
     foreach ($payments as $row) {
         $row['serial'] = $counter++;
-        $row['date_paid'] = $row['created_at']; // or whatever column from DB
+        $row['date_paid'];
         $data[] = $row;
     }
 
