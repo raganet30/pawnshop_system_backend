@@ -314,8 +314,6 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
 
 
-
-
     // call print receipt js function
     $(document).on("click", ".printClaimBtn", function () {
         const pawn_id = $(this).data("id");

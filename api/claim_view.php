@@ -53,7 +53,7 @@ $cashierName = isset($_SESSION['user']['full_name'])
 
 if ($data) {
     // Add extra print info
-    $data['or_no'] = "OR-" . rand(10000, 99999);
+    // $data['or_no'] = "OR-" . rand(10000, 99999);
     $data['cashier'] = $_SESSION['user']['full_name'] ?? "Cashier";
     $data['printed_at'] = date("m/d/Y h:i A");
 

@@ -98,7 +98,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div class="col-md-6">
                                 <label>Notes</label>
                                 <input id="cashAdjustmentNotes" type="text" class="form-control"
-                                    placeholder="Reason for adjustment" required>
+                                    placeholder="Notes for adjustment" required>
                             </div>
                             <div class="col-md-6">
                                 <label></label>

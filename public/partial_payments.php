@@ -29,7 +29,7 @@ checkSessionTimeout($pdo);
             </div>
 
             <!-- DataTable -->
-            <table id="partialPaymentsTable" class="table table-bordered table-striped">
+            <table id="partialPaymentsTable" class="table table-bordered table-striped" style="width: 100%">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -47,10 +47,6 @@ checkSessionTimeout($pdo);
             </table>
         </div>
 
-
-
-
-
         <?php include '../views/footer.php'; ?>
     </div>
 </div>
@@ -58,19 +54,23 @@ checkSessionTimeout($pdo);
 
 <script>
 // Load DataTable
-$('#partialPaymentsTable').DataTable({
-    ajax: 'api/partial_payments_list.php',
+$(document).ready(function () {
+    $('#partialPaymentsTable').DataTable({
+    ajax: '../api/partial_payments_list.php',
     columns: [
-        { data: 'date_paid' },
-        { data: 'customer' },
-        { data: 'item' },
-        { data: 'amount_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'interest_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'principal_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'remaining_balance', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'cashier' }
-    ]
+        { data: 'serial', title: '#' },
+        { data: 'date_paid', title: 'Date' },
+        { data: 'customer', title: 'Customer' },
+        { data: 'item', title: 'Item' },
+        { data: 'amount_paid', title: 'Payment', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'interest_paid', title: 'Interest', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'principal_paid', title: 'Principal', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'remaining_balance', title: 'Remaining Balance', render: d => '₱' + parseFloat(d).toFixed(2) },
+        { data: 'cashier', title: 'Cashier' }
+    ],
+    order: [[1, 'desc']], // default order by date_paid descending
 });
 
+});
 
-<script>
+</script>

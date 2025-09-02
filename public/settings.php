@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 include '../config/db.php';
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
 
 
@@ -49,7 +49,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                     </select>
                 </div> -->
 
-               
+
 
                 <!-- Backup Frequency -->
                 <div class="col-md-3">
@@ -65,9 +65,10 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                 <!-- Session Timeout -->
                 <div class="col-md-3">
                     <label for="session_timeout" class="form-label">Session Timeout (minutes)</label>
-                    <input type="number" class="form-control" id="session_timeout" name="session_timeout" min="5" max="60">
+                    <input type="number" class="form-control" id="session_timeout" name="session_timeout" min="5"
+                        max="60">
                 </div>
-                 <!-- Report Header/Footer -->
+                <!-- Report Header/Footer -->
                 <!-- <div class="col-md-4">
                     <label class="form-label">Report Header/Footer Info</label>
                     <textarea class="form-control" name="report_info" rows="2"></textarea>
@@ -79,10 +80,15 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-save"></i> Save Settings
                     </button>
+
+
+                    <!-- Reset Button -->
+                    <button type="button" class="btn btn-danger" id="resetSettingsBtn">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset Database
+                    </button>
                 </div>
             </form>
         </div>
-
 
         <?php include '../views/footer.php'; ?>
     </div>
@@ -115,5 +121,30 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
             }, "json");
         });
     });
+
+
+
+
+    document.getElementById('resetSettingsBtn').addEventListener('click', function() {
+    if (confirm('Are you sure you want to reset all settings?')) {
+        fetch('../processes/reset_db.php', { // replace with your backend URL
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success){
+                alert('Settings have been reset successfully.');
+                location.reload(); // reload page to reflect changes
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An unexpected error occurred.');
+        });
+    }
+});
+
 
 </script>
