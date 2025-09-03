@@ -44,40 +44,57 @@ $recent_items = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 // ============================
 $trend_stmt = $pdo->prepare("
    SELECT 
-    DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
+    m.month,
+    COALESCE(SUM(m.interest_income), 0)     AS total_interest,
+    COALESCE(SUM(m.partial_interest), 0)    AS total_partial_interest,
+    COALESCE(SUM(m.penalty_income), 0)      AS total_penalty,
+    (COALESCE(SUM(m.interest_income), 0) 
+     + COALESCE(SUM(m.partial_interest), 0) 
+     + COALESCE(SUM(m.penalty_income), 0))  AS total_income
+FROM (
+    -- Interest from tubo_payments
+    SELECT 
+        DATE_FORMAT(tp.date_paid, '%Y-%m') AS month,
+        tp.branch_id,
+        SUM(tp.interest_amount) AS interest_income,
+        0 AS partial_interest,
+        0 AS penalty_income
+    FROM tubo_payments tp
+    WHERE tp.date_paid >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+      AND tp.branch_id = :branch_id
+    GROUP BY month, tp.branch_id
 
-    -- Total pawned items
-    COALESCE(SUM(CASE WHEN p.status = 'pawned' AND is_deleted = 0 THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
+    UNION ALL
 
-    -- Total interest (from tubo_payments)
-    (
-        SELECT COALESCE(SUM(t.interest_amount), 0)
-        FROM tubo_payments t
-        WHERE t.branch_id = :branch_id
-          AND DATE_FORMAT(t.date_paid, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
-    ) AS total_interest,
+    -- Interest from partial_payments
+    SELECT 
+        DATE_FORMAT(pp.created_at, '%Y-%m') AS month,
+        pp.branch_id,
+        0 AS interest_income,
+        SUM(pp.interest_paid) AS partial_interest,
+        0 AS penalty_income
+    FROM partial_payments pp
+    WHERE pp.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+      AND pp.branch_id = :branch_id
+    GROUP BY month, pp.branch_id
 
-    -- Total interest (from partial payments)
-    (
-        SELECT COALESCE(SUM(pp.interest_paid), 0)
-        FROM partial_payments pp
-        WHERE pp.branch_id = :branch_id
-          AND DATE_FORMAT(pp.created_at, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
-    ) AS total_partial_interest,
+    UNION ALL
 
-    -- Total penalties (from claims)
-    (
-        SELECT COALESCE(SUM(c.penalty_amount), 0)
-        FROM claims c
-        WHERE c.branch_id = :branch_id
-          AND DATE_FORMAT(c.date_claimed, '%Y-%m') = DATE_FORMAT(p.date_pawned, '%Y-%m')
-    ) AS total_penalty
+    -- Penalties from claims
+    SELECT 
+        DATE_FORMAT(c.date_claimed, '%Y-%m') AS month,
+        c.branch_id,
+        0 AS interest_income,
+        0 AS partial_interest,
+        SUM(c.penalty_amount) AS penalty_income
+    FROM claims c
+    WHERE c.date_claimed >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+      AND c.branch_id = :branch_id
+    GROUP BY month, c.branch_id
+) m
+GROUP BY m.month
+ORDER BY m.month ASC;
 
-FROM pawned_items p
-WHERE p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-  AND p.branch_id = :branch_id
-GROUP BY month
-ORDER BY month ASC;
 
 ");
 $trend_stmt->execute(['branch_id' => $branch_id]);
