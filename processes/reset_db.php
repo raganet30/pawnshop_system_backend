@@ -12,8 +12,8 @@ try {
         "DELETE FROM tubo_payments",
         "DELETE FROM partial_payments",
         "DELETE FROM pawned_items",
-        "UPDATE branches SET cash_on_hand = 0",
-        "DELETE FROM customers"
+        "UPDATE branches SET cash_on_hand = 0"
+        // "DELETE FROM customers"
     ];
 
     foreach ($queries as $sql) {

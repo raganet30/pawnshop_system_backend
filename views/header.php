@@ -15,7 +15,7 @@
 <!-- Select2 CSS -->
 <!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> -->
 <link rel="stylesheet" href="../assets/css/select2.min.css">
-<link rel="icon" href="../assets/img/pawnshop icon.png" type="image/x-icon">
+<link rel="icon" href="../assets/img/ld_pawnshop_logo.jpg" type="image/x-icon">
 
 
 </head>

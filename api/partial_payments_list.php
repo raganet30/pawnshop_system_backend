@@ -8,8 +8,12 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
+$branch_id = $_POST['branch_id'] ?? '';
+$from_date = $_POST['from_date'] ?? '';
+$to_date = $_POST['to_date'] ?? '';
+
 try {
-    $stmt = $pdo->prepare("
+    $query = "
         SELECT 
             pp.pp_id,
             pp.created_at AS date_paid,
@@ -25,18 +29,44 @@ try {
         INNER JOIN pawned_items pi ON pp.pawn_id = pi.pawn_id
         INNER JOIN customers c ON pi.customer_id = c.customer_id
         INNER JOIN users u ON pp.user_id = u.user_id
-        WHERE pi.branch_id = :branch_id
-        ORDER BY pp.created_at DESC
-    ");
-    $stmt->execute(['branch_id' => $_SESSION['user']['branch_id']]);
+        WHERE 1=1
+    ";
+
+    $params = [];
+
+    // Branch filter
+    if (!empty($branch_id)) {
+        $query .= " AND pi.branch_id = :branch_id";
+        $params['branch_id'] = $branch_id;
+    } else {
+        // If user is not super_admin, force branch filter to their branch
+        if ($_SESSION['user']['role'] !== 'super_admin') {
+            $query .= " AND pi.branch_id = :user_branch_id";
+            $params['user_branch_id'] = $_SESSION['user']['branch_id'];
+        }
+    }
+
+    // Date filters
+    if (!empty($from_date)) {
+        $query .= " AND DATE(pp.created_at) >= :from_date";
+        $params['from_date'] = $from_date;
+    }
+    if (!empty($to_date)) {
+        $query .= " AND DATE(pp.created_at) <= :to_date";
+        $params['to_date'] = $to_date;
+    }
+
+    $query .= " ORDER BY pp.created_at DESC";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
     $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Add serial number and formatted date
+    // Add serial numbers
     $data = [];
     $counter = 1;
     foreach ($payments as $row) {
         $row['serial'] = $counter++;
-        $row['date_paid'];
         $data[] = $row;
     }
 
@@ -45,4 +75,3 @@ try {
 } catch (Exception $e) {
     echo json_encode(["data" => []]);
 }
-?>

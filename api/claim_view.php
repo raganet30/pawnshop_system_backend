@@ -8,15 +8,13 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-
-
-
 $pawn_id = $_GET['pawn_id'] ?? null;
 if (!$pawn_id) {
     echo json_encode(["status" => "error", "message" => "Missing pawn_id"]);
     exit();
 }
 
+// --- Fetch claim details ---
 $query = "
     SELECT 
         p.pawn_id,
@@ -47,19 +45,46 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$pawn_id]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$cashierName = isset($_SESSION['user']['full_name']) 
-    ? $_SESSION['user']['full_name'] 
-    : "Cashier";
+$cashierName = $_SESSION['user']['full_name'] ?? "Cashier";
 
 if ($data) {
-    // Add extra print info
-    // $data['or_no'] = "OR-" . rand(10000, 99999);
-    $data['cashier'] = $_SESSION['user']['full_name'] ?? "Cashier";
-    $data['printed_at'] = date("m/d/Y h:i A");
+    // --- Fetch partial payments history ---
+    $stmt2 = $pdo->prepare("
+        SELECT 
+            created_at AS date_paid,
+            amount_paid,
+            interest_paid,
+            principal_paid,
+            0 AS penalty_paid, -- no penalties in partial payments
+            remaining_principal AS remaining_balance,
+            'Partial payment' AS remarks
+        FROM partial_payments
+        WHERE pawn_id = ?
+        ORDER BY created_at ASC
+    ");
+    $stmt2->execute([$pawn_id]);
+    $partialPayments = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-     $data['cashier'] = $cashierName;
+    // --- Append final settlement row ---
+    $finalRow = [
+        "date_paid"        => $data['date_claimed'],
+        "amount_paid"      => $data['total_paid'],
+        "interest_paid"    => $data['interest_amount'],
+        "principal_paid"   => $data['amount_pawned'], // or remaining principal if tracked
+        "penalty_paid"     => $data['penalty_amount'],
+        "remaining_balance"=> 0,
+        "remarks"          => "Full settlement"
+    ];
+    $partialPayments[] = $finalRow;
+
+    // Attach to response
+    $data['partial_payments'] = $partialPayments;
+
+    // Extra print info
+    $data['cashier']    = $cashierName;
+    $data['printed_at'] = date("Y-m-d H:i:s");
+
     echo json_encode(["status" => "success", "data" => $data]);
 } else {
     echo json_encode(["status" => "error", "message" => "Claim not found"]);
 }
- 

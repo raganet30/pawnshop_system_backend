@@ -28,6 +28,36 @@ checkSessionTimeout($pdo);
                 <h2>Partial Payments</h2>
             </div>
 
+            <!-- Date Filters -->
+            <div class="row mb-3">
+                <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                    <div class="col-md-3">
+                        <label for="branchFilter" class="form-label">Branch:</label>
+                        <select id="branchFilter" class="form-select">
+                            <option value="">All Branches</option>
+                            <?php
+                            $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                            while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+                <div class="col-md-2">
+                    <label for="fromDate" class="form-label">From:</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="toDate" class="form-label">To:</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+
             <!-- DataTable -->
             <table id="partialPaymentsTable" class="table table-bordered table-striped" style="width: 100%">
                 <thead>
@@ -54,36 +84,69 @@ checkSessionTimeout($pdo);
 
 
 <script>
-// Load DataTable
-$(document).ready(function () {
-    $('#partialPaymentsTable').DataTable({
-    ajax: '../api/partial_payments_list.php',
-    columns: [
-        { data: 'serial', title: '#' },
-        { data: 'date_paid', title: 'Date' },
-        { data: 'customer', title: 'Customer' },
-        { data: 'item', title: 'Item' },
-        { data: 'amount_paid', title: 'Payment', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'interest_paid', title: 'Interest', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'principal_paid', title: 'Principal', render: d => '₱' + parseFloat(d).toFixed(2) },
-        { data: 'remaining_balance', title: 'Remaining Balance', render: d => '₱' + parseFloat(d).toFixed(2) },
-        {
-                data: 'status',
-                title: 'Status',
-                render: function (data) {
-                    if (data === 'active') {
-                        return '<span class="badge bg-success">Active</span>';
-                    } else if (data === 'settled') {
-                        return '<span class="badge bg-info">Settled</span>';
-                    }
-                    return '<span class="badge bg-dark">Unknown</span>';
+    // Load DataTable
+    $(document).ready(function () {
+        let table = $('#partialPaymentsTable').DataTable({
+            ajax: {
+                url: '../api/partial_payments_list.php',
+                type: 'POST', // use POST to send filters
+                data: function (d) {
+                    d.branch_id = $('#branchFilter').val();
+                    d.from_date = $('#fromDate').val();
+                    d.to_date = $('#toDate').val();
                 }
             },
-        { data: 'cashier', title: 'Cashier' }
-    ],
-    order: [[1, 'desc']], // default order by date_paid descending
-});
+            columns: [
+                { data: 'serial', title: '#' },
+                {
+                    data: 'date_paid',
+                    title: 'Date',
+                    render: function (data) {
+                        if (!data) return '';
+                        let date = new Date(data);
+                        let y = date.getFullYear();
+                        let m = String(date.getMonth() + 1).padStart(2, '0');
+                        let d = String(date.getDate()).padStart(2, '0');
+                        return `${y}-${m}-${d}`;
+                    }
+                },
 
-});
+                { data: 'customer', title: 'Customer' },
+                { data: 'item', title: 'Item' },
+                { data: 'amount_paid', title: 'Payment', render: d => '₱' + parseFloat(d).toFixed(2) },
+                { data: 'interest_paid', title: 'Interest', render: d => '₱' + parseFloat(d).toFixed(2) },
+                { data: 'principal_paid', title: 'Principal', render: d => '₱' + parseFloat(d).toFixed(2) },
+                { data: 'remaining_balance', title: 'Remaining Balance', render: d => '₱' + parseFloat(d).toFixed(2) },
+                {
+                    data: 'status',
+                    title: 'Status',
+                    render: function (data) {
+                        if (data === 'active') {
+                            return '<span class="badge bg-success">Active</span>';
+                        } else if (data === 'settled') {
+                            return '<span class="badge bg-info">Settled</span>';
+                        }
+                        return '<span class="badge bg-dark">Unknown</span>';
+                    }
+                },
+                { data: 'cashier', title: 'Cashier' }
+            ],
+            order: [[1, 'desc']]
+        });
+
+        // Filter button
+        $('#filterBtn').on('click', function () {
+            table.ajax.reload();
+        });
+
+        // Reset button
+        $('#resetBtn').on('click', function () {
+            $('#branchFilter').val('');
+            $('#fromDate').val('');
+            $('#toDate').val('');
+            table.ajax.reload();
+        });
+    });
+
 
 </script>

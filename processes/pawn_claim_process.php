@@ -171,8 +171,12 @@ try {
 
 
     //update partial_payments status to settled
-    // --- Update partial payments ---
-    $stmt = $pdo->prepare("UPDATE partial_payments SET status = 'settled', remaining_principal = 0  WHERE pawn_id = ? AND status = 'active'");
+    // --- Update partial payments set status to settled ---
+    $stmt = $pdo->prepare("UPDATE partial_payments SET status = 'settled' WHERE pawn_id = ? AND status = 'active'");
+    $stmt->execute([$pawn_id]);
+
+    // update latest partial transaction set to 0 remaining balance
+    $stmt = $pdo->prepare(" UPDATE partial_payments SET remaining_principal = 0 WHERE pawn_id = ? ORDER BY pp_id DESC LIMIT 1");
     $stmt->execute([$pawn_id]);
 
 
