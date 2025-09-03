@@ -22,7 +22,8 @@ $branch_stats = $pdo->query("
     COALESCE(SUM(CASE WHEN p.status = 'pawned' AND p.is_deleted=0 THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned_value,
     COALESCE(SUM(tp.interest_amount), 0) AS total_interest_amount,
     COALESCE(SUM(c.penalty_amount), 0) AS total_penalty_amount,
-    (COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(c.penalty_amount), 0)) AS total_income,
+    COALESCE(SUM(pp_sum.total_interest_paid), 0) AS total_partial_interest,
+    (COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(c.penalty_amount), 0) + COALESCE(SUM(pp_sum.total_interest_paid), 0)) AS total_income,
     b.cash_on_hand
 FROM branches b
 LEFT JOIN pawned_items p 
@@ -32,24 +33,37 @@ LEFT JOIN tubo_payments tp
     ON p.pawn_id = tp.pawn_id 
 LEFT JOIN claims c
     ON p.pawn_id = c.pawn_id 
-GROUP BY b.branch_id, b.branch_name
+LEFT JOIN (
+    SELECT pawn_id, SUM(interest_paid) AS total_interest_paid
+    FROM partial_payments
+    GROUP BY pawn_id
+) pp_sum ON p.pawn_id = pp_sum.pawn_id
+GROUP BY b.branch_id, b.branch_name;
+
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 // MONTHLY TRENDS (last 12 months)
 $trend_stmt = $pdo->query("
    SELECT 
-        DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
-        COALESCE(SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
-        COALESCE(SUM(tp.interest_amount), 0) AS total_interest,
-        COALESCE(SUM(c.penalty_amount), 0) AS total_penalty,
-        (COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(c.penalty_amount), 0)) AS total_income
-    FROM pawned_items p
-    LEFT JOIN tubo_payments tp ON p.pawn_id = tp.pawn_id
-    LEFT JOIN claims c ON p.pawn_id = c.pawn_id
-    WHERE p.is_deleted = 0
-      AND p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-    GROUP BY month
-    ORDER BY month ASC
+    DATE_FORMAT(c.date_claimed, '%Y-%m') AS month,
+    COALESCE(SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned,
+    COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(pp_sum.total_interest_paid), 0) AS total_interest,
+    COALESCE(SUM(c.penalty_amount), 0) AS total_penalty,
+    (COALESCE(SUM(tp.interest_amount), 0) + COALESCE(SUM(pp_sum.total_interest_paid), 0) + COALESCE(SUM(c.penalty_amount), 0)) AS total_income
+FROM pawned_items p
+LEFT JOIN tubo_payments tp ON p.pawn_id = tp.pawn_id
+LEFT JOIN claims c ON p.pawn_id = c.pawn_id
+-- Aggregate partial payments per pawn_id first
+LEFT JOIN (
+    SELECT pawn_id, SUM(interest_paid) AS total_interest_paid
+    FROM partial_payments
+    GROUP BY pawn_id
+) pp_sum ON p.pawn_id = pp_sum.pawn_id
+WHERE p.is_deleted = 0
+  AND p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+GROUP BY month
+ORDER BY month ASC;
+
 ");
 $trend_data = $trend_stmt->fetchAll(PDO::FETCH_ASSOC);
 

@@ -112,6 +112,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
                                 <th>Interest Amount</th>
+                                <th>Penalty</th>
                                 <th>Total Paid</th>
                                 <th>Contact No.</th>
                                 <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
@@ -124,7 +125,9 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                 <th colspan="6" class="text-end">TOTALS:</th>
                                 <th id="totalPawned"></th>
                                 <th id="totalInterest"></th>
+                                <th id="totalPenalty"></th>
                                 <th id="totalPaid"></th>
+                                <th></th>
                                 <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
                                     <th></th>
                                 <?php endif; ?>
@@ -161,15 +164,17 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                 },
                 dataSrc: function (json) {
                     // Calculate totals
-                    let totalPawned = 0, totalInterest = 0, totalPaid = 0;
+                    let totalPawned = 0, totalInterest = 0, totalPaid = 0; totalPenalty = 0;
                     json.data.forEach(row => {
                         totalPawned += parseFloat(row[5].replace(/[^0-9.-]+/g, "")) || 0;
                         totalInterest += parseFloat(row[6].replace(/[^0-9.-]+/g, "")) || 0;
-                        totalPaid += parseFloat(row[7].replace(/[^0-9.-]+/g, "")) || 0;
+                        totalPenalty += parseFloat(row[7].replace(/[^0-9.-]+/g, "")) || 0;
+                        totalPaid += parseFloat(row[8].replace(/[^0-9.-]+/g, "")) || 0;
                     });
 
                     $("#totalPawned").text('₱' + totalPawned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                     $("#totalInterest").text('₱' + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                    $("#totalPenalty").text('₱' + totalPenalty.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                     $("#totalPaid").text('₱' + totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
                     return json.data;
@@ -191,10 +196,11 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                 { data: 4 }, // Category
                 { data: 5, className: "text-end" }, // Amount Pawned
                 { data: 6, className: "text-end" }, // Interest Amount
-                { data: 7, className: "text-end" }, // Total Paid
-                { data: 8, className: "text-center" }, // Contact No.
+                { data: 7, className: "text-end" }, // Penalty Amount
+                { data: 8, className: "text-end" }, // Total Paid
+                { data: 9, className: "text-center" }, // Contact No.
                 <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
-                    { data: 9, orderable: false, className: "text-center" } // Actions
+                        { data: 10, orderable: false, className: "text-center" } // Actions
             <?php endif; ?>
             ],
             order: [[1, "desc"]],

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
 
 header('Content-Type: application/json');
 
@@ -10,8 +11,8 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-$user_role  = $_SESSION['user']['role'] ?? 'cashier';
-$branch_id  = $_SESSION['user']['branch_id'] ?? null;
+$user_role = $_SESSION['user']['role'] ?? 'cashier';
+$branch_id = $_SESSION['user']['branch_id'] ?? null;
 
 // Branch filter (if super admin)
 $filter_branch = $_GET['branch_id'] ?? null;
@@ -51,7 +52,7 @@ if ($user_role !== 'super_admin') {
 }
 
 $fromDate = $_GET['fromDate'] ?? null;
-$toDate   = $_GET['toDate'] ?? null;
+$toDate = $_GET['toDate'] ?? null;
 
 if (!empty($fromDate)) {
     $query .= " AND f.date_forfeited >= ? ";
@@ -79,7 +80,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item revertForfeitBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
+                        <a class="dropdown-item revertForfeitBtn text-warning" href="#" data-id="' . $row['pawn_id'] . '">
                             <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawn Items
                         </a>
                     </li>
@@ -90,12 +91,12 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     $rows[] = [
         null, // placeholder for auto-increment numbering
-        htmlspecialchars($row['date_pawned']),
-        htmlspecialchars($row['date_forfeited']),
+        htmlspecialchars(formatDateMDY($row['date_pawned'])),
+        htmlspecialchars(formatDateMDY($row['date_forfeited'])),
         htmlspecialchars($row['owner_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
-        '₱'.number_format($row['amount_pawned'],2),
+        '₱' . number_format($row['amount_pawned'], 2),
         htmlspecialchars($row['contact_no']),
         htmlspecialchars($row['reason']),
         $actions

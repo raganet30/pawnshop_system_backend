@@ -81,6 +81,10 @@ function updateCOH(PDO $pdo, int $branch_id, float $amount, string $operation = 
 
 
 
+function formatDateMDY($date) {
+    if (!$date || $date === "0000-00-00") return "";
+    return date('m-d-Y', strtotime($date));
+}
 
 
 

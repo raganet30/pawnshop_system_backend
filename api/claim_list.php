@@ -1,6 +1,9 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
+
+
 
 header('Content-Type: application/json');
 
@@ -29,6 +32,7 @@ $query = "
         p.category AS `category`,
         p.amount_pawned AS `amount_pawned`,
         c.interest_amount AS `interest_amount`,
+        c.penalty_amount as `penalty_amount`,
         c.total_paid AS `total_paid`,
         cu.contact_no AS `contact_no`,
         p.pawn_id,
@@ -121,13 +125,14 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
     $rows[] = [
-        htmlspecialchars($row['date_pawned']),
-        htmlspecialchars($row['date_claimed']),
+        htmlspecialchars(formatDateMDY($row['date_pawned'])),
+        htmlspecialchars(formatDateMDY($row['date_claimed'])),
         htmlspecialchars($row['owner_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
         '₱'.number_format($row['amount_pawned'],2),
         '₱'.number_format($row['interest_amount'],2),
+        '₱'.number_format($row['penalty_amount'],2),
         '₱'.number_format($row['total_paid'],2),
         htmlspecialchars($row['contact_no']),
         $actions

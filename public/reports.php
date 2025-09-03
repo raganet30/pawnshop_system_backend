@@ -183,6 +183,7 @@ checkSessionTimeout($pdo);
                                                 <th>Category</th>
                                                 <th>Amount Pawned</th>
                                                 <th>Interest Amount</th>
+                                                <th>Penalty</th>
                                                 <th>Total Paid</th>
                                                 <th>Contact No.</th>
                                             </tr>
@@ -192,6 +193,7 @@ checkSessionTimeout($pdo);
                                                 <th colspan="6" class="text-end">Totals</th>
                                                 <th id="claimed_total_pawned">0.00</th>
                                                 <th id="claimed_total_interest">0.00</th>
+                                                <th id="claimed_total_penalty">0.00</th>
                                                 <th id="claimed_total_paid">0.00</th>
                                                 <th></th>
                                             </tr>

@@ -8,13 +8,15 @@ function printClaimReceipt(d) {
     d.months_duration = months;
 
     // Helpers
+    // Format date as MM-DD-YYYY
     function formatDate(date) {
         const dt = new Date(date);
-        const day = String(dt.getDate()).padStart(2, '0');
-        const month = String(dt.getMonth() + 1).padStart(2, '0');
-        const year = dt.getFullYear();
-        return `${day}/${month}/${year}`;
+        const month = String(dt.getMonth() + 1).padStart(2, '0'); // MM
+        const day = String(dt.getDate()).padStart(2, '0');        // DD
+        const year = dt.getFullYear();                            // YYYY
+        return `${month}/${day}/${year}`;
     }
+
     function formatDateTwist(dateStr) {
         const [year, month, day] = dateStr.split("-");
         return month + day + year.slice(2); // "MMDDYY"
@@ -64,55 +66,55 @@ function printClaimReceipt(d) {
 
         let totalInterest = 0, totalPenalty = 0, totalPayment = 0;
 
-// ✅ Compute original principal from all rows
-let originalPrincipal = d.partial_payments.reduce(
-    (sum, p) => sum + parseFloat(p.principal_paid || 0),
-    0
-);
+        //  Compute original principal from all rows
+        let originalPrincipal = d.partial_payments.reduce(
+            (sum, p) => sum + parseFloat(p.principal_paid || 0),
+            0
+        );
 
-d.partial_payments.forEach((pp, idx) => {
-    const isFirst = idx === 0;
-    const isLast = idx === d.partial_payments.length - 1;
+        d.partial_payments.forEach((pp, idx) => {
+            const isFirst = idx === 0;
+            const isLast = idx === d.partial_payments.length - 1;
 
-    totalPayment += parseFloat(pp.amount_paid || 0);
-    totalInterest += parseFloat(pp.interest_paid || 0);
+            totalPayment += parseFloat(pp.amount_paid || 0);
+            totalInterest += parseFloat(pp.interest_paid || 0);
 
-    // Remarks
-    let remarks = isLast
-        ? "full settlement"
-        : (isFirst ? "partial payment"
-                   : "partial payment");
+            // Remarks
+            let remarks = isLast
+                ? "full settlement"
+                : (isFirst ? "partial payment"
+                    : "partial payment");
 
-    // ✅ Balance recompute dynamically
-    let paidPrincipal = d.partial_payments
-        .slice(0, idx + 1)
-        .reduce((sum, p) => sum + parseFloat(p.principal_paid || 0), 0);
+            // ✅ Balance recompute dynamically
+            let paidPrincipal = d.partial_payments
+                .slice(0, idx + 1)
+                .reduce((sum, p) => sum + parseFloat(p.principal_paid || 0), 0);
 
-    let displayBalance = originalPrincipal - paidPrincipal;
-    if (isLast) displayBalance = 0; // force 0 on settlement row
-    if (displayBalance < 0) displayBalance = 0; // safety
+            let displayBalance = originalPrincipal - paidPrincipal;
+            if (isLast) displayBalance = 0; // force 0 on settlement row
+            if (displayBalance < 0) displayBalance = 0; // safety
 
-    // ✅ Penalty only on last row
-    let penaltyPaid = isLast ? parseFloat(d.penalty_amount || 0) : 0;
-    if (isLast) totalPenalty += penaltyPaid;
+            // ✅ Penalty only on last row
+            let penaltyPaid = isLast ? parseFloat(d.penalty_amount || 0) : 0;
+            if (isLast) totalPenalty += penaltyPaid;
 
-    let row = "";
-    row += pad(formatDate(pp.date_paid), dateW);
-    row += pad("₱" + formatMoney(pp.amount_paid), moneyW, "right");
-    row += pad("₱" + formatMoney(pp.interest_paid), moneyW, "right");
-    row += pad("₱" + formatMoney(pp.principal_paid), moneyW, "right");
-    row += pad("₱" + formatMoney(penaltyPaid), moneyW, "right");
-    row += pad("₱" + formatMoney(displayBalance), balW, "right");
-    row += "  " + remarks;
+            let row = "";
+            row += pad(formatDate(pp.date_paid), dateW);
+            row += pad("₱" + formatMoney(pp.amount_paid), moneyW, "right");
+            row += pad("₱" + formatMoney(pp.interest_paid), moneyW, "right");
+            row += pad("₱" + formatMoney(pp.principal_paid), moneyW, "right");
+            row += pad("₱" + formatMoney(penaltyPaid), moneyW, "right");
+            row += pad("₱" + formatMoney(displayBalance), balW, "right");
+            row += "  " + remarks;
 
-    receipt += row + "\n";
-});
+            receipt += row + "\n";
+        });
 
 
 
         receipt += "-".repeat(lineWidth) + "\n";
 
-        // ✅ Totals section
+        //  Totals section
         receipt += pad("ORIGINAL PRINCIPAL:", 22) + "₱" + formatMoney(originalPrincipal) + "\n";
         receipt += pad("TOTAL INTEREST:", 22) + "₱" + formatMoney(totalInterest) + "\n";
         receipt += pad("TOTAL PENALTY :", 22) + "₱" + formatMoney(totalPenalty) + "\n";
@@ -138,19 +140,41 @@ d.partial_payments.forEach((pp, idx) => {
     // Footer
     receipt += pad("Cashier   : " + d.cashier, lineWidth) + "\n";
     receipt += pad("Printed   : " + formatDate(d.printed_at), lineWidth) + "\n\n";
-    receipt += centerText("Thank you!", lineWidth) + "\n\n\n";
+    receipt += centerText("Thank you!", lineWidth);
 
     // Print
     const w = window.open("", "PrintWindow", "width=800,height=600");
     w.document.write("<pre style='font-family: Courier; font-size: 12px;'>" + receipt + "</pre>");
 
 
-    // ✅ Add QR code after receipt
-w.document.write("<div style='text-align:center; margin-top:10px;'>");
-w.document.write("<img src='https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=https://www.facebook.com/YourPageHere' alt='QR Code'>");
-w.document.write("<div>Scan to visit our Facebook page</div>");
-w.document.write("</div>");
+    //  Add QR code after receipt
+    const qrContainer = w.document.createElement('div');
+    qrContainer.style.textAlign = 'center';
+    qrContainer.style.marginTop = '2px';
+    qrContainer.style.fontFamily = 'Arial, sans-serif';
+    qrContainer.style.fontSize = '12px';
 
+    // Add instruction text
+    const qrText = w.document.createElement('div');
+    qrText.innerText = "Scan QR for inquiries";
+    qrText.style.marginBottom = '5px';
+    qrContainer.appendChild(qrText);
+
+    // Append QR code
+    const qrDiv = w.document.createElement('div');
+    qrContainer.appendChild(qrDiv);
+    w.document.body.appendChild(qrContainer);
+
+    // Generate QR code
+    let fbURL = "https://www.facebook.com/ldgadgetpawnshop/"; // <-- replace with your FB page
+    new QRCode(qrDiv, {
+        text: fbURL,
+        width: 120,     // proportional size
+        height: 120,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
     w.document.close();
     w.print();
