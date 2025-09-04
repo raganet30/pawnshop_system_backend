@@ -54,6 +54,8 @@ $sql = "
         p.unit_description,
         p.category,
         p.amount_pawned,
+        p.original_amount_pawned,
+        p.has_partial_payments,
         p.notes,
         c.full_name,
         c.contact_no,
@@ -70,7 +72,8 @@ $rows = [];
 $totalPawned = 0;
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $totalPawned += floatval($row['amount_pawned']);
+
+   
 
     // Build actions dropdown (only if user has access)
     $actions = '';
@@ -129,6 +132,18 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
 
+    // Decide what to display for amount
+    if (!empty($row['has_partial_payments']) && $row['has_partial_payments'] == 1) {
+        // Show original amount pawned
+        $amountDisplay = '₱' . number_format($row['original_amount_pawned'], 2);
+        // For totals, use original amount so it's transparent
+        $totalPawned += floatval($row['original_amount_pawned']);
+    } else {
+        // Show current amount (no partials yet)
+        $amountDisplay = '₱' . number_format($row['amount_pawned'], 2);
+         $totalPawned += floatval($row['amount_pawned']);
+    }
+
     // Build row for DataTable
     $rowData = [
         null,
@@ -136,11 +151,12 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
-        '₱' . number_format($row['amount_pawned'], 2),
+        $amountDisplay,
         htmlspecialchars($row['contact_no']),
         htmlspecialchars($row['address']),
         htmlspecialchars($row['notes']),
     ];
+
 
     // Append Actions column only if applicable
     if (in_array($user_role, ['admin', 'cashier'])) {
