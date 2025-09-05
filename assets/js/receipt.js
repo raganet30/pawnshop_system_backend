@@ -52,7 +52,7 @@ function printClaimReceipt(d) {
     if (hasSOA) {
         const dateW = 12, moneyW = 12, balW = 12;
 
-        receipt += centerText("STATEMENT OF ACCOUNT", lineWidth) + "\n";
+        receipt += centerText("PAYMENTS", lineWidth) + "\n";
 
         // Header row
         let header = pad("Date", dateW) +
@@ -166,7 +166,7 @@ function printClaimReceipt(d) {
     w.document.body.appendChild(qrContainer);
 
     // Generate QR code
-    let fbURL = "https://www.facebook.com/ldgadgetpawnshop/"; // <-- replace with your FB page
+    let fbURL = "https://www.facebook.com/ldgadgetpawnshop/"; //FB PAGE
     new QRCode(qrDiv, {
         text: fbURL,
         width: 120,     // proportional size

@@ -169,9 +169,7 @@ checkSessionTimeout($pdo);
                         searchable: false,
                         render: function (data, type, row) {
                             return `
-                        <button class="btn btn-sm btn-secondary editBtn" data-id="${row.customer_id}">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </button>
+                        <i class="bi bi-pencil-square editBtn" data-id="${row.customer_id}" title="Edit Pawner" style="cursor: pointer;"></i>
                     `;
                         }
                     }

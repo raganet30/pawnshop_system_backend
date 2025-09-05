@@ -52,7 +52,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
                 <!-- Backup Frequency -->
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <label class="form-label">Backup Frequency</label>
                     <select class="form-select" name="backup_frequency">
                         <option value="daily">Daily</option>
@@ -60,7 +60,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                         <option value="monthly">Monthly</option>
                         <option value="manual">Manual only</option>
                     </select>
-                </div>
+                </div> -->
 
                 <!-- Session Timeout -->
                 <div class="col-md-3">
@@ -81,6 +81,12 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                         <i class="bi bi-save"></i> Save Settings
                     </button>
 
+                    <!-- Backup Button (only shows if frequency = manual) -->
+                    <!-- Manual Backup Button -->
+                    <button type="button" id="backupBtn" class="btn btn-info">
+                        <i class="bi bi-folder"></i> Backup Database
+                    </button>
+
 
                     <!-- Reset Button -->
                     <button type="button" class="btn btn-danger" id="resetSettingsBtn">
@@ -97,54 +103,82 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 <script>
     $(document).ready(function () {
         // Load settings from DB
-        $.get("../api/get_settings.php", function (res) {
-            if (res.success) {
-                let s = res.data;
-                $("input[name='cash_threshold']").val(s.cash_threshold);
-                $("input[name='pawn_maturity_reminder_days']").val(s.pawn_maturity_reminder_days);
-                $("select[name='export_format']").val(s.export_format);
-                $("textarea[name='report_info']").val(s.report_info);
-                $("select[name='backup_frequency']").val(s.backup_frequency);
-                $("input[name='session_timeout']").val(s.session_timeout);
-            }
-        }, "json");
-
-        // Save settings
-        $("#settingsForm").submit(function (e) {
-            e.preventDefault();
-            $.post("../processes/save_settings.php", $(this).serialize(), function (res) {
+        $(document).ready(function () {
+            // Load settings from DB
+            $.get("../api/get_settings.php", function (res) {
                 if (res.success) {
-                    Swal.fire("Saved!", "Settings updated successfully.", "success");
-                } else {
-                    Swal.fire("Error", res.message || "Failed to update settings", "error");
+                    let s = res.data;
+                    $("input[name='cash_threshold']").val(s.cash_threshold);
+                    $("input[name='pawn_maturity_reminder_days']").val(s.pawn_maturity_reminder_days);
+                    $("select[name='export_format']").val(s.export_format);
+                    $("textarea[name='report_info']").val(s.report_info);
+                    $("input[name='session_timeout']").val(s.session_timeout);
                 }
             }, "json");
+
+            // Save settings
+            $("#settingsForm").submit(function (e) {
+                e.preventDefault();
+                $.post("../processes/save_settings.php", $(this).serialize(), function (res) {
+                    if (res.success) {
+                        Swal.fire("Saved!", "Settings updated successfully.", "success");
+                    } else {
+                        Swal.fire("Error", res.message || "Failed to update settings", "error");
+                    }
+                }, "json");
+            });
+
+            // Manual backup button click event
+            $("#backupBtn").click(function () {
+                Swal.fire({
+                    title: "Backup Database?",
+                    text: "This will create a backup of your database.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, backup now!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('../processes/backup.php')
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire("Success!", "Backup created: " + data.filename, "success");
+                                } else {
+                                    Swal.fire("Error", data.message, "error");
+                                }
+                            });
+                    }
+                });
+            });
         });
+
+
     });
 
 
 
 
-    document.getElementById('resetSettingsBtn').addEventListener('click', function() {
-    if (confirm('Are you sure you want to reset the database?')) {
-        fetch('../processes/reset_db.php', { // replace with your backend URL
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success){
-                alert('Settings have been reset successfully.');
-                location.reload(); // reload page to reflect changes
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('An unexpected error occurred.');
-        });
-    }
-});
+    document.getElementById('resetSettingsBtn').addEventListener('click', function () {
+        if (confirm('Are you sure you want to reset the database?')) {
+            fetch('../processes/reset_db.php', { // replace with your backend URL
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings have been reset successfully.');
+                        location.reload(); // reload page to reflect changes
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('An unexpected error occurred.');
+                });
+        }
+    });
+
 
 
 </script>

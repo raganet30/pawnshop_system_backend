@@ -25,7 +25,7 @@ include '../views/header.php';
     <div class="card shadow-lg" style="width: 350px;">
         <div class="card-body">
             <div class="text-center mb-4">
-                <img src="../assets/img/ld_pawnshop_logo.jpg" alt="Pawnshop Logo" style="max-width:80px;">
+                <img src="../assets/img/ld_pawnshop_logo.png" alt="Pawnshop Logo" style="max-width:200px;">
                 <h5 class="mt-2">Pawnshop Management System</h5>
             </div>
 
