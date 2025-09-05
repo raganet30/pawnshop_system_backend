@@ -44,56 +44,70 @@ $recent_items = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 // ============================
 $trend_stmt = $pdo->prepare("
    SELECT 
-    m.month,
-    COALESCE(SUM(m.interest_income), 0)     AS total_interest,
-    COALESCE(SUM(m.partial_interest), 0)    AS total_partial_interest,
-    COALESCE(SUM(m.penalty_income), 0)      AS total_penalty,
-    (COALESCE(SUM(m.interest_income), 0) 
-     + COALESCE(SUM(m.partial_interest), 0) 
-     + COALESCE(SUM(m.penalty_income), 0))  AS total_income
+    t.month,
+    SUM(t.total_pawned)   AS total_pawned,
+    SUM(t.total_interest) AS total_interest,
+    SUM(t.total_penalty)  AS total_penalty,
+    SUM(t.total_income)   AS total_income
 FROM (
-    -- Interest from tubo_payments
+    -- Pawned amounts (by date_pawned, only active pawned items)
+    SELECT 
+        DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
+        SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END) AS total_pawned,
+        0 AS total_interest,
+        0 AS total_penalty,
+        0 AS total_income
+    FROM pawned_items p
+    WHERE p.is_deleted = 0
+      AND p.branch_id = :branch_id
+      AND p.date_pawned >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+    GROUP BY month
+
+    UNION ALL
+
+    -- Tubo interest
     SELECT 
         DATE_FORMAT(tp.date_paid, '%Y-%m') AS month,
-        tp.branch_id,
-        SUM(tp.interest_amount) AS interest_income,
-        0 AS partial_interest,
-        0 AS penalty_income
+        0 AS total_pawned,
+        SUM(tp.interest_amount) AS total_interest,
+        0 AS total_penalty,
+        SUM(tp.interest_amount) AS total_income
     FROM tubo_payments tp
     WHERE tp.date_paid >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
       AND tp.branch_id = :branch_id
-    GROUP BY month, tp.branch_id
+    GROUP BY month
 
     UNION ALL
 
-    -- Interest from partial_payments
+    -- Partial payments interest
     SELECT 
         DATE_FORMAT(pp.created_at, '%Y-%m') AS month,
-        pp.branch_id,
-        0 AS interest_income,
-        SUM(pp.interest_paid) AS partial_interest,
-        0 AS penalty_income
+        0 AS total_pawned,
+        SUM(pp.interest_paid) AS total_interest,
+        0 AS total_penalty,
+        SUM(pp.interest_paid) AS total_income
     FROM partial_payments pp
     WHERE pp.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
       AND pp.branch_id = :branch_id
-    GROUP BY month, pp.branch_id
+    GROUP BY month
 
     UNION ALL
 
-    -- Penalties from claims
+    -- Penalties
     SELECT 
         DATE_FORMAT(c.date_claimed, '%Y-%m') AS month,
-        c.branch_id,
-        0 AS interest_income,
-        0 AS partial_interest,
-        SUM(c.penalty_amount) AS penalty_income
+        0 AS total_pawned,
+        0 AS total_interest,
+        SUM(c.penalty_amount) AS total_penalty,
+        SUM(c.penalty_amount) AS total_income
     FROM claims c
     WHERE c.date_claimed >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
       AND c.branch_id = :branch_id
-    GROUP BY month, c.branch_id
-) m
-GROUP BY m.month
-ORDER BY m.month ASC;
+    GROUP BY month
+) t
+GROUP BY t.month
+ORDER BY t.month ASC;
+
 
 
 ");

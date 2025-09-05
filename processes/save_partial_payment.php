@@ -83,7 +83,7 @@ try {
     $pp_id = $pdo->lastInsertId();
 
     // --- Update pawned_items principal ---
-    $stmt = $pdo->prepare("UPDATE pawned_items SET amount_pawned = ?, updated_by = ?, updated_at = NOW() WHERE pawn_id = ?");
+    $stmt = $pdo->prepare("UPDATE pawned_items SET amount_pawned = ?, has_partial_payments=1, updated_by = ?, updated_at = NOW() WHERE pawn_id = ?");
     $stmt->execute([$new_principal, $user_id, $pawn_id]);
 
     // --- Update branch cash on hand ---

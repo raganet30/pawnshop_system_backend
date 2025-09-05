@@ -38,7 +38,7 @@ try {
     $branch_id = $claim['branch_id'];
     $total_paid = $claim['total_paid'];
     $claim_id = $claim['claim_id'];
-    $pricipal_amount = $claim['principal_amount'];
+    $principal_amount = $claim['principal_amount'];
 
 
     // 2. Deduct from cash_on_hand
@@ -85,7 +85,7 @@ try {
         $branch_id,
         "claim",       // txn_type
         $direction,    // in/out
-        $pricipal_amount,
+        $principal_amount,
         "claims",      // ref_table
         $pawn_id,
         $description,
@@ -100,7 +100,7 @@ try {
     $description = sprintf(
         "Reverted a claimed iteom to pawn item.(PawnID: %s, Amount: ₱%s)",
         $pawn_id,
-        number_format($pricipal_amount, 2)
+        number_format($principal_amount, 2)
     );
     logAudit($pdo, $user_id, $branch_id, 'Revert Claimed Item', $description);
 
@@ -112,7 +112,7 @@ try {
 
     $pdo->commit();
 
-    echo json_encode(["status" => "success", "message" => "Claimed item reverted to pawned items.<br>Cash on Hand adjusted -₱" . number_format($pricipal_amount, 2)]);
+    echo json_encode(["status" => "success", "message" => "Claimed item reverted to pawned items.<br>Cash on Hand adjusted -₱" . number_format($principal_amount, 2)]);
 
     
 } catch (Exception $e) {
