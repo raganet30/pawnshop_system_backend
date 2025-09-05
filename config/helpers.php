@@ -1,6 +1,7 @@
 <?php
 // helpers.php
 
+
 // function to log audit entries
 function logAudit($pdo, $user_id, $branch_id, $action_type, $description) {
     try {
