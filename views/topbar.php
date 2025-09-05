@@ -72,14 +72,14 @@ $sqlOverdue = "
         p.category,
         p.amount_pawned,
         p.date_pawned,
-        DATE_ADD(p.date_pawned, INTERVAL 2 MONTH) AS maturity_date,
+        DATE_ADD(p.date_pawned, INTERVAL 1 MONTH) AS maturity_date,
         c.full_name AS customer_name,
         b.branch_name
     FROM pawned_items p
     LEFT JOIN customers c ON p.customer_id = c.customer_id
     LEFT JOIN branches b ON p.branch_id = b.branch_id
     $where
-      AND DATE_ADD(p.date_pawned, INTERVAL 2 MONTH) < CURDATE()
+      AND DATE_ADD(p.date_pawned, INTERVAL 1 MONTH) < CURDATE()
     ORDER BY maturity_date ASC
 ";
 $stmtOverdue = $pdo->prepare($sqlOverdue);

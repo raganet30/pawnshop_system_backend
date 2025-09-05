@@ -109,7 +109,6 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Recent Adjustments (Right) -->
-                <!-- Recent Adjustments (Right) -->
                 <div class="col-md-6">
                     <h5>Recent Adjustments</h5>
                     <div class="card p-3">
@@ -120,6 +119,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <th>Date</th>
                                         <th>Amount</th>
                                         <th>Type</th>
+                                        <th>User</th>
                                         <th>Notes</th>
                                     </tr>
                                 </thead>
@@ -227,6 +227,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td>${sign}₱${displayAmount}</td>
             <td><span class="badge ${badgeClass}">${adj.direction}</span></td>
             <td>${adj.notes ?? ''}</td>
+            <td>${adj.full_name ?? ''}</td>
         </tr>
     `;
                     tbody.innerHTML += row;

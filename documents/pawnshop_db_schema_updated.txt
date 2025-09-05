@@ -20,14 +20,19 @@ customer_id (FK -> customers.customer_id)
 unit_description
 category
 amount_pawned
+original_amount_pawned
 interest_rate
 date_pawned
-status (pawned, claimed, forfeited, sold)
+current_due_date
+status (pawned, claimed, forfeited)
+has_partial_payments (default 0, 1)
 notes
+photo_path (item picture)
 created_by
 updated_by
 created_at
 updated_at
+is_deleted
 
 3. claims
 ---------
@@ -126,3 +131,21 @@ action_type
 description
 branch_id (FK -> branches.branch_id)
 created_at
+
+11. partial_payments
+----------------
+pp_id
+pawn_id
+branch_id
+amount_paid
+interest_paid
+principal_paid
+remaining_principal
+status
+user_id
+notes
+created_at	
+
+
+
+

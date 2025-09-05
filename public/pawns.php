@@ -99,11 +99,10 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label for="category">Category</label>
                                         <select name="category" id="category" class="form-control" required>
                                             <option value="">-- Select Category --</option>
-                                            <option value="Gadgets">Gadgets</option>
-                                            <option value="Computer">Computer</option>
+                                            <option value="Cellphone">Cellphone</option>
+                                            <option value="Laptop">Laptop</option>
                                             <option value="Camera">Camera</option>
-                                            <option value="Vehicle">Vehicle</option>
-                                            <option value="Appliances">Appliances</option>
+                                            <option value="Motorcycle">Motorcycle</option>
                                             <option value="Others">Others</option>
                                         </select>
                                     </div>
@@ -187,11 +186,11 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label>Category</label>
                                         <select name="category" id="editCategory" class="form-control" required>
                                             <option value="">-- Select Category --</option>
-                                            <option value="Gadgets">Gadgets</option>
-                                            <option value="Computer">Computer</option>
-                                            <option value="Camera">Camera</option>
-                                            <option value="Vehicle">Vehicle</option>
-                                            <option value="Appliances">Appliances</option>
+                                            <option value="Cellphone">Cellphone</option>
+                                            <option value="Laptop ">Laptop</option>
+                                            <!-- <option value="Camera">Camera</option> -->
+                                            <option value="Tablet/iPad">Tablet/iPad</option>
+                                            <option value="Motorcycle">Motorcycle</option>
                                             <option value="Others">Others</option>
                                         </select>
                                     </div>

@@ -100,8 +100,32 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                 </div>
             </div>
 
-            <!-- Recent Pawned Items Table -->
+            <!-- Upcoming Due Items -->
             <div class="card">
+                <div class="card-header">Upcoming Due Items</div>
+                <div class="card-body">
+                    <table id="upcomingDueItemsTable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date Pawned</th>
+                                <th>Owner</th>
+                                <th>Item</th>
+                                <th>Category</th>   
+                                <th>Amount Pawned</th>
+                                <th>Months Period</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- Recent Pawned Items Table -->
+            <!-- <div class="card">
                 <div class="card-header">Recent Pawn Transactions</div>
                 <div class="card-body">
                     <table id="pawnedItemsTable" class="table table-striped table-bordered">
@@ -118,8 +142,10 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                         <tbody></tbody>
                     </table>
                 </div>
-            </div>
+            </div> -->
 
+
+            
         </div>
 
         <?php include '../views/footer.php'; ?>
