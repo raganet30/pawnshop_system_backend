@@ -227,7 +227,7 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                         item.owner_name,
                         item.unit_description,
                         item.category,
-                        "₱" + parseFloat(item.amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+                        "₱" + parseFloat(item.original_amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }),
                         statusBadge
                     ]);
                 });
@@ -239,9 +239,7 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                    ===================== */
                 const months = data.trend_data.map(row => row.month);
                 const pawned = data.trend_data.map(row => parseFloat(row.total_pawned));
-                const income = data.trend_data.map(row =>
-                    parseFloat(row.total_interest) + parseFloat(row.total_penalty) + parseFloat(row.total_partial_interest)
-                );
+                const income = data.trend_data.map(row =>parseFloat(row.total_income));
 
                 monthlyTrendsChart.data.labels = months.map(m => {
                     const d = new Date(m + "-01");

@@ -46,9 +46,9 @@ try {
 
     // ✅ Update only pawn details (NOT customer info)
     $stmt = $pdo->prepare("UPDATE pawned_items 
-        SET unit_description = ?, category = ?, amount_pawned = ?, notes = ?, date_pawned = ?
+        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, notes = ?, date_pawned = ?
         WHERE pawn_id = ?");
-    $stmt->execute([$unit_description, $category, $new_amount, $notes, $date_pawned, $pawn_id]);
+    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $notes, $date_pawned, $pawn_id]);
 
     // ✅ Adjust COH only if amount changed
     if ($difference != 0) {
