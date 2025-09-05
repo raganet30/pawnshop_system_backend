@@ -133,28 +133,32 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
 
     // Decide what to display for amount
-    if (!empty($row['has_partial_payments']) && $row['has_partial_payments'] == 1) {
-        // Show original amount pawned
-        $amountDisplay = '₱' . number_format($row['original_amount_pawned'], 2);
-        // For totals, use original amount so it's transparent
-        $totalPawned += floatval($row['original_amount_pawned']);
-    } else {
-        // Show current amount (no partials yet)
-        $amountDisplay = '₱' . number_format($row['amount_pawned'], 2);
-         $totalPawned += floatval($row['amount_pawned']);
-    }
+    // if (!empty($row['has_partial_payments']) && $row['has_partial_payments'] == 1) {
+    //     // Show original amount pawned
+    //     $amountDisplay = '₱' . number_format($row['original_amount_pawned'], 2);
+    //     // For totals, use original amount so it's transparent
+    //     $totalPawned += floatval($row['original_amount_pawned']);
+    // } else {
+    //     // Show current amount (no partials yet)
+    //     $amountDisplay = '₱' . number_format($row['amount_pawned'], 2);
+    //      $totalPawned += floatval($row['amount_pawned']);
+    // }
 
     // Build row for DataTable
+
+    $totalPawned += floatval($row['amount_pawned']);
     $rowData = [
         null,
         formatDateMDY($row['date_pawned']),
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
-        $amountDisplay,
+        // $amountDisplay,
+        '₱'.number_format($row['amount_pawned'],2),
         htmlspecialchars($row['contact_no']),
         htmlspecialchars($row['address']),
         htmlspecialchars($row['notes']),
+        
     ];
 
 

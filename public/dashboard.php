@@ -169,7 +169,7 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                 animateValue("pawnedValue",
                     parseFloat($("#pawnedValue").text().replace(/[^0-9.-]+/g, "")) || 0,
                     data.pawned_value, 600, "₱", 2);
-
+                    
                 // Cash on Hand
                 animateValue("cashOnHand",
                     parseFloat($("#cashOnHand").text().replace(/[^0-9.-]+/g, "")) || 0,

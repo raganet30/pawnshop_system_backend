@@ -20,7 +20,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? 1; // fallback to branch 1
 $pawned_stmt = $pdo->prepare("
     SELECT 
         COUNT(*) AS total_units,
-        COALESCE(SUM(original_amount_pawned), 0) AS total_value
+        COALESCE(SUM(amount_pawned), 0) AS total_value
     FROM pawned_items
     WHERE status = 'pawned' AND branch_id = :branch_id AND is_deleted = 0
 ");
