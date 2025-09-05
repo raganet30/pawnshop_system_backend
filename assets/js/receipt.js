@@ -52,7 +52,7 @@ function printClaimReceipt(d) {
     if (hasSOA) {
         const dateW = 12, moneyW = 12, balW = 12;
 
-        receipt += centerText("STATEMENT OF ACCOUNT", lineWidth) + "\n";
+        receipt += centerText("PAYMENTS", lineWidth) + "\n";
 
         // Header row
         let header = pad("Date", dateW) +

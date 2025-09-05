@@ -43,7 +43,7 @@ $recent_items = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 // Shows total pawned amount + total income
 // ============================
 $trend_stmt = $pdo->prepare("
-SELECT 
+   SELECT 
     t.month,
     SUM(t.total_pawned)   AS total_pawned,
     SUM(t.total_interest) AS total_interest,
@@ -53,7 +53,7 @@ FROM (
     -- Pawned amounts (by date_pawned, only active pawned items)
     SELECT 
         DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
-        SUM(CASE WHEN p.status = 'pawned' THEN p.original_amount_pawned ELSE 0 END) AS total_pawned,
+        SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END) AS total_pawned,
         0 AS total_interest,
         0 AS total_penalty,
         0 AS total_income

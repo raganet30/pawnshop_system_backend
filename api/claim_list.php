@@ -26,6 +26,7 @@ $end_date   = $_GET['end_date'] ?? null;
 $query = "
     SELECT 
         p.date_pawned AS `date_pawned`,
+        p.has_partial_payments as `has_partial_payments`,
         c.date_claimed AS `date_claimed`,
         cu.full_name AS `owner_name`,
         p.unit_description AS `unit_description`,
@@ -97,32 +98,40 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         ';
     }
 
-    if ($user_role == 'admin') {
-        $actions = '
-            <div class="dropdown">
-                <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots fs-5"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                            <i class="bi bi-eye text-info"></i> View Details
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
-                            <i class="bi bi-printer"></i> Print Receipt
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item revertClaimBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
-                            <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawned
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        ';
+   if ($user_role == 'admin') {
+    $actions = '
+        <div class="dropdown">
+            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots fs-5"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item viewClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                        <i class="bi bi-eye text-info"></i> View Details
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item printClaimBtn" href="#" data-id="'.$row['pawn_id'].'">
+                        <i class="bi bi-printer"></i> Print Receipt
+                    </a>
+                </li>';
+    
+    // Only show Revert option if no partial payments
+    if (empty($row['has_partial_payments']) || $row['has_partial_payments'] == 0) {
+        $actions .= '
+                <li>
+                    <a class="dropdown-item revertClaimBtn text-warning" href="#" data-id="'.$row['pawn_id'].'">
+                        <i class="bi bi-arrow-counterclockwise"></i> Revert to Pawned
+                    </a>
+                </li>';
     }
+
+    $actions .= '
+            </ul>
+        </div>
+    ';
+}
+
 
     $rows[] = [
         htmlspecialchars(formatDateMDY($row['date_pawned'])),
