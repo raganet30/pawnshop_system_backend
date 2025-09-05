@@ -74,6 +74,15 @@ checkSessionTimeout($pdo);
                         <th>Cashier</th>
                     </tr>
                 </thead>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" style="text-align:right">Totals:</th>
+                        <th></th> <!-- Payment total -->
+                        <th></th> <!-- Interest total -->
+                        <th></th> <!-- Principal total -->
+                        <th colspan="3"></th>
+                    </tr>
+                </tfoot>
                 <tbody></tbody>
             </table>
         </div>
@@ -89,7 +98,7 @@ checkSessionTimeout($pdo);
         let table = $('#partialPaymentsTable').DataTable({
             ajax: {
                 url: '../api/partial_payments_list.php',
-                type: 'POST', // use POST to send filters
+                type: 'POST',
                 data: function (d) {
                     d.branch_id = $('#branchFilter').val();
                     d.from_date = $('#fromDate').val();
@@ -110,7 +119,6 @@ checkSessionTimeout($pdo);
                         return `${y}-${m}-${d}`;
                     }
                 },
-
                 { data: 'customer', title: 'Customer' },
                 { data: 'item', title: 'Item' },
                 { data: 'amount_paid', title: 'Payment', render: d => '₱' + parseFloat(d).toFixed(2) },
@@ -131,8 +139,31 @@ checkSessionTimeout($pdo);
                 },
                 { data: 'cashier', title: 'Cashier' }
             ],
-            order: [[1, 'desc']]
+            order: [[1, 'desc']],
+            footerCallback: function (row, data, start, end, display) {
+                let api = this.api();
+
+                // Helper function to clean values
+                let intVal = function (i) {
+                    return typeof i === 'string'
+                        ? i.replace(/[₱,]/g, '') * 1
+                        : typeof i === 'number'
+                            ? i
+                            : 0;
+                };
+
+                // Compute totals
+                let totalPayment = api.column(4).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                let totalInterest = api.column(5).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+                let totalPrincipal = api.column(6).data().reduce((a, b) => intVal(a) + intVal(b), 0);
+
+                // Update footer cells
+                $(api.column(4).footer()).html('₱' + totalPayment.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $(api.column(5).footer()).html('₱' + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                $(api.column(6).footer()).html('₱' + totalPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+            }
         });
+
 
         // Filter button
         $('#filterBtn').on('click', function () {
