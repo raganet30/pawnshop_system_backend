@@ -21,6 +21,7 @@ try {
     $unit_description = $_POST['unit_description'] ?? '';
     $category = $_POST['category'] ?? '';
     $amount_pawned = (float) ($_POST['amount_pawned'] ?? 0);
+    $original_amount_pawned = $amount_pawned;
     $notes = $_POST['notes'] ?? null;
     $date_pawned = $_POST['date_pawned'] ?? date("Y-m-d");
 
@@ -68,14 +69,15 @@ try {
 
     // --- 3. Insert pawn item ---
     $stmt = $pdo->prepare("INSERT INTO pawned_items 
-        (branch_id, customer_id, unit_description, category, amount_pawned, notes, date_pawned, created_by, status, is_deleted) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0)");
+        (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, notes, date_pawned, created_by, status, is_deleted) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0)");
     $stmt->execute([
         $branch_id,
         $customer_id,
         $unit_description,
         $category,
         $amount_pawned,
+        $original_amount_pawned,
         $notes,
         $date_pawned,
         $user_id

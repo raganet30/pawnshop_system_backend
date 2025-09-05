@@ -29,6 +29,7 @@ $sql = "
         p.unit_description,
         p.category,
         p.amount_pawned,
+        p.original_amount_pawned,
         p.notes,
         p.date_pawned,
         p.status

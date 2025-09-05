@@ -22,9 +22,9 @@ $(document).on("click", ".editPawnBtn", function(e) {
                 $("#editDatePawned").val(pawn.date_pawned);
 
                 // Amount fields: hidden raw value + formatted visible value
-                $("#editAmountPawned").val(pawn.amount_pawned);
+                $("#editAmountPawned").val(pawn.original_amount_pawned);
                 $("#editAmountPawnedVisible").val(
-                    Number(pawn.amount_pawned).toLocaleString('en-PH', { 
+                    Number(pawn.original_amount_pawned).toLocaleString('en-PH', { 
                         minimumFractionDigits: 2, 
                         maximumFractionDigits: 2 
                     })

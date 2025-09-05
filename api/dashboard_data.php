@@ -27,7 +27,7 @@ $recent_stmt = $pdo->prepare("
         c.full_name AS owner_name,
         p.unit_description,
         p.category,
-        p.amount_pawned,
+        p.original_amount_pawned,
         p.status
     FROM pawned_items p
     INNER JOIN customers c ON p.customer_id = c.customer_id
@@ -40,7 +40,7 @@ $recent_items = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // ============================
 // MONTHLY TRENDS (Last 12 months)
-// Shows total pawned amount + total tubo interest collected
+// Shows total pawned amount + total income
 // ============================
 $trend_stmt = $pdo->prepare("
    SELECT 

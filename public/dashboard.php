@@ -227,7 +227,7 @@ if ($_SESSION['user']['role'] == 'super_admin') {
                         item.owner_name,
                         item.unit_description,
                         item.category,
-                        "₱" + parseFloat(item.amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+                        "₱" + parseFloat(item.original_amount_pawned).toLocaleString(undefined, { minimumFractionDigits: 2 }),
                         statusBadge
                     ]);
                 });

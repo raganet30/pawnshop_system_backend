@@ -612,7 +612,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 );
                 return; // stop further execution
             }
-
+                
             // Populate modal fields
             $("#forfeitPawnId").val(pawn.pawn_id);
             $("#forfeitOwnerName").val(pawn.customer_name);

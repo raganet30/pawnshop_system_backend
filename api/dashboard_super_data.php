@@ -19,7 +19,7 @@ $branch_stats = $pdo->query("
     SUM(CASE WHEN p.status = 'pawned' AND p.is_deleted=0 THEN 1 ELSE 0 END) AS total_pawned,
     SUM(CASE WHEN p.status = 'claimed' AND p.is_deleted=0 THEN 1 ELSE 0 END) AS claimed,
     SUM(CASE WHEN p.status = 'forfeited' AND p.is_deleted=0 THEN 1 ELSE 0 END) AS forfeited,
-    COALESCE(SUM(CASE WHEN p.status = 'pawned' AND p.is_deleted=0 THEN p.amount_pawned ELSE 0 END), 0) AS total_pawned_value,
+    COALESCE(SUM(CASE WHEN p.status = 'pawned' AND p.is_deleted=0 THEN p.original_amount_pawned ELSE 0 END), 0) AS total_pawned_value,
     COALESCE(SUM(tp.interest_amount), 0) AS total_interest_amount,
     COALESCE(SUM(c.penalty_amount), 0) AS total_penalty_amount,
     COALESCE(SUM(pp_sum.total_interest_paid), 0) AS total_partial_interest,
@@ -54,7 +54,7 @@ FROM (
     -- Pawned amounts (by date_pawned, only active pawned items)
     SELECT 
         DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
-        SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END) AS total_pawned,
+        SUM(CASE WHEN p.status = 'pawned' THEN p.original_amount_pawned ELSE 0 END) AS total_pawned,
         0 AS total_interest,
         0 AS total_penalty,
         0 AS total_income
