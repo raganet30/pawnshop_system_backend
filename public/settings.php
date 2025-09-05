@@ -52,7 +52,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
                 <!-- Backup Frequency -->
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <label class="form-label">Backup Frequency</label>
                     <select class="form-select" name="backup_frequency">
                         <option value="daily">Daily</option>
@@ -60,7 +60,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                         <option value="monthly">Monthly</option>
                         <option value="manual">Manual only</option>
                     </select>
-                </div>
+                </div> -->
 
                 <!-- Session Timeout -->
                 <div class="col-md-3">
