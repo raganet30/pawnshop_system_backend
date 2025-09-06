@@ -69,8 +69,8 @@ try {
 
     // --- 3. Insert pawn item ---
     $stmt = $pdo->prepare("INSERT INTO pawned_items 
-        (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, notes, date_pawned, created_by, status, is_deleted) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0)");
+        (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, notes, date_pawned, current_due_date, created_by, status, is_deleted) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0)");
     $stmt->execute([
         $branch_id,
         $customer_id,
@@ -79,6 +79,7 @@ try {
         $amount_pawned,
         $original_amount_pawned,
         $notes,
+        $date_pawned,
         $date_pawned,
         $user_id
     ]);

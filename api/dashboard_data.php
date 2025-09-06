@@ -43,19 +43,19 @@ $recent_items = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
 // Shows total pawned amount + total income
 // ============================
 $trend_stmt = $pdo->prepare("
-   SELECT 
+  SELECT 
     t.month,
-    SUM(t.total_pawned)   AS total_pawned,
-    SUM(t.total_interest) AS total_interest,
-    SUM(t.total_penalty)  AS total_penalty,
-    SUM(t.total_income)   AS total_income
+    SUM(t.total_pawned)       AS total_pawned,
+    SUM(t.total_interest)     AS total_interest,
+    SUM(t.total_claim_interest) AS total_claim_interest,
+    SUM(t.total_income)       AS total_income
 FROM (
-    -- Pawned amounts (by date_pawned, only active pawned items)
+    -- Pawned amounts (only active pawned items)
     SELECT 
         DATE_FORMAT(p.date_pawned, '%Y-%m') AS month,
         SUM(CASE WHEN p.status = 'pawned' THEN p.amount_pawned ELSE 0 END) AS total_pawned,
         0 AS total_interest,
-        0 AS total_penalty,
+        0 AS total_claim_interest,
         0 AS total_income
     FROM pawned_items p
     WHERE p.is_deleted = 0
@@ -70,7 +70,7 @@ FROM (
         DATE_FORMAT(tp.date_paid, '%Y-%m') AS month,
         0 AS total_pawned,
         SUM(tp.interest_amount) AS total_interest,
-        0 AS total_penalty,
+        0 AS total_claim_interest,
         SUM(tp.interest_amount) AS total_income
     FROM tubo_payments tp
     WHERE tp.date_paid >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
@@ -84,7 +84,7 @@ FROM (
         DATE_FORMAT(pp.created_at, '%Y-%m') AS month,
         0 AS total_pawned,
         SUM(pp.interest_paid) AS total_interest,
-        0 AS total_penalty,
+        0 AS total_claim_interest,
         SUM(pp.interest_paid) AS total_income
     FROM partial_payments pp
     WHERE pp.created_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
@@ -93,13 +93,13 @@ FROM (
 
     UNION ALL
 
-    -- Penalties
+    -- Claims (interest + penalty)
     SELECT 
         DATE_FORMAT(c.date_claimed, '%Y-%m') AS month,
         0 AS total_pawned,
         0 AS total_interest,
-        SUM(c.penalty_amount) AS total_penalty,
-        SUM(c.penalty_amount) AS total_income
+        SUM(c.interest_amount + c.penalty_amount) AS total_claim_interest,
+        SUM(c.interest_amount + c.penalty_amount) AS total_income
     FROM claims c
     WHERE c.date_claimed >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
       AND c.branch_id = :branch_id
@@ -107,8 +107,6 @@ FROM (
 ) t
 GROUP BY t.month
 ORDER BY t.month ASC;
-
-
 
 ");
 $trend_stmt->execute(['branch_id' => $branch_id]);

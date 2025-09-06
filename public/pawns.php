@@ -231,7 +231,7 @@ $highlightPawnId = $_GET['id'] ?? '';
             <!-- Claim Pawn Modal -->
             <div class="modal fade" id="claimPawnModal" tabindex="-1" aria-labelledby="claimPawnModalLabel"
                 aria-hidden="true">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <form id="claimPawnForm" method="POST" action="../processes/pawn_claim_process.php">
                             <div class="modal-header">
@@ -242,49 +242,95 @@ $highlightPawnId = $_GET['id'] ?? '';
                             <div class="modal-body">
                                 <input type="hidden" name="pawn_id" id="claimPawnId">
                                 <input type="hidden" name="claimantPhoto" id="claimantPhoto">
-                                <!-- hidden field for captured photo -->
 
-                                <div class="row g-3">
-                                    <div class="col-md-6">
+                                <!-- Pawn Details -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-3">
                                         <label>Owner Name</label>
                                         <input type="text" class="form-control" id="claimOwnerName" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label>Unit Description</label>
                                         <input type="text" class="form-control" id="claimUnitDescription" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label>Date Pawned</label>
                                         <input type="text" class="form-control" id="claimDatePawned" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
+                                        <label>Months Pawned</label>
+                                        <input type="text" class="form-control" id="claimMonths" readonly>
+                                    </div>
+                                     <div class="col-md-3">
                                         <label>Amount Pawned</label>
                                         <input type="text" class="form-control" id="claimAmountPawned" readonly>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Months</label>
-                                        <input type="text" class="form-control" id="claimMonths" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Interest</label>
+                                    <div class="col-md-3">
+                                        <label>Interest Amount</label>
                                         <input type="text" class="form-control" id="claimInterest" readonly>
                                     </div>
-
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label for="claimPenalty">Penalty (optional)</label>
                                         <input type="number" step="0.01" class="form-control" id="claimPenalty"
                                             name="claimPenalty" placeholder="Enter penalty amount">
-
                                         <input type="number" step="0.01" class="form-control" id="claimPenaltyHidden"
                                             name="claimPenaltyHidden" hidden>
                                     </div>
-
-
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label>Total Payment</label>
                                         <input type="text" class="form-control" id="claimTotal" readonly>
                                     </div>
+                                    <div class="col-md-6">
+                                        <label>Notes</label>
+                                        <input type="text" class="form-control" id="claimNotes" >
+                                    </div>
+
                                 </div>
+
+                                <!-- 🔹 Tubo Payments History -->
+                                <h6 class="mt-3">Tubo Payments History</h6>
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered table-sm" id="tuboPaymentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date Paid</th>
+                                                <th>Covered Period</th>
+                                                <th>Interest Rate</th>
+                                                <th>Interest Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- 🔹 Partial Payments History -->
+                                <h6 class="mt-3">Partial Payments History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm" id="partialPaymentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date Paid</th>
+                                                <th>Amount Paid</th>
+                                                <th>Interest Paid</th>
+                                                <th>Principal Paid</th>
+                                                <th>Remaining Principal</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <p class="small text-muted">
+                                    * If prepaid interest or partial payments exist, they will be applied automatically
+                                    in the claim computation.
+                                </p>
 
                                 <hr>
 
@@ -304,7 +350,6 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <p class="text-muted small">Captured photo will appear here.</p>
                                     </div>
                                 </div>
-
                             </div>
 
                             <div class="modal-footer">
@@ -315,6 +360,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                     </div>
                 </div>
             </div>
+
 
 
             <!-- Partial Payment Modal -->
@@ -370,7 +416,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="number" class="form-control" id="ppAmount" name="partial_amount"
                                             min="1" required>
 
-                                              
+
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Notes</label>
@@ -555,7 +601,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                    { title: "Actions", orderable: false }
+                                                                                { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -611,7 +657,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 );
                 return; // stop further execution
             }
-                
+
             // Populate modal fields
             $("#forfeitPawnId").val(pawn.pawn_id);
             $("#forfeitOwnerName").val(pawn.customer_name);
@@ -707,7 +753,7 @@ $highlightPawnId = $_GET['id'] ?? '';
         document.getElementById('editAmountPawned')
     );
 
-   
+
 
 
     // partial payment function
@@ -729,11 +775,10 @@ $highlightPawnId = $_GET['id'] ?? '';
                         // Compute months covered (minimum 1 month)
                         let datePawned = new Date(pawn.date_pawned);
                         let today = new Date();
-                        let diffMonths =
-                            (today.getFullYear() - datePawned.getFullYear()) * 12 +
-                            (today.getMonth() - datePawned.getMonth());
-                        if (today.getDate() > datePawned.getDate()) diffMonths++;
+                        let daysDiff = Math.floor((today - datePawned) / (1000 * 60 * 60 * 24));
+                        let diffMonths = Math.ceil(daysDiff / 31);
                         if (diffMonths < 1) diffMonths = 1;
+
 
                         // Fill modal fields
                         // Fill modal fields

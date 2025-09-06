@@ -119,8 +119,8 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <th>Date</th>
                                         <th>Amount</th>
                                         <th>Type</th>
-                                        <th>User</th>
                                         <th>Notes</th>
+                                        <th>User</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adjustmentsBody">

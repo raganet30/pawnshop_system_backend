@@ -35,12 +35,15 @@ try {
 
     $current_principal = floatval($pawn['amount_pawned']);
     $interest_rate = floatval($pawn['interest_rate'] ?? 0) / 100; // convert to decimal
-
-    // --- Calculate months covered (min 1 month) ---
+    
+// --- Calculate months covered (min 1 month) ---
     $datePawned = new DateTime($pawn['date_pawned']);
     $today = new DateTime();
     $days_diff = $datePawned->diff($today)->days;
-    $months = max(1, ceil($days_diff / 30));
+
+    // assume 31-day month cycle
+    $months = max(1, ceil($days_diff / 31));
+
 
     // --- Compute interest portion based on current principal ---
     $interest_due = round($current_principal * $interest_rate * $months, 2);
@@ -90,7 +93,7 @@ try {
     updateCOH($pdo, $branch_id, $total_paid, 'add');
 
     // --- Ledger entry ---
-    $ledgerNotes = "Partial payment: Principal ₱" . number_format($total_paid, 2) ."Partial Payment ₱:" . number_format($partial_amount, 2) . "Interest ₱" . number_format($interest_due, 2);
+    $ledgerNotes = "Partial payment: Principal ₱" . number_format($total_paid, 2) . "Partial Payment ₱:" . number_format($partial_amount, 2) . "Interest ₱" . number_format($interest_due, 2);
     insertCashLedger(
         $pdo,
         $branch_id,

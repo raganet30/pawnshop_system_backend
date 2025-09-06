@@ -6,137 +6,203 @@ require_once "../config/helpers.php";
 header('Content-Type: application/json');
 
 try {
-    if (!isset($_SESSION['user'])) throw new Exception("Unauthorized");
+    // --- Authentication ---
+    if (!isset($_SESSION['user'])) {
+        echo json_encode(["status" => "error", "message" => "Unauthorized"]);
+        exit;
+    }
 
     $pawn_id = $_POST['pawn_id'] ?? null;
     $branch_id = $_SESSION['user']['branch_id'];
     $user_id = $_SESSION['user']['id'];
-    $notes = $_POST['notes'] ?? "";
+    $notes = $_POST['claimNotes'] ?? "";
 
-    if (!$pawn_id) throw new Exception("Invalid pawn ID.");
+    if (!$pawn_id) {
+        echo json_encode(["status" => "error", "message" => "Invalid pawn ID."]);
+        exit;
+    }
 
-    // Fetch pawned item
+    // --- Fetch pawned item ---
     $stmt = $pdo->prepare("SELECT * FROM pawned_items WHERE pawn_id = ? AND status = 'pawned'");
     $stmt->execute([$pawn_id]);
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$pawn) throw new Exception("Pawn record not found or already claimed.");
 
+    if (!$pawn) {
+        echo json_encode(["status" => "error", "message" => "Pawn record not found or already claimed."]);
+        exit;
+    }
+
+    // --- Calculate months pawned ---
     $datePawned = new DateTime($pawn['date_pawned']);
-    $claimDate = new DateTime();
+    $now = new DateTime();
+    $daysDiff = $datePawned->diff($now)->days;
 
-    // Get branch interest rate (fallback to pawn rate)
-    $stmt = $pdo->prepare("SELECT interest_rate FROM branches WHERE branch_id = ?");
+    // min 1 month, ceil by 30 days
+    $monthsPawned = max(1, ceil($daysDiff / 31));
+
+    // --- Get branch interest rate ---
+    $stmt = $pdo->prepare("SELECT interest_rate, cash_on_hand FROM branches WHERE branch_id = ?");
     $stmt->execute([$pawn['branch_id']]);
     $branch = $stmt->fetch(PDO::FETCH_ASSOC);
-    $interest_rate = isset($branch['interest_rate']) ? floatval($branch['interest_rate']) : floatval($pawn['interest_rate'] ?? 0.06);
 
+    $interest_rate = floatval($branch['interest_rate'] ?? 0.06);
     $principal = floatval($pawn['amount_pawned']);
 
-    // --- Determine last prepaid interest (from tubo_payments) ---
-    $stmt = $pdo->prepare("SELECT MAX(period_end) AS last_period_end FROM tubo_payments WHERE pawn_id = ?");
+    // --- Check tubo payments (prepaid interest) ---
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM(months_covered), 0) AS prepaid_months
+        FROM tubo_payments
+        WHERE pawn_id = ?
+    ");
     $stmt->execute([$pawn_id]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $lastCovered = $row['last_period_end'] ? new DateTime($row['last_period_end']) : (clone $datePawned)->modify('+1 month');
+    $tubo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // --- Calculate unpaid months (always min 1 month) ---
-    $diffDays = $lastCovered->diff($claimDate)->days;
-    $unpaidMonths = max(1, ceil($diffDays / 30));
-    $interest_amount = ($unpaidMonths > 0) ? round($principal * $interest_rate * $unpaidMonths, 2) : 0.00;
 
-    // Penalty
-    $penalty = isset($_POST['claimPenalty']) && $_POST['claimPenalty'] !== '' ? floatval($_POST['claimPenalty']) : 0.00;
 
-    $total_paid = round($principal + $interest_amount + $penalty, 2);
+
+
+
+    $prepaidMonths = intval($tubo['prepaid_months'] ?? 0);
+
+    // --- Net months to pay now ---
+    $netMonths = max(0, $monthsPawned - $prepaidMonths);
+
+    // --- Determine current cover period ---
+    $currentPeriodStart = clone $datePawned;
+    $currentPeriodStart->modify('+' . ($monthsPawned - 1) . ' months');
+
+    $currentPeriodEnd = clone $datePawned;
+    $currentPeriodEnd->modify('+' . $monthsPawned . ' months');
+
+    // --- Check partial payments if interest already paid within this cover period ---
+    $stmt = $pdo->prepare("
+    SELECT COUNT(*) AS cnt
+    FROM partial_payments
+    WHERE pawn_id = ?
+      AND interest_paid > 0
+      AND status = 'active'
+      AND DATE(created_at) BETWEEN ? AND ?
+");
+    $stmt->execute([$pawn_id, $currentPeriodStart->format('Y-m-d'), $currentPeriodEnd->format('Y-m-d')]);
+    $partialInterest = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $interestAlreadyPaid = intval($partialInterest['cnt'] ?? 0) > 0;
+
+    // --- Compute interest only if not prepaid and no partial interest in cover period ---
+    if ($interestAlreadyPaid) {
+        $interest_amount = 0.00;
+    } else {
+        $interest_amount = round($principal * $interest_rate * $netMonths, 2);
+    }
 
     // --- Save claimant photo ---
-    if (empty($_POST['claimantPhoto'])) throw new Exception("Claimant photo is required.");
+    $photoPathForDb = null;
+    if (!empty($_POST['claimantPhoto'])) {
+        $photoData = $_POST['claimantPhoto'];
+        $photoData = str_replace('data:image/png;base64,', '', $photoData);
+        $photoData = str_replace(' ', '+', $photoData);
+        $photoBinary = base64_decode($photoData);
 
-    $photoData = $_POST['claimantPhoto'];
-    if (strpos($photoData, 'base64,') !== false) $photoData = substr($photoData, strpos($photoData, 'base64,') + 7);
-    $photoData = str_replace(' ', '+', $photoData);
-    $photoBinary = base64_decode($photoData);
+        $fileName = "claimant_" . $pawn_id . "_" . time() . ".png";
+        $uploadDir = "../uploads/claimants/";
 
-    $fileName = "claimant_{$pawn_id}_" . time() . ".png";
-    $uploadDir = "../uploads/claimants/";
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-    $filePath = $uploadDir . $fileName;
-    file_put_contents($filePath, $photoBinary);
-    $photoPathForDb = "uploads/claimants/" . $fileName;
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
 
-    // --- Begin transaction ---
-    $pdo->beginTransaction();
+        $filePath = $uploadDir . $fileName;
+        file_put_contents($filePath, $photoBinary);
+        $photoPathForDb = "uploads/claimants/" . $fileName;
+    } else {
+        echo json_encode(["status" => "error", "message" => "Claimant photo is required."]);
+        exit;
+    }
 
-    // Insert into claims
+    // --- Penalty (if any) ---
+    $penalty = isset($_POST['claimPenalty']) && $_POST['claimPenalty'] !== '' ? floatval($_POST['claimPenalty']) : 0.00;
+
+   
+  
+    // --- Final total ---
+    $total_paid = $principal + $interest_amount + $penalty;
+
+    // --- Insert into claims ---
     $stmt = $pdo->prepare("
-        INSERT INTO claims
-        (pawn_id, branch_id, date_claimed, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
-        VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        INSERT INTO claims 
+        (pawn_id, branch_id, date_claimed, months, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
+        VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ");
     $stmt->execute([
-        $pawn_id,
-        $pawn['branch_id'],
-        $interest_rate,
-        $interest_amount,
-        $principal,
-        $penalty,
-        $total_paid,
-        $user_id,
-        $notes,
-        $photoPathForDb
+        $pawn_id,               // pawn_id
+        $pawn['branch_id'],     // branch_id
+        $monthsPawned,          // months pawned (raw months)
+        $interest_rate,         // interest_rate
+        $interest_amount,       // interest_amount (after tubo adjustment)
+        $principal,             // principal_amount
+        $penalty,               // penalty_amount
+        $total_paid,            // total_paid
+        $user_id,               // cashier_id
+        $notes,                 // notes
+        $photoPathForDb         // photo_path
     ]);
 
-    // Update pawned item as claimed
-    $stmt = $pdo->prepare("UPDATE pawned_items SET status='claimed', WHERE pawn_id=?");
+    $claim_id = $pdo->lastInsertId();
+
+    // --- Update pawned item ---
+    $stmt = $pdo->prepare("UPDATE pawned_items SET status = 'claimed' WHERE pawn_id = ?");
     $stmt->execute([$pawn_id]);
 
-    // Update branch cash on hand
-    if ($total_paid > 0) updateCOH($pdo, $branch_id, $total_paid, 'add');
+    // --- Update branch cash on hand ---
+    updateCOH($pdo, $branch_id, $total_paid, 'add');
 
-    // Insert cash ledger
+    // --- Insert into cash ledger ---
     if ($total_paid > 0) {
+        $description = "Claim (ID #$claim_id)";
+        $ledgerNotes = "Pawn ID #$pawn_id claimed with interest + penalty (if any)";
+
         insertCashLedger(
             $pdo,
             $branch_id,
-            "claim",
-            "in",
+            "claim",     // txn_type
+            "in",        // direction
             $total_paid,
-            "claims",
+            "claims",    // ref_table
             $pawn_id,
-            "Claim (ID #{$pawn_id})",
-            "Pawn ID #{$pawn_id} claimed; principal + unpaid interest + penalty",
+            $description,
+            $ledgerNotes,
             $user_id
         );
     }
 
-    // Update partial payments
-    $stmt = $pdo->prepare("UPDATE partial_payments SET status='settled' WHERE pawn_id=? AND status='active'");
-    $stmt->execute([$pawn_id]);
-    $stmt = $pdo->prepare("UPDATE partial_payments SET remaining_principal=0 WHERE pawn_id=? ORDER BY pp_id DESC LIMIT 1");
-    $stmt->execute([$pawn_id]);
+    // --- Insert into audit_logs ---
+    $description = sprintf(
+        "Claimed pawn ID: %d, Unit: %s, Total Amount Paid: ₱%s",
+        $pawn_id,
+        $pawn['unit_description'],
+        number_format($total_paid, 2)
+    );
 
-    // Audit log
     logAudit(
         $pdo,
         $user_id,
         $pawn['branch_id'],
         'Claim Pawned Item',
-        "Claimed pawn ID: {$pawn_id}, Principal: ₱" . number_format($principal,2) . 
-        ", Interest: ₱" . number_format($interest_amount,2) .
-        ", Penalty: ₱" . number_format($penalty,2) .
-        ", Total Paid: ₱" . number_format($total_paid,2)
+        $description
     );
 
-    $pdo->commit();
+    // --- Settle partial payments ---
+    $stmt = $pdo->prepare("UPDATE partial_payments SET status = 'settled' WHERE pawn_id = ? AND status = 'active'");
+    $stmt->execute([$pawn_id]);
+
+    $stmt = $pdo->prepare("UPDATE partial_payments SET remaining_principal = 0 WHERE pawn_id = ? ORDER BY pp_id DESC LIMIT 1");
+    $stmt->execute([$pawn_id]);
 
     echo json_encode([
         "status" => "success",
-        "message" => "Pawn item successfully claimed! Cash on Hand +₱" . number_format($total_paid,2),
-        "pawn_id" => $pawn_id,
-        "interest_charged" => number_format($interest_amount,2),
-        "months_charged" => $unpaidMonths
+        "message" => "Pawn item successfully claimed!<br>Cash on Hand +₱" . number_format($total_paid, 2),
+        "pawn_id" => $pawn_id
     ]);
 
 } catch (Exception $e) {
-    if ($pdo->inTransaction()) $pdo->rollBack();
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
