@@ -73,7 +73,7 @@ $totalPawned = 0;
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
-   
+
 
     // Build actions dropdown (only if user has access)
     $actions = '';
@@ -147,18 +147,27 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     // Build row for DataTable
 
     $totalPawned += floatval($row['amount_pawned']);
+
+    $datePawned = new DateTime($row['date_pawned']);
+    $today = new DateTime();
+    $daysDiff = $datePawned->diff($today)->days;
+
+    // Calculate months (minimum 1 month, assume 31-day month)
+    $months = max(1, ceil($daysDiff / 31));
+
     $rowData = [
         null,
         formatDateMDY($row['date_pawned']),
+         $months . ' month(s)', // <-- new row showing months since pawned
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
         // $amountDisplay,
-        '₱'.number_format($row['amount_pawned'],2),
+        '₱' . number_format($row['amount_pawned'], 2),
         htmlspecialchars($row['contact_no']),
         htmlspecialchars($row['address']),
         htmlspecialchars($row['notes']),
-        
+
     ];
 
 

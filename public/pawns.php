@@ -261,7 +261,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label>Months Pawned</label>
                                         <input type="text" class="form-control" id="claimMonths" readonly>
                                     </div>
-                                     <div class="col-md-3">
+                                    <div class="col-md-3">
                                         <label>Amount Pawned</label>
                                         <input type="text" class="form-control" id="claimAmountPawned" readonly>
                                     </div>
@@ -282,7 +282,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </div>
                                     <div class="col-md-6">
                                         <label>Notes</label>
-                                        <input type="text" class="form-control" id="claimNotes" >
+                                        <input type="text" class="form-control" id="claimNotes">
                                     </div>
 
                                 </div>
@@ -328,8 +328,8 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 </div>
 
                                 <p class="small text-muted">
-                                    * If prepaid interest or partial payments exist, they will be applied automatically
-                                    in the claim computation.
+                                    * If prepaid interest or partial payments exist, interest amount will be waived
+                                    during covered period
                                 </p>
 
                                 <hr>
@@ -365,7 +365,7 @@ $highlightPawnId = $_GET['id'] ?? '';
 
             <!-- Partial Payment Modal -->
             <div class="modal fade" id="partialPaymentModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <form id="partialPaymentForm">
                             <div class="modal-header">
@@ -373,52 +373,48 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
+                                <div class="row g-3 mb-3">
+                                    <!-- Pawn Details -->
 
-                                <!-- Pawn Details -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label">Pawner Name</label>
                                         <input type="text" class="form-control" id="ppPawnerName" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label">Category</label>
                                         <input type="text" class="form-control" id="ppCategory" readonly>
                                     </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
+
+
+                                    <div class="col-md-3">
                                         <label class="form-label">Unit</label>
                                         <input type="text" class="form-control" id="ppUnit" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label">Date Pawned</label>
                                         <input type="text" class="form-control" id="ppDatePawned" readonly>
                                     </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
+
+
+                                    <div class="col-md-3">
                                         <label class="form-label">Amount Pawned</label>
                                         <input type="text" class="form-control" id="ppAmountPawned" readonly>
-
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label">Months Covered</label>
                                         <input type="text" class="form-control" id="ppMonths" readonly>
                                     </div>
-                                </div>
 
-                                <hr>
 
-                                <!-- Partial Payment -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
+
+                                    <!-- Partial Payment -->
+
+                                    <div class="col-md-3">
                                         <label class="form-label">Enter Partial Payment</label>
                                         <input type="number" class="form-control" id="ppAmount" name="partial_amount"
                                             min="1" required>
-
-
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label">Notes</label>
                                         <input type="text" class="form-control" id="ppNotes" name="ppNotes">
                                     </div>
@@ -434,6 +430,36 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <strong>Total Payable Now: ₱0.00</strong>
                                 </div>
 
+                           
+
+                                <hr>
+                                <h6>Tubo History</h6>
+                                <table class="table table-sm table-bordered" id="ppTuboHistory">
+                                    <thead>
+                                        <tr>
+                                            <th>Date Paid</th>
+                                            <th>Period Start</th>
+                                            <th>Period End</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+                                <h6>Partial Payment History</h6>
+                                <table class="table table-sm table-bordered" id="ppPartialHistory">
+                                    <thead>
+                                        <tr>
+                                            <th>Date Paid</th>
+                                            <th>Amount Paid</th>
+                                            <th>Remaining Principal</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+
                             </div>
                             <div class="modal-footer">
                                 <!-- Hidden Fields -->
@@ -448,7 +474,6 @@ $highlightPawnId = $_GET['id'] ?? '';
                     </div>
                 </div>
             </div>
-
 
 
             <!-- Forfeit Modal -->
@@ -518,6 +543,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                             <tr>
                                 <th>#</th>
                                 <th>Date Pawned</th>
+                                <th>Months</th>
                                 <th>Owner</th>
                                 <th>Unit</th>
                                 <th>Category</th>
@@ -532,7 +558,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                         </thead>
                         <tfoot>
                             <tr>
-                                <th colspan="5" class="text-end">TOTAL PAWNED AMOUNT:</th>
+                                <th colspan="6" class="text-end">TOTAL PAWNED AMOUNT:</th>
                                 <th id="totalPawned"></th>
                                 <?php if (in_array($_SESSION['user']['role'], ['admin', 'cashier'])): ?>
                                     <th colspan="4"></th>
@@ -593,6 +619,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                     }
                 },
                 { title: "Date Pawned" },
+                { title: "Months" },
                 { title: "Owner" },
                 { title: "Unit" },
                 { title: "Category" },
@@ -601,7 +628,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                                { title: "Actions", orderable: false }
+                                                                                                { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -757,79 +784,142 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
     // partial payment function
-    $(document).ready(function () {
-        // Handle "Add Partial Payment" button click
-        $(document).on("click", ".addPartialPaymentBtn", function () {
-            let pawnId = $(this).data("id");
+    // partial payment function
+$(document).ready(function () {
+    // Handle "Add Partial Payment" button click
+    $(document).on("click", ".addPartialPaymentBtn", function () {
+        let pawnId = $(this).data("id");
 
-            $.ajax({
-                url: "../api/pawn_get.php",
-                method: "GET",
-                data: { pawn_id: pawnId },
-                dataType: "json",
-                success: function (response) {
-                    if (response.status === "success") {
-                        let pawn = response.pawn;
-                        let interestRate = response.branch_interest;
+        $.ajax({
+            url: "../api/pawn_get.php",
+            method: "GET",
+            data: { pawn_id: pawnId },
+            dataType: "json",
+            success: function (response) {
+                if (response.status === "success") {
+                    let pawn = response.pawn;
+                    let interestRate = response.branch_interest;
+                    let tuboHistory = response.tubo_payments || [];
+                    let partialHistory = response.partial_payments || [];
 
-                        // Compute months covered (minimum 1 month)
-                        let datePawned = new Date(pawn.date_pawned);
-                        let today = new Date();
-                        let daysDiff = Math.floor((today - datePawned) / (1000 * 60 * 60 * 24));
-                        let diffMonths = Math.ceil(daysDiff / 31);
-                        if (diffMonths < 1) diffMonths = 1;
+                    // Compute months covered (minimum 1 month)
+                    let datePawned = new Date(pawn.date_pawned);
+                    let today = new Date();
+                    let daysDiff = Math.floor((today - datePawned) / (1000 * 60 * 60 * 24));
+                    let diffMonths = Math.ceil(daysDiff / 31);
+                    if (diffMonths < 1) diffMonths = 1;
 
+                    // --- Check if prepaid ---
+                    let prepaid = false;
 
-                        // Fill modal fields
-                        // Fill modal fields
-                        $("#ppPawnerName").val(pawn.customer_name);  // use .val()
-                        $("#ppUnit").val(pawn.unit_description);
-                        $("#ppCategory").val(pawn.category);
-                        $("#ppDatePawned").val(pawn.date_pawned);
-                        $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
-                        $("#ppNotes").val(pawn.notes);
-                        $("#ppMonths").val(diffMonths + " month(s)");
-
-                        // Hidden fields
-                        $("#ppPawnId").val(pawn.pawn_id);
-                        $("#ppInterestRate").val(interestRate);
-                        $("#ppPrincipal").val(pawn.amount_pawned);
-
-                        // Reset
-                        $("#ppAmount").val("");
-                        $("#ppSummary").html("");
-
-                        // Show modal
-                        $("#partialPaymentModal").modal("show");
-                    } else {
-                        alert(response.message);
+                    // 1. Check tubo payments
+                    if (tuboHistory.length > 0) {
+                        const lastTubo = tuboHistory[0]; // sorted DESC in API
+                        if (lastTubo.period_end && new Date(lastTubo.period_end) >= today) {
+                            prepaid = true;
+                        }
                     }
-                },
-                error: function () {
-                    alert("Failed to fetch pawn details.");
+
+                    // 2. Check partial payments
+                    if (!prepaid && partialHistory.length > 0) {
+                        const lastPartial = partialHistory[0];
+                        const currentPeriodEnd = new Date(datePawned);
+                        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + diffMonths);
+
+                        if (new Date(lastPartial.created_at) <= currentPeriodEnd) {
+                            prepaid = true;
+                        }
+                    }
+
+                    // Fill modal fields
+                    $("#ppPawnerName").val(pawn.customer_name);
+                    $("#ppUnit").val(pawn.unit_description);
+                    $("#ppCategory").val(pawn.category);
+                    $("#ppDatePawned").val(pawn.date_pawned);
+                    $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
+                    $("#ppNotes").val(pawn.notes);
+                    $("#ppMonths").val(diffMonths + " month(s)");
+
+                    // Hidden fields
+                    $("#ppPawnId").val(pawn.pawn_id);
+                    $("#ppInterestRate").val(interestRate);
+                    $("#ppPrincipal").val(pawn.amount_pawned);
+                    $("#ppPrepaid").val(prepaid ? "1" : "0"); // hidden flag
+
+                    // Reset
+                    $("#ppAmount").val("");
+                    $("#ppSummary").html("");
+
+                    // --- Fill tubo history table ---
+                    let tuboHtml = "";
+                    if (tuboHistory.length > 0) {
+                        tuboHistory.forEach(t => {
+                            const prepaidMark = (t.period_end && new Date(t.period_end) >= today) ? "table-success" : "";
+                            tuboHtml += `
+                                <tr class="${prepaidMark}">
+                                    <td>${t.date_paid}</td>
+                                    <td>${t.period_start}</td>
+                                    <td>${t.period_end}</td>
+                                    <td>₱${parseFloat(t.amount).toLocaleString()}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        tuboHtml = `<tr><td colspan="4" class="text-center text-muted">No tubo payments</td></tr>`;
+                    }
+                    $("#ppTuboHistory tbody").html(tuboHtml);
+
+                    // --- Fill partial history table ---
+                    let partialHtml = "";
+                    if (partialHistory.length > 0) {
+                        partialHistory.forEach(p => {
+                            const prepaidMark = (new Date(p.created_at) <= new Date(datePawned.setMonth(datePawned.getMonth() + diffMonths))) 
+                                ? "table-success" : "";
+                            partialHtml += `
+                                <tr class="${prepaidMark}">
+                                    <td>${p.created_at}</td>
+                                    <td>₱${parseFloat(p.amount_paid).toLocaleString()}</td>
+                                    <td>₱${parseFloat(p.remaining_principal).toLocaleString()}</td>
+                                    <td>${p.notes || ""}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        partialHtml = `<tr><td colspan="4" class="text-center text-muted">No partial payments</td></tr>`;
+                    }
+                    $("#ppPartialHistory tbody").html(partialHtml);
+
+                    // Show modal
+                    $("#partialPaymentModal").modal("show");
+                } else {
+                    alert(response.message);
                 }
-            });
-        });
-
-        // Live computation when partial payment is entered
-        $("#ppAmount").on("input", function () {
-            let entered = parseFloat($(this).val()) || 0;
-            let principal = parseFloat($("#ppPrincipal").val());
-            let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
-            let months = parseInt($("#ppMonths").val()) || 1;
-
-            if (entered >= principal) {
-                $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to pawned amount!</span>`);
-                return;
+            },
+            error: function () {
+                alert("Failed to fetch pawn details.");
             }
+        });
+    });
 
-            // Interest = principal × rate × months
-            let interest = principal * interestRate * months;
+    // Live computation when partial payment is entered
+   $("#ppAmount").on("input", function () {
+    let entered = parseFloat($(this).val()) || 0;
+    let principal = parseFloat($("#ppPrincipal").val());
+    let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
+    let months = parseInt($("#ppMonths").val()) || 1;
+    let prepaid = $("#ppPrepaid").val() === "1";
 
-            let remaining = principal - entered;
-            let totalPay = entered + interest;
+    // --- If entering a partial payment today, interest should be 0 ---
+    if (entered > 0) {
+        prepaid = true;
+    }
 
-            $("#ppSummary").html(`
+    let interest = prepaid ? 0 : principal * interestRate * months;
+
+    let remaining = principal - entered;
+    let totalPay = entered + interest;
+
+    $("#ppSummary").html(`
         <div>Original Principal: ₱${principal.toLocaleString()}</div>
         <div>Partial Payment: ₱${entered.toLocaleString()}</div>
         <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
@@ -837,74 +927,67 @@ $highlightPawnId = $_GET['id'] ?? '';
         <hr>
         <strong>Total Payable Now: ₱${totalPay.toLocaleString()}</strong>
     `);
-        });
+});
 
 
+    // Handle form submit (save partial payment)
+    $("#partialPaymentForm").on("submit", function (e) {
+        e.preventDefault();
 
-        // Handle form submit (save partial payment)
-        $("#partialPaymentForm").on("submit", function (e) {
-            e.preventDefault();
+        let pawnId = $("#ppPawnId").val();
+        let partialAmount = parseFloat($("#ppAmount").val()) || 0;
+        let principal = parseFloat($("#ppPrincipal").val()) || 0;
 
-            let pawnId = $("#ppPawnId").val();
-            let partialAmount = parseFloat($("#ppAmount").val()) || 0;
-            let principal = parseFloat($("#ppPrincipal").val()) || 0;
-            let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
-            let notes = $("input[name='notes']").val();
+        if (!pawnId || partialAmount <= 0) {
+            Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
+            return;
+        }
 
-            if (!pawnId || partialAmount <= 0) {
-                Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
-                return;
-            }
+        if (partialAmount >= principal) {
+            Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
+            return;
+        }
 
-            if (partialAmount > principal) {
-                Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
-                return;
-            }
+        Swal.fire({
+            title: "Confirm Partial Payment",
+            html: `Save partial payment?`,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Save",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let formData = $("#partialPaymentForm").serialize();
 
-            let newPrincipal = principal - partialAmount;
+                $.ajax({
+                    url: "../processes/save_partial_payment.php",
+                    method: "POST",
+                    data: formData,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            $("#partialPaymentModal").modal("hide");
 
-            Swal.fire({
-                title: "Confirm Partial Payment",
-                html: `Save partial payment?`,
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, Save",
-                cancelButtonText: "Cancel"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let formData = $("#partialPaymentForm").serialize();
+                            Swal.fire({
+                                title: "Success!",
+                                html: response.message,
+                                icon: "success"
+                            });
 
-                    $.ajax({
-                        url: "../processes/save_partial_payment.php",
-                        method: "POST",
-                        data: formData,
-                        dataType: "json",
-                        success: function (response) {
-                            if (response.status === "success") {
-                                $("#partialPaymentModal").modal("hide");
-
-                                Swal.fire({
-                                    title: "Success!",
-                                    html: response.message,
-                                    icon: "success"
-                                });
-
-                                $("#pawnTable").DataTable().ajax.reload();
-                            } else {
-                                Swal.fire("Error", response.message, "error");
-                            }
-                        },
-                        error: function () {
-                            Swal.fire("Error", "Failed to save partial payment.", "error");
+                            $("#pawnTable").DataTable().ajax.reload();
+                        } else {
+                            Swal.fire("Error", response.message, "error");
                         }
-                    });
-                }
-            });
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Failed to save partial payment.", "error");
+                    }
+                });
+            }
         });
-
-
-
     });
+});
+
 
 
 

@@ -14,7 +14,7 @@ try {
 
     $pawn_id = $_POST['pawn_id'] ?? null;
     $partial_amount = isset($_POST['partial_amount']) ? floatval($_POST['partial_amount']) : 0;
-    $notes = $_POST['notes'] ?? "";
+    $notes = $_POST['ppNotes'] ?? "";
     $user_id = $_SESSION['user']['id'];
     $branch_id = $_SESSION['user']['branch_id'];
 
@@ -34,38 +34,56 @@ try {
     }
 
     $current_principal = floatval($pawn['amount_pawned']);
-    $interest_rate = floatval($pawn['interest_rate'] ?? 0) / 100; // convert to decimal
-    
-// --- Calculate months covered (min 1 month) ---
+    $interest_rate = floatval($pawn['interest_rate'] ?? 6) / 100; // convert to decimal
+
+    // --- Calculate months pawned (min 1 month, assume 31-day month) ---
     $datePawned = new DateTime($pawn['date_pawned']);
     $today = new DateTime();
     $days_diff = $datePawned->diff($today)->days;
-
-    // assume 31-day month cycle
     $months = max(1, ceil($days_diff / 31));
 
-
-    // --- Compute interest portion based on current principal ---
+    // --- Default interest ---
     $interest_due = round($current_principal * $interest_rate * $months, 2);
 
-    // // --- Allocate partial payment ---
-    // if ($partial_amount <= $interest_due) {
-    //     // Entire payment goes to interest
-    //     $interest_paid = $partial_amount;
-    //     $principal_paid = 0;
-    // } else {
-    //     $interest_paid = $interest_due;
-    //     $principal_paid = $partial_amount - $interest_paid;
-    // }
+    // --- Fetch previous partial payments ---
+    $stmtPartial = $pdo->prepare("
+        SELECT created_at 
+        FROM partial_payments 
+        WHERE pawn_id = ? 
+        ORDER BY created_at DESC
+    ");
+    $stmtPartial->execute([$pawn_id]);
+    $partialHistory = $stmtPartial->fetchAll(PDO::FETCH_ASSOC);
 
-    // --- Compute new remaining principal ---
-    $new_principal = $current_principal - $partial_amount;
-    // if ($new_principal < 0)
-    //     $new_principal = 0;
+    // --- Check if interest already prepaid in current period ---
+    $prepaid = false;
+    if (!empty($partialHistory)) {
+        foreach ($partialHistory as $pp) {
+            $ppDate = new DateTime($pp['created_at']);
 
+            $periodStart = clone $datePawned;
+            $periodStart->modify('+' . ($months - 1) . ' months');
 
+            $periodEnd = clone $datePawned;
+            $periodEnd->modify('+' . $months . ' months');
 
-    $total_paid = $partial_amount + $interest_due;
+            if ($ppDate >= $periodStart && $ppDate <= $periodEnd) {
+                $prepaid = true;
+                break;
+            }
+        }
+    }
+
+    if ($prepaid) {
+        $interest_due = 0;
+    }
+
+    // --- Allocate partial payment ---
+    $principal_paid = $partial_amount;
+    $new_principal = $current_principal - $principal_paid;
+    if ($new_principal < 0) $new_principal = 0;
+
+    $total_paid = $principal_paid + $interest_due;
 
     // --- Insert into partial_payments ---
     $stmt = $pdo->prepare("
@@ -78,7 +96,7 @@ try {
         $branch_id,
         $total_paid,
         $interest_due,
-        $partial_amount,
+        $principal_paid,
         $new_principal,
         $user_id,
         $notes
@@ -86,14 +104,19 @@ try {
     $pp_id = $pdo->lastInsertId();
 
     // --- Update pawned_items principal ---
-    $stmt = $pdo->prepare("UPDATE pawned_items SET amount_pawned = ?, has_partial_payments=1, updated_by = ?, updated_at = NOW() WHERE pawn_id = ?");
+    $stmt = $pdo->prepare("
+        UPDATE pawned_items 
+        SET amount_pawned = ?, has_partial_payments = 1, updated_by = ?, updated_at = NOW() 
+        WHERE pawn_id = ?
+    ");
     $stmt->execute([$new_principal, $user_id, $pawn_id]);
 
     // --- Update branch cash on hand ---
     updateCOH($pdo, $branch_id, $total_paid, 'add');
 
     // --- Ledger entry ---
-    $ledgerNotes = "Partial payment: Principal ₱" . number_format($total_paid, 2) . "Partial Payment ₱:" . number_format($partial_amount, 2) . "Interest ₱" . number_format($interest_due, 2);
+    $ledgerNotes = "Partial payment: Principal ₱" . number_format($principal_paid, 2) .
+                   " | Interest ₱" . number_format($interest_due, 2);
     insertCashLedger(
         $pdo,
         $branch_id,
@@ -109,10 +132,10 @@ try {
 
     // --- Audit log ---
     $log_desc = sprintf(
-        "Partial payment recorded. Pawn ID: %d, Total Amount Paid: ₱%s (Partial Payment:₱%s Interest ₱%s), New Principal: ₱%s",
+        "Partial payment recorded. Pawn ID: %d, Total Amount Paid: ₱%s (Principal:₱%s Interest:₱%s), New Principal: ₱%s",
         $pawn_id,
         number_format($total_paid, 2),
-        number_format($partial_amount, 2),
+        number_format($principal_paid, 2),
         number_format($interest_due, 2),
         number_format($new_principal, 2)
     );
@@ -122,7 +145,8 @@ try {
         "status" => "success",
         "message" => "Partial payment of ₱" . number_format($partial_amount, 2) . " saved!<br>Remaining Principal: ₱" . number_format($new_principal, 2) . "<br>Cash On Hand: +₱" . number_format($total_paid, 2),
         "pawn_id" => $pawn_id,
-        "new_principal" => $new_principal
+        "new_principal" => $new_principal,
+        "interest_due" => $interest_due
     ]);
 
 } catch (Exception $e) {
