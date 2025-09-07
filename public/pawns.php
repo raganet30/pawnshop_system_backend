@@ -128,6 +128,26 @@ $highlightPawnId = $_GET['id'] ?? '';
                                             value="<?php echo date('Y-m-d'); ?>" required>
                                     </div>
 
+                                    <!-- Claimant Photo Capture -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>Live Camera</label>
+                                            <video id="cameraStream" width="100%" height="240" autoplay
+                                                playsinline></video>
+                                            <button type="button" class="btn btn-sm btn-primary mt-2"
+                                                id="pawnCapturePhotoBtn">
+                                                <i class="bi bi-camera"></i> Capture Photo
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Captured Photo</label>
+                                            <canvas id="pawnCapturedCanvas" width="320" height="240"
+                                                class="border d-block mb-2"></canvas>
+                                            <p class="text-muted small">Captured photo will appear here.</p>
+                                        </div>
+                                    </div>
+
+
                                 </div>
                             </div>
 
@@ -215,6 +235,33 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="date" class="form-control" name="date_pawned" id="editDatePawned"
                                             required>
                                     </div>
+
+
+
+                                    <!-- Pawn Item Picture -->
+                                    <div class="col-md-6 text-center">
+                                        <label class="form-label d-block">Item Picture</label>
+                                        <div class="mt-2">
+                                            <img id="edit_pawn_preview" src="../assets/img/avatar.png"
+                                                class="img-thumbnail" style="max-width:300px; ">
+
+                                            <!-- Replace photo controls -->
+                                            <div class="mt-3">
+                                                <input type="file" id="editPawnPhoto" name="pawn_photo" accept="image/*"
+                                                    class="form-control form-control-sm mb-2">
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                    id="editPawnCaptureBtn">
+                                                    <i class="bi bi-camera"></i> Capture New Photo
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Hidden canvas for capture -->
+                                        <canvas id="editPawnCanvas" width="320" height="240" class="d-none"></canvas>
+                                    </div>
+
+
+
                                 </div>
                             </div>
 
@@ -282,7 +329,12 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </div>
                                     <div class="col-md-6">
                                         <label>Notes</label>
-                                        <input type="text" class="form-control" id="claimNotes">
+                                        <input type="text" class="form-control" id="claimNotes" name="claimNotes">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Date Claimed</label>
+                                        <input type="date" class="form-control" id="claimDate" name="claimDate"
+                                            required>
                                     </div>
 
                                 </div>
@@ -338,7 +390,8 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label>Live Camera</label>
-                                        <video id="cameraStream" width="100%" height="240" autoplay playsinline></video>
+                                        <video id="claimCameraStream" width="100%" height="240" autoplay
+                                            playsinline></video>
                                         <button type="button" class="btn btn-sm btn-primary mt-2" id="capturePhotoBtn">
                                             <i class="bi bi-camera"></i> Capture Photo
                                         </button>
@@ -430,7 +483,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <strong>Total Payable Now: ₱0.00</strong>
                                 </div>
 
-                           
+
 
                                 <hr>
                                 <h6>Tubo History</h6>
@@ -474,6 +527,135 @@ $highlightPawnId = $_GET['id'] ?? '';
                     </div>
                 </div>
             </div>
+
+
+
+
+
+
+            <!-- Tubo Payment Modal -->
+            <div class="modal fade" id="tuboPaymentModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <form id="tuboPaymentForm">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Add Tubo Payment</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <!-- Pawn Details (readonly, for reference only) -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Pawner Name</label>
+                                        <input type="text" class="form-control" id="tpPawnerName" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Category</label>
+                                        <input type="text" class="form-control" id="tpCategory" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Unit</label>
+                                        <input type="text" class="form-control" id="tpUnit" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Date Pawned</label>
+                                        <input type="text" class="form-control" id="tpDatePawned" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Amount Pawned</label>
+                                        <input type="text" class="form-control" id="tpAmountPawned" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Months period to pay</label>
+                                        <select id="tpMonthsSelector" class="form-select">
+                                            <option value="1">1 month</option>
+                                            <option value="2">2 months</option>
+                                            <option value="3">3 months</option>
+                                            <option value="4">4 months</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Notes</label>
+                                        <input type="text" class="form-control" id="tpNotes" name="tpNotes">
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- New Tubo Payment Section -->
+                                <h6>New Tubo Payment</h6>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Payment Date</label>
+                                        <input type="date" class="form-control" id="tpDatePaid" name="tpDatePaid"
+                                            required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Months Covered</label>
+                                        <input type="text" class="form-control" id="tpMonthsCovered"
+                                            name="tpMonthsCovered" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Interest Amount</label>
+                                        <input type="text" class="form-control" id="tpInterestAmount"
+                                            name="tpInterestAmount" readonly>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">New Due Date</label>
+                                        <input type="text" class="form-control" id="tpNewDueDate" name="tpNewDueDate"
+                                            readonly>
+                                    </div>
+
+                                </div>
+
+                                <hr>
+
+                                <!-- Tubo History -->
+                                <h6>Tubo History</h6>
+                                <table class="table table-sm table-bordered" id="tpTuboHistory">
+                                    <thead>
+                                        <tr>
+                                            <th>Date Paid</th>
+                                            <th>Months Covered</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+
+                                <h6>Partial Payment History</h6>
+                                <table class="table table-sm table-bordered" id="tpPartialHistory">
+                                    <thead>
+                                        <tr>
+                                            <th>Date Paid</th>
+                                            <th>Amount Paid</th>
+                                            <th>Remaining Principal</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+
+
+                                <!-- Hidden Fields -->
+                                <input type="hidden" id="tpPawnId" name="tpPawnId">
+                                <input type="hidden" id="tpBranchId" name="tpBranchId">
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save Tubo Payment</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
 
 
             <!-- Forfeit Modal -->
@@ -628,7 +810,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                                                { title: "Actions", orderable: false }
+                                                                                                                                    { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -784,142 +966,80 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
     // partial payment function
-    // partial payment function
-$(document).ready(function () {
-    // Handle "Add Partial Payment" button click
-    $(document).on("click", ".addPartialPaymentBtn", function () {
-        let pawnId = $(this).data("id");
+    $(document).ready(function () {
+        // Handle "Add Partial Payment" button click
+        $(document).on("click", ".addPartialPaymentBtn", function () {
+            let pawnId = $(this).data("id");
 
-        $.ajax({
-            url: "../api/pawn_get.php",
-            method: "GET",
-            data: { pawn_id: pawnId },
-            dataType: "json",
-            success: function (response) {
-                if (response.status === "success") {
-                    let pawn = response.pawn;
-                    let interestRate = response.branch_interest;
-                    let tuboHistory = response.tubo_payments || [];
-                    let partialHistory = response.partial_payments || [];
+            $.ajax({
+                url: "../api/pawn_get.php",
+                method: "GET",
+                data: { pawn_id: pawnId },
+                dataType: "json",
+                success: function (response) {
+                    if (response.status === "success") {
+                        let pawn = response.pawn;
+                        let interestRate = response.branch_interest;
 
-                    // Compute months covered (minimum 1 month)
-                    let datePawned = new Date(pawn.date_pawned);
-                    let today = new Date();
-                    let daysDiff = Math.floor((today - datePawned) / (1000 * 60 * 60 * 24));
-                    let diffMonths = Math.ceil(daysDiff / 31);
-                    if (diffMonths < 1) diffMonths = 1;
+                        // Compute months covered (minimum 1 month)
+                        let datePawned = new Date(pawn.date_pawned);
+                        let today = new Date();
+                        let diffMonths =
+                            (today.getFullYear() - datePawned.getFullYear()) * 12 +
+                            (today.getMonth() - datePawned.getMonth());
+                        if (today.getDate() > datePawned.getDate()) diffMonths++;
+                        if (diffMonths < 1) diffMonths = 1;
 
-                    // --- Check if prepaid ---
-                    let prepaid = false;
+                        // Fill modal fields
+                        // Fill modal fields
+                        $("#ppPawnerName").val(pawn.customer_name);  // use .val()
+                        $("#ppUnit").val(pawn.unit_description);
+                        $("#ppCategory").val(pawn.category);
+                        $("#ppDatePawned").val(pawn.date_pawned);
+                        $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
+                        $("#ppNotes").val(pawn.notes);
+                        $("#ppMonths").val(diffMonths + " month(s)");
 
-                    // 1. Check tubo payments
-                    if (tuboHistory.length > 0) {
-                        const lastTubo = tuboHistory[0]; // sorted DESC in API
-                        if (lastTubo.period_end && new Date(lastTubo.period_end) >= today) {
-                            prepaid = true;
-                        }
-                    }
+                        // Hidden fields
+                        $("#ppPawnId").val(pawn.pawn_id);
+                        $("#ppInterestRate").val(interestRate);
+                        $("#ppPrincipal").val(pawn.amount_pawned);
 
-                    // 2. Check partial payments
-                    if (!prepaid && partialHistory.length > 0) {
-                        const lastPartial = partialHistory[0];
-                        const currentPeriodEnd = new Date(datePawned);
-                        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + diffMonths);
+                        // Reset
+                        $("#ppAmount").val("");
+                        $("#ppSummary").html("");
 
-                        if (new Date(lastPartial.created_at) <= currentPeriodEnd) {
-                            prepaid = true;
-                        }
-                    }
-
-                    // Fill modal fields
-                    $("#ppPawnerName").val(pawn.customer_name);
-                    $("#ppUnit").val(pawn.unit_description);
-                    $("#ppCategory").val(pawn.category);
-                    $("#ppDatePawned").val(pawn.date_pawned);
-                    $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
-                    $("#ppNotes").val(pawn.notes);
-                    $("#ppMonths").val(diffMonths + " month(s)");
-
-                    // Hidden fields
-                    $("#ppPawnId").val(pawn.pawn_id);
-                    $("#ppInterestRate").val(interestRate);
-                    $("#ppPrincipal").val(pawn.amount_pawned);
-                    $("#ppPrepaid").val(prepaid ? "1" : "0"); // hidden flag
-
-                    // Reset
-                    $("#ppAmount").val("");
-                    $("#ppSummary").html("");
-
-                    // --- Fill tubo history table ---
-                    let tuboHtml = "";
-                    if (tuboHistory.length > 0) {
-                        tuboHistory.forEach(t => {
-                            const prepaidMark = (t.period_end && new Date(t.period_end) >= today) ? "table-success" : "";
-                            tuboHtml += `
-                                <tr class="${prepaidMark}">
-                                    <td>${t.date_paid}</td>
-                                    <td>${t.period_start}</td>
-                                    <td>${t.period_end}</td>
-                                    <td>₱${parseFloat(t.amount).toLocaleString()}</td>
-                                </tr>
-                            `;
-                        });
+                        // Show modal
+                        $("#partialPaymentModal").modal("show");
                     } else {
-                        tuboHtml = `<tr><td colspan="4" class="text-center text-muted">No tubo payments</td></tr>`;
+                        alert(response.message);
                     }
-                    $("#ppTuboHistory tbody").html(tuboHtml);
-
-                    // --- Fill partial history table ---
-                    let partialHtml = "";
-                    if (partialHistory.length > 0) {
-                        partialHistory.forEach(p => {
-                            const prepaidMark = (new Date(p.created_at) <= new Date(datePawned.setMonth(datePawned.getMonth() + diffMonths))) 
-                                ? "table-success" : "";
-                            partialHtml += `
-                                <tr class="${prepaidMark}">
-                                    <td>${p.created_at}</td>
-                                    <td>₱${parseFloat(p.amount_paid).toLocaleString()}</td>
-                                    <td>₱${parseFloat(p.remaining_principal).toLocaleString()}</td>
-                                    <td>${p.notes || ""}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        partialHtml = `<tr><td colspan="4" class="text-center text-muted">No partial payments</td></tr>`;
-                    }
-                    $("#ppPartialHistory tbody").html(partialHtml);
-
-                    // Show modal
-                    $("#partialPaymentModal").modal("show");
-                } else {
-                    alert(response.message);
+                },
+                error: function () {
+                    alert("Failed to fetch pawn details.");
                 }
-            },
-            error: function () {
-                alert("Failed to fetch pawn details.");
-            }
+            });
         });
-    });
 
-    // Live computation when partial payment is entered
-   $("#ppAmount").on("input", function () {
-    let entered = parseFloat($(this).val()) || 0;
-    let principal = parseFloat($("#ppPrincipal").val());
-    let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
-    let months = parseInt($("#ppMonths").val()) || 1;
-    let prepaid = $("#ppPrepaid").val() === "1";
+        // Live computation when partial payment is entered
+        $("#ppAmount").on("input", function () {
+            let entered = parseFloat($(this).val()) || 0;
+            let principal = parseFloat($("#ppPrincipal").val());
+            let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
+            let months = parseInt($("#ppMonths").val()) || 1;
 
-    // --- If entering a partial payment today, interest should be 0 ---
-    if (entered > 0) {
-        prepaid = true;
-    }
+            if (entered >= principal) {
+                $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to pawned amount!</span>`);
+                return;
+            }
 
-    let interest = prepaid ? 0 : principal * interestRate * months;
+            // Interest = principal × rate × months
+            let interest = principal * interestRate * months;
 
-    let remaining = principal - entered;
-    let totalPay = entered + interest;
+            let remaining = principal - entered;
+            let totalPay = entered + interest;
 
-    $("#ppSummary").html(`
+            $("#ppSummary").html(`
         <div>Original Principal: ₱${principal.toLocaleString()}</div>
         <div>Partial Payment: ₱${entered.toLocaleString()}</div>
         <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
@@ -927,68 +1047,284 @@ $(document).ready(function () {
         <hr>
         <strong>Total Payable Now: ₱${totalPay.toLocaleString()}</strong>
     `);
-});
+        });
 
 
-    // Handle form submit (save partial payment)
-    $("#partialPaymentForm").on("submit", function (e) {
+
+        // Handle form submit (save partial payment)
+        $("#partialPaymentForm").on("submit", function (e) {
+            e.preventDefault();
+
+            let pawnId = $("#ppPawnId").val();
+            let partialAmount = parseFloat($("#ppAmount").val()) || 0;
+            let principal = parseFloat($("#ppPrincipal").val()) || 0;
+            let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
+            let notes = $("input[name='notes']").val();
+
+            if (!pawnId || partialAmount <= 0) {
+                Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
+                return;
+            }
+
+            if (partialAmount > principal) {
+                Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
+                return;
+            }
+
+            let newPrincipal = principal - partialAmount;
+
+            Swal.fire({
+                title: "Confirm Partial Payment",
+                html: `Save partial payment?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Save",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let formData = $("#partialPaymentForm").serialize();
+
+                    $.ajax({
+                        url: "../processes/save_partial_payment.php",
+                        method: "POST",
+                        data: formData,
+                        dataType: "json",
+                        success: function (response) {
+                            if (response.status === "success") {
+                                $("#partialPaymentModal").modal("hide");
+
+                                Swal.fire({
+                                    title: "Success!",
+                                    html: response.message,
+                                    icon: "success"
+                                });
+
+                                $("#pawnTable").DataTable().ajax.reload();
+                            } else {
+                                Swal.fire("Error", response.message, "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("Error", "Failed to save partial payment.", "error");
+                        }
+                    });
+                }
+            });
+        });
+
+
+
+    });
+
+
+
+    // Utility function to add months to a date
+    function addMonths(date, months) {
+        let d = new Date(date);
+        d.setMonth(d.getMonth() + months);
+        return d.toISOString().slice(0, 10); // format YYYY-MM-DD
+    }
+
+    // Update default tubo values (period & interest)
+    function updateTuboDefaults(p, res) {
+        let amountPawned = parseFloat(p.amount_pawned);
+        let interestRate = parseFloat(res.branch_interest); // use as-is
+
+        let lastTubo = res.tubo_history[0] || null;
+        let lastPartial = res.partial_history[0] || null;
+
+        let startDate;
+
+        if (lastTubo) {
+            startDate = lastTubo.period_end;
+        } else if (lastPartial) {
+            startDate = lastPartial.date_paid;
+        } else {
+            startDate = p.date_pawned;
+        }
+
+        let months = parseInt($("#tpMonthsSelector").val()) || 1;
+        let endDate = addMonths(startDate, months);
+
+        // Compute end of current covered period
+        let periodEnd = addMonths(startDate, months);
+
+
+        // Compute new due date = periodEnd + 1 month
+        let newDueDate = addMonths(periodEnd, 1);
+
+        $("#tpMonthsCovered").val(`${startDate} to ${endDate}`);
+        $("#tpInterestAmount").val((amountPawned * interestRate * months).toFixed(2));
+        $("#tpNewDueDate").val(newDueDate);
+
+        $("#tuboPaymentModal").data("period_start", startDate);
+    }
+
+
+    // Load pawn, tubo, and partial history, then show modal
+    $(document).on("click", ".addTuboPaymentBtn", function (e) {
+        e.preventDefault();
+        let pawnId = $(this).data("id");
+
+        $.get("../api/pawn_get.php", { pawn_id: pawnId }, function (res) {
+            if (res.status === "success") {
+                let p = res.pawn;
+
+                // Fill pawn details
+                $("#tpPawnId").val(p.pawn_id);
+                $("#tpBranchId").val(p.branch_id);
+                $("#tpPawnerName").val(p.customer_name);
+                $("#tpCategory").val(p.category);
+                $("#tpUnit").val(p.unit_description);
+                $("#tpDatePawned").val(p.date_pawned);
+                $("#tpAmountPawned").val(parseFloat(p.amount_pawned).toFixed(2));
+
+                // ✅ Set default Payment Date to today
+                let today = new Date().toISOString().slice(0, 10);
+                $("#tpDatePaid").val(today);
+
+
+                // Store branch interest for computation
+                $("#tuboPaymentModal").data("branch_interest", res.branch_interest);
+
+                // Populate tubo history
+                let tuboRows = "";
+                res.tubo_history.forEach(h => {
+                    tuboRows += `
+                    <tr>
+                        <td>${h.date_paid}</td>
+                        <td>${h.period_start} to ${h.period_end}</td>
+                        <td>${parseFloat(h.interest_amount).toFixed(2)}</td>
+                    </tr>`;
+                });
+                $("#tpTuboHistory tbody").html(tuboRows);
+
+                // Populate partial history
+                let partialRows = "";
+                res.partial_history.forEach(h => {
+                    partialRows += `
+                    <tr>
+                        <td>${h.date_paid}</td>
+                        <td>${parseFloat(h.amount_paid).toFixed(2)}</td>
+                        <td>${parseFloat(h.remaining_principal).toFixed(2)}</td>
+                        <td>${h.notes || ""}</td>
+                    </tr>`;
+                });
+                $("#tpPartialHistory tbody").html(partialRows);
+
+                // Initialize default tubo period & interest
+                updateTuboDefaults(p, res);
+
+
+                // Show modal
+                $("#tuboPaymentModal").modal("show");
+            } else {
+                alert(res.message);
+            }
+        }, "json");
+    });
+
+    $("#tpMonthsSelector").on("change", function () {
+        let months = parseInt($(this).val());
+
+        // Get clean numeric pawn amount
+        let amountPawned = Number($("#tpAmountPawned").val().replace(/,/g, ''));
+
+        // Branch interest (already decimal, e.g., 0.06)
+        let interestRate = parseFloat($("#tuboPaymentModal").data("branch_interest"));
+
+        // Get start date
+        let startDate = $("#tuboPaymentModal").data("period_start");
+
+        // Compute end date of current covered period
+        let endDate = addMonths(startDate, months);
+
+        // Update Months Covered Period
+        $("#tpMonthsCovered").val(`${startDate} to ${endDate}`);
+
+        // Compute interest amount
+        let interestAmount = amountPawned * interestRate * months;
+        $("#tpInterestAmount").val(interestAmount.toFixed(2));
+
+        // Compute new due date = end of current period + 1 month
+        let newDueDate = addMonths(endDate, 1);
+        $("#tpNewDueDate").val(newDueDate);
+
+    });
+
+    // Optional: Update period start if you want it to follow Payment Date instead
+    $("#tpDatePaid").on("change", function () {
+        // let selectedDate = $(this).val();
+        // Optional logic to adjust period start if needed
+    });
+
+
+
+
+    // submit tubo payment
+    $("#tuboPaymentForm").on("submit", function (e) {
         e.preventDefault();
 
-        let pawnId = $("#ppPawnId").val();
-        let partialAmount = parseFloat($("#ppAmount").val()) || 0;
-        let principal = parseFloat($("#ppPrincipal").val()) || 0;
-
-        if (!pawnId || partialAmount <= 0) {
-            Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
-            return;
-        }
-
-        if (partialAmount >= principal) {
-            Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
-            return;
-        }
-
+        // SweetAlert confirmation
         Swal.fire({
-            title: "Confirm Partial Payment",
-            html: `Save partial payment?`,
-            icon: "question",
+            title: 'Confirm Tubo Payment',
+            text: "Are you sure you want to save this Tubo Payment?",
+            icon: 'question',
             showCancelButton: true,
-            confirmButtonText: "Yes, Save",
-            cancelButtonText: "Cancel"
+            cancelButtonText: 'Cancel',
+            confirmButtonText: 'Yes, Save',
+            reverseButtons: false
         }).then((result) => {
             if (result.isConfirmed) {
-                let formData = $("#partialPaymentForm").serialize();
+                // Proceed to save
+                let formData = {
+                    pawn_id: $("#tpPawnId").val(),
+                    branch_id: $("#tpBranchId").val(),
+                    payment_date: $("#tpDatePaid").val(),
+                    months_covered: $("#tpMonthsSelector").val(),
+                    period_start: $("#tpMonthsCovered").val().split(" to ")[0],
+                    period_end: $("#tpMonthsCovered").val().split(" to ")[1],
+                    interest_amount: $("#tpInterestAmount").val(),
+                    new_due_date: $("#tpNewDueDate").val(),
+                    notes: $("#tpNotes").val()
+                };
 
                 $.ajax({
-                    url: "../processes/save_partial_payment.php",
-                    method: "POST",
+                    url: "../processes/save_tubo_payments.php",
+                    type: "POST",
                     data: formData,
                     dataType: "json",
-                    success: function (response) {
-                        if (response.status === "success") {
-                            $("#partialPaymentModal").modal("hide");
+                    success: function (res) {
+                        if (res.status === "success") {
+                            Swal.fire(
+                                'Saved!',
+                                'Tubo payment has been saved successfully.',
+                                'success'
+                            );
+                            $("#tuboPaymentModal").modal("hide");
 
-                            Swal.fire({
-                                title: "Success!",
-                                html: response.message,
-                                icon: "success"
-                            });
-
-                            $("#pawnTable").DataTable().ajax.reload();
+                            // Refresh histories
+                            refreshTuboHistory();
+                            refreshPartialHistory();
                         } else {
-                            Swal.fire("Error", response.message, "error");
+                            Swal.fire(
+                                'Error!',
+                                res.message,
+                                'error'
+                            );
                         }
                     },
-                    error: function () {
-                        Swal.fire("Error", "Failed to save partial payment.", "error");
+                    error: function (xhr, status, error) {
+                        Swal.fire(
+                            'Error!',
+                            'An unexpected error occurred: ' + error,
+                            'error'
+                        );
                     }
                 });
             }
         });
     });
-});
-
-
 
 
 

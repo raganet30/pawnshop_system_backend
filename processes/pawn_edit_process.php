@@ -21,6 +21,17 @@ $new_amount = floatval($_POST['amount_pawned'] ?? 0);
 $notes = $_POST['notes'] ?? '';
 $date_pawned = $_POST['date_pawned'] ?? '';
 
+
+
+// Create DateTime object from date pawned
+$dt = new DateTime($date_pawned);
+
+// Add 1 month
+$dt->modify("+1 month");
+
+// Format back to Y-m-d
+$current_due_date = $dt->format("Y-m-d");
+
 if (!$pawn_id) {
     echo json_encode(["status" => "error", "message" => "Pawn ID is required"]);
     exit();
@@ -38,6 +49,57 @@ try {
         throw new Exception("Pawn record not found.");
     }
 
+
+
+    // Handle photo upload or replacement
+    $photo_path = $pawn['photo_path'] ?? null; // current photo path
+
+    // If file uploaded via input
+    if (isset($_FILES['editPawnPhoto']) && $_FILES['editPawnPhoto']['error'] === UPLOAD_ERR_OK) {
+        $ext = pathinfo($_FILES['editPawnPhoto']['name'], PATHINFO_EXTENSION);
+        $newFileName = "pawn_" . $pawn_id . "_" . time() . "." . $ext;
+        $targetDir = __DIR__ . "/../uploads/pawn_items/";
+        $targetPath = $targetDir . $newFileName;
+
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        if (move_uploaded_file($_FILES['editPawnPhoto']['tmp_name'], $targetPath)) {
+            $photo_path = "uploads/pawn_items/" . $newFileName;
+        }
+    }
+    // If captured via webcam (base64 string)
+    elseif (!empty($_POST['captured_photo'])) {
+        $imgData = $_POST['captured_photo'];
+        if (preg_match('/^data:image\/(\w+);base64,/', $imgData, $type)) {
+            $imgData = substr($imgData, strpos($imgData, ',') + 1);
+            $imgData = base64_decode($imgData);
+            $ext = strtolower($type[1]); // e.g. png, jpg
+
+            $newFileName = "pawn_" . $pawn_id . "_" . time() . "." . $ext;
+            $targetDir = __DIR__ . "/../uploads/pawn_items/";
+            $targetPath = $targetDir . $newFileName;
+
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
+            if (file_put_contents($targetPath, $imgData)) {
+                $photo_path = "uploads/pawn_items/" . $newFileName;
+            }
+        }
+    }
+
+    // If new photo uploaded/captured → update DB
+    if ($photo_path !== ($pawn['photo_path'] ?? null)) {
+        $stmt = $pdo->prepare("UPDATE pawned_items SET photo_path = ? WHERE pawn_id = ?");
+        $stmt->execute([$photo_path, $pawn_id]);
+    }
+
+
+
+
     $old_amount = floatval($pawn['amount_pawned']);
     $branch_id = $pawn['branch_id'];
 
@@ -46,9 +108,9 @@ try {
 
     //  Update only pawn details (NOT customer info)
     $stmt = $pdo->prepare("UPDATE pawned_items 
-        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, notes = ?, date_pawned = ?
+        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, notes = ?, date_pawned = ?, current_due_date = ?
         WHERE pawn_id = ?");
-    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $notes, $date_pawned, $pawn_id]);
+    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $notes, $date_pawned, $current_due_date, $pawn_id]);
 
     //  Adjust COH only if amount changed
     if ($difference != 0) {
@@ -133,11 +195,11 @@ try {
         echo json_encode([
             "status" => "success",
             "message" => "Pawn item updated successfully."
-                .$adjustment_text
+                . $adjustment_text
         ]);
 
     } else {
-       
+
         // insert into audit_logs
         $user_id = $_SESSION['user']['id'] ?? null;
         $description = "Edit pawn ID: $pawn_id details";

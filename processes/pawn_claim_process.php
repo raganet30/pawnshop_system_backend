@@ -3,6 +3,7 @@ session_start();
 require_once "../config/db.php";
 require_once "../config/helpers.php";
 
+
 header('Content-Type: application/json');
 
 try {
@@ -32,68 +33,57 @@ try {
         exit;
     }
 
-    // --- Calculate months pawned ---
-    $datePawned = new DateTime($pawn['date_pawned']);
-    $now = new DateTime();
-    $daysDiff = $datePawned->diff($now)->days;
+   // --- Calculate months pawned ---
+$datePawned = new DateTime($pawn['date_pawned']);
+$now = new DateTime();
 
-    // min 1 month, ceil by 30 days
-    $monthsPawned = max(1, ceil($daysDiff / 31));
+// --- Get branch interest rate ---
+$stmt = $pdo->prepare("SELECT interest_rate, cash_on_hand FROM branches WHERE branch_id = ?");
+$stmt->execute([$pawn['branch_id']]);
+$branch = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // --- Get branch interest rate ---
-    $stmt = $pdo->prepare("SELECT interest_rate, cash_on_hand FROM branches WHERE branch_id = ?");
-    $stmt->execute([$pawn['branch_id']]);
-    $branch = $stmt->fetch(PDO::FETCH_ASSOC);
+$interest_rate = floatval($branch['interest_rate'] ?? 0.06); // decimal format
+$principal = floatval($pawn['amount_pawned']);
 
-    $interest_rate = floatval($branch['interest_rate'] ?? 0.06);
-    $principal = floatval($pawn['amount_pawned']);
+// --- Check latest tubo payment and partial payment ---
+$stmt = $pdo->prepare("SELECT MAX(period_end) AS last_tubo_end FROM tubo_payments WHERE pawn_id = ?");
+$stmt->execute([$pawn['pawn_id']]);
+$lastTuboEnd = $stmt->fetchColumn();
 
-    // --- Check tubo payments (prepaid interest) ---
-    $stmt = $pdo->prepare("
-        SELECT COALESCE(SUM(months_covered), 0) AS prepaid_months
-        FROM tubo_payments
-        WHERE pawn_id = ?
-    ");
-    $stmt->execute([$pawn_id]);
-    $tubo = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare("SELECT MAX(created_at) AS last_partial_paid FROM partial_payments WHERE pawn_id = ?");
+$stmt->execute([$pawn['pawn_id']]);
+$lastPartialPaid = $stmt->fetchColumn();
 
+// --- Determine start date for interest calculation ---
+if ($lastTuboEnd) {
+    $startDate = new DateTime($lastTuboEnd);
+} elseif ($lastPartialPaid) {
+    $startDate = new DateTime($lastPartialPaid);
+} else {
+    $startDate = $datePawned;
+}
 
-
-
-
-
-    $prepaidMonths = intval($tubo['prepaid_months'] ?? 0);
-
-    // --- Net months to pay now ---
-    $netMonths = max(0, $monthsPawned - $prepaidMonths);
-
-    // --- Determine current cover period ---
-    $currentPeriodStart = clone $datePawned;
-    $currentPeriodStart->modify('+' . ($monthsPawned - 1) . ' months');
-
-    $currentPeriodEnd = clone $datePawned;
-    $currentPeriodEnd->modify('+' . $monthsPawned . ' months');
-
-    // --- Check partial payments if interest already paid within this cover period ---
-    $stmt = $pdo->prepare("
-    SELECT COUNT(*) AS cnt
-    FROM partial_payments
-    WHERE pawn_id = ?
-      AND interest_paid > 0
-      AND status = 'active'
-      AND DATE(created_at) BETWEEN ? AND ?
-");
-    $stmt->execute([$pawn_id, $currentPeriodStart->format('Y-m-d'), $currentPeriodEnd->format('Y-m-d')]);
-    $partialInterest = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    $interestAlreadyPaid = intval($partialInterest['cnt'] ?? 0) > 0;
-
-    // --- Compute interest only if not prepaid and no partial interest in cover period ---
-    if ($interestAlreadyPaid) {
-        $interest_amount = 0.00;
-    } else {
-        $interest_amount = round($principal * $interest_rate * $netMonths, 2);
+// --- Waive interest if tubo already covers today ---
+$waiveInterest = false;
+if ($lastTuboEnd) {
+    $lastTuboEndDate = new DateTime($lastTuboEnd);
+    if ($lastTuboEndDate >= $now) {
+        $waiveInterest = true;
     }
+}
+
+// --- Compute interest only if not waived ---
+if (!$waiveInterest) {
+    $daysDiff = $startDate->diff($now)->days;
+    $months = max(1, ceil($daysDiff / 31));
+    $interest_amount = round($principal * $interest_rate * $months, 2);
+} else {
+    $interest_amount = 0;
+    $months = 0; // optional, for display purposes
+}
+
+$total_paid = round($principal + $interest_amount, 2);
+
 
     // --- Save claimant photo ---
     $photoPathForDb = null;
@@ -118,26 +108,23 @@ try {
         exit;
     }
 
-    // --- Penalty (if any) ---
-    $penalty = isset($_POST['claimPenalty']) && $_POST['claimPenalty'] !== '' ? floatval($_POST['claimPenalty']) : 0.00;
 
-   
-  
-    // --- Final total ---
+    // Sanitize input
+    $penalty = isset($_POST['claimPenalty']) && $_POST['claimPenalty'] !== '' ? floatval($_POST['claimPenalty']) : 0.00;
     $total_paid = $principal + $interest_amount + $penalty;
 
     // --- Insert into claims ---
     $stmt = $pdo->prepare("
-        INSERT INTO claims 
-        (pawn_id, branch_id, date_claimed, months, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
-        VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-    ");
+    INSERT INTO claims 
+    (pawn_id, branch_id, date_claimed, months, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
+    VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+");
     $stmt->execute([
         $pawn_id,               // pawn_id
         $pawn['branch_id'],     // branch_id
-        $monthsPawned,          // months pawned (raw months)
+        $months,                // months
         $interest_rate,         // interest_rate
-        $interest_amount,       // interest_amount (after tubo adjustment)
+        $interest_amount,       // interest_amount
         $principal,             // principal_amount
         $penalty,               // penalty_amount
         $total_paid,            // total_paid
@@ -155,10 +142,18 @@ try {
     // --- Update branch cash on hand ---
     updateCOH($pdo, $branch_id, $total_paid, 'add');
 
+
+
     // --- Insert into cash ledger ---
+    // Calculate total amount for ledger (penalty + interest)
+    // $total_amount = $penalty + $interest_amount ;
+
+
+
+    // ✅ Ledger entry (Cash IN for total claim amount)
     if ($total_paid > 0) {
         $description = "Claim (ID #$claim_id)";
-        $ledgerNotes = "Pawn ID #$pawn_id claimed with interest + penalty (if any)";
+        $notes = "Pawn ID #$pawn_id claimed with interest + penalty (if any)";
 
         insertCashLedger(
             $pdo,
@@ -169,10 +164,12 @@ try {
             "claims",    // ref_table
             $pawn_id,
             $description,
-            $ledgerNotes,
+            $notes,
             $user_id
         );
     }
+
+
 
     // --- Insert into audit_logs ---
     $description = sprintf(
@@ -190,12 +187,23 @@ try {
         $description
     );
 
-    // --- Settle partial payments ---
+
+    
+
+
+    //if has records on partial payments update related records to settled
+    //update partial_payments status to settled
+    // --- Update partial payments set status to settled ---
     $stmt = $pdo->prepare("UPDATE partial_payments SET status = 'settled' WHERE pawn_id = ? AND status = 'active'");
     $stmt->execute([$pawn_id]);
 
-    $stmt = $pdo->prepare("UPDATE partial_payments SET remaining_principal = 0 WHERE pawn_id = ? ORDER BY pp_id DESC LIMIT 1");
+    // update latest partial transaction set to 0 remaining balance
+    $stmt = $pdo->prepare(" UPDATE partial_payments SET remaining_principal = 0 WHERE pawn_id = ? ORDER BY pp_id DESC LIMIT 1");
     $stmt->execute([$pawn_id]);
+
+
+
+
 
     echo json_encode([
         "status" => "success",

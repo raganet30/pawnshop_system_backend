@@ -1,29 +1,21 @@
 $(function () {
 
-    // Utility: Fill input fields
+    // Utility: Fill input fields from a mapping
     function fillFields(mapping, data) {
         for (const selector in mapping) {
             $(selector).val(data[mapping[selector]] ?? '');
         }
     }
 
-    // --- Recalculate total with optional penalty ---
-    function recalcClaimTotal(principal, interest) {
-        let penalty = parseFloat($("#claimPenalty").val()) || 0;
+    // Claim Button Click
+    $(function () {
 
-        // Validation: Penalty must not exceed principal
-        if (penalty > principal) {
-            Swal.fire("Invalid Penalty", "Penalty cannot exceed the pawned amount.", "warning");
-            $("#claimPenalty").val(0); // reset to 0
-            penalty = 0;
+    // Utility: Fill input fields from a mapping
+    function fillFields(mapping, data) {
+        for (const selector in mapping) {
+            $(selector).val(data[mapping[selector]] ?? '');
         }
-
-        const total = principal + interest + penalty;
-
-        $("#claimTotal").val("₱" + total.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-        $("#claimPenaltyHidden").val(penalty); // sync hidden field for submission
     }
-
 
     // Claim Button Click
     $(document).on("click", ".claimPawnBtn", function (e) {
@@ -37,85 +29,142 @@ $(function () {
                 }
 
                 const pawn = data.pawn;
-                const tuboHistory = data.tubo_payments || [];
-                const partialHistory = data.partial_payments || [];
+const principal = parseFloat(pawn.amount_pawned);
+const interestRate = parseFloat(data.branch_interest) || 0.06; // decimal
+const today = new Date();
 
-                const datePawned = new Date(pawn.date_pawned);
-                const now = new Date();
-                datePawned.setHours(0, 0, 0, 0);
-                now.setHours(0, 0, 0, 0);
+// --- Determine default interest based on tubo and partial payments ---
+let totalInterest = 0;
+let lastTuboEnd = null;
+let lastPartialDate = null;
 
-                const daysDiff = Math.floor((now - datePawned) / (1000 * 60 * 60 * 24));
-                const months = Math.max(1, Math.ceil(daysDiff / 31));
+// Populate Tubo Payments History
+let tuboRows = "";
+if (data.tubo_history && data.tubo_history.length > 0) {
+    data.tubo_history.forEach((t, i) => {
+        tuboRows += `<tr>
+            <td>${i + 1}</td>
+            <td>${t.date_paid}</td>
+            <td>${t.period_start} to ${t.period_end}</td>
+            <td>${parseFloat(t.interest_rate).toFixed(2)}</td>
+            <td>${parseFloat(t.interest_amount).toFixed(2)}</td>
+        </tr>`;
+        lastTuboEnd = t.period_end; // track latest tubo period_end
+    });
+}
+$("#tuboPaymentsTable tbody").html(tuboRows);
 
-                const principal = parseFloat(pawn.amount_pawned);
-                const interestRate = parseFloat(data.branch_interest) || 0.06;
+// Populate Partial Payments History
+let partialRows = "";
+if (data.partial_history && data.partial_history.length > 0) {
+    data.partial_history.forEach((p, i) => {
+        partialRows += `<tr>
+            <td>${i + 1}</td>
+            <td>${p.date_paid}</td>
+            <td>${parseFloat(p.amount_paid).toFixed(2)}</td>
+            <td>${parseFloat(p.interest_paid).toFixed(2)}</td>
+            <td>${parseFloat(p.principal_paid).toFixed(2)}</td>
+            <td>${parseFloat(p.remaining_principal).toFixed(2)}</td>
+            <td>${p.status}</td>
+        </tr>`;
+        lastPartialDate = p.date_paid; // track latest partial payment date
+    });
+}
+$("#partialPaymentsTable tbody").html(partialRows);
 
-                // --- Check if prepaid ---
-                let prepaid = false;
+// --- Determine start date for interest calculation ---
+let startDate;
+if (lastTuboEnd) {
+    startDate = lastTuboEnd;
+} else if (lastPartialDate) {
+    startDate = lastPartialDate;
+} else {
+    startDate = pawn.date_pawned;
+}
 
-                if (tuboHistory.length > 0) {
-                    const lastTubo = tuboHistory[0];
-                    if (lastTubo.period_end && new Date(lastTubo.period_end) >= now) {
-                        prepaid = true;
+// Convert to Date objects
+const startDateObj = new Date(startDate);
+const todayObj = today;
+
+// --- Waive interest if latest tubo covers today ---
+let waiveInterest = false;
+if (lastTuboEnd) {
+    const lastTuboEndObj = new Date(lastTuboEnd);
+    if (lastTuboEndObj >= todayObj) {
+        waiveInterest = true;
+    }
+}
+
+// --- Calculate months covered only if not waived ---
+let monthsCovered = 0;
+if (!waiveInterest) {
+    monthsCovered = Math.max(1, Math.ceil((todayObj - startDateObj) / (1000*60*60*24*30))); // min 1 month
+    totalInterest = principal * interestRate * monthsCovered;
+} else {
+    totalInterest = 0;
+}
+
+// Fill visible fields
+fillFields({
+    "#claimPawnId": "pawn_id",
+    "#claimOwnerName": "customer_name",
+    "#claimUnitDescription": "unit_description",
+    "#claimDatePawned": "date_pawned"
+}, pawn);
+
+$("#claimAmountPawned").val(principal.toLocaleString(undefined, {minimumFractionDigits:2}));
+$("#claimMonths").val(monthsCovered + " month(s)");
+$("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, {minimumFractionDigits:2}));
+$("#claimTotal").val("₱" + (principal + totalInterest).toLocaleString(undefined, {minimumFractionDigits:2}));
+
+// Hidden fields for backend
+$("#claimPrincipalValue").val(principal.toFixed(2));
+$("#claimInterestValue").val(totalInterest.toFixed(2));
+$("#claimTotalValue").val((principal + totalInterest).toFixed(2));
+
+                // --- Set Date Claimed default to today ---
+                $("#claimDate").val(today.toISOString().split('T')[0]);
+
+                // --- Live penalty calculation ---
+                $("#claimPenalty").off("input").on("input", function() {
+                    let penalty = parseFloat($(this).val()) || 0;
+                    if (penalty >= principal) {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Invalid Penalty",
+                            text: "Penalty should be less than the claim amount pawned.",
+                        });
+                        penalty = 0;
+                        $(this).val('');
                     }
-                }
-
-                if (!prepaid && partialHistory.length > 0) {
-                    const currentPeriodStart = new Date(datePawned);
-                    currentPeriodStart.setMonth(currentPeriodStart.getMonth() + (months - 1));
-                    currentPeriodStart.setHours(0, 0, 0, 0);
-
-                    const currentPeriodEnd = new Date(datePawned);
-                    currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + months);
-                    currentPeriodEnd.setHours(23, 59, 59, 999);
-
-                    prepaid = partialHistory.some(pp => {
-                        const ppDate = new Date(pp.created_at.replace(' ', 'T'));
-                        return ppDate >= currentPeriodStart && ppDate <= currentPeriodEnd;
-                    });
-                }
-
-                // --- Calculate interest ---
-                let interest = principal * interestRate * months;
-                if (prepaid) interest = 0;
-
-                // --- Fill visible fields ---
-                fillFields({
-                    "#claimPawnId": "pawn_id",
-                    "#claimOwnerName": "customer_name",
-                    "#claimUnitDescription": "unit_description",
-                    "#claimDatePawned": "date_pawned"
-                }, pawn);
-
-                $("#claimAmountPawned").val(principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                $("#claimMonths").val(months + " month(s)");
-                $("#claimInterest").val("₱" + (interest === 0 ? "0.00" : interest.toLocaleString(undefined, { minimumFractionDigits: 2 })));
-
-                // Initial total calculation
-                recalcClaimTotal(principal, interest);
-
-                // Recalculate total whenever penalty changes
-                $("#claimPenalty").off("input").on("input", function () {
-                    recalcClaimTotal(principal, interest);
+                    const newTotal = principal + totalInterest + penalty;
+                    $("#claimTotal").val("₱" + newTotal.toLocaleString(undefined, {minimumFractionDigits:2}));
+                    $("#claimTotalValue").val(newTotal.toFixed(2));
                 });
 
-                // --- Populate tables & modal setup (tubo, partial, photo) ---
-                // ... your existing code for tables & webcam remains unchanged ...
+                // Reset photo canvas
+                $("#claimantPhoto").val('');
+                $("#capturedCanvas")[0].getContext("2d").clearRect(0,0,320,240);
 
                 $("#claimPawnModal").modal("show");
             })
             .fail(() => Swal.fire("Error", "Unable to fetch pawn details.", "error"));
     });
 
+});
+
+
+
 
 
     // Webcam Capture for Claimant Photo
+    // Initialize webcam stream and capture functionality
     let cameraStream = document.getElementById("cameraStream");
     let capturedCanvas = document.getElementById("capturedCanvas");
     let capturePhotoBtn = document.getElementById("capturePhotoBtn");
     let hiddenPhotoInput = document.getElementById("claimantPhoto");
 
+    // Start webcam when modal opens
     $("#claimPawnModal").on("shown.bs.modal", function () {
         navigator.mediaDevices.getUserMedia({ video: true })
             .then((stream) => {
@@ -126,13 +175,18 @@ $(function () {
             });
     });
 
+    // Capture photo
     capturePhotoBtn.addEventListener("click", () => {
         let context = capturedCanvas.getContext("2d");
         context.drawImage(cameraStream, 0, 0, capturedCanvas.width, capturedCanvas.height);
-        hiddenPhotoInput.value = capturedCanvas.toDataURL("image/png");
+
+        // Save to hidden input as base64
+        let photoData = capturedCanvas.toDataURL("image/png");
+        hiddenPhotoInput.value = photoData;
         Swal.fire("Success", "Photo captured!", "success");
     });
 
+    // Stop camera when modal closes
     $("#claimPawnModal").on("hidden.bs.modal", function () {
         let stream = cameraStream.srcObject;
         if (stream) {
@@ -141,6 +195,9 @@ $(function () {
         }
         cameraStream.srcObject = null;
     });
+
+
+
 
     // Submit claim form
     $("#claimPawnForm").on("submit", function (e) {
@@ -166,8 +223,10 @@ $(function () {
                             $("#claimPawnModal").modal("hide");
                             $("#pawnTable").DataTable().ajax.reload();
 
-                            // Auto-print receipt
+
+                            // 🔹 Auto-print receipt after successful claim
                             if (response.pawn_id) {
+                                // Fetch full claim details before printing
                                 $.ajax({
                                     url: "../api/claim_view.php",
                                     type: "GET",
@@ -176,10 +235,16 @@ $(function () {
                                     success: function (res) {
                                         if (res.status === "success") {
                                             printClaimReceipt(res.data);
+                                        } else {
+                                            console.error("Failed to fetch claim details:", res.message);
                                         }
+                                    },
+                                    error: function () {
+                                        console.error("Error fetching claim details for printing.");
                                     }
                                 });
                             }
+
                         });
                     } else {
                         Swal.fire("Error", response.message || "Unable to claim pawn.", "error");
