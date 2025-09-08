@@ -167,9 +167,15 @@ try {
 
 
 
-    $pdo->commit();
 
-    echo json_encode(["status" => "success", "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2)]);
+$pdo->commit();
+
+echo json_encode([
+    "status" => "success",
+    "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2),
+    "pawn_id" => $pawn_id
+]);
+
 } catch (Exception $e) {
     $pdo->rollBack();
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

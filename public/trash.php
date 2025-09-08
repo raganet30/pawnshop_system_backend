@@ -3,8 +3,8 @@ session_start();
 require_once "../config/db.php";
 
 // role restriction
-if (!in_array($_SESSION['user']['role'], ['admin','super_admin'])) {
-    header("Location: ../public/dashboard.php");
+if (!in_array($_SESSION['user']['role'], ['admin'])) {
+    header("Location: ../public/dashboard");
     exit();
 }
 ?>

@@ -129,50 +129,57 @@ $(document).ready(function () {
     });
 
     // Add Pawn form submission
-$("#addPawnForm").on("submit", function (e) {
-    e.preventDefault();
+    $("#addPawnForm").on("submit", function (e) {
+        e.preventDefault();
 
-    // --- Validate photo requirement ---
-    let capturedPhoto = $(this).find("input[name='captured_photo']").val();
-    if (!capturedPhoto) {
-        Swal.fire("Photo Required", "Please capture a photo of the pawn item before saving.", "warning");
-        return; // stop submission
-    }
-
-    Swal.fire({
-        title: "Confirm Add Pawn?",
-        text: "This will save the pawned item.",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Yes, Save it!",
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "../processes/pawn_add_process.php",
-                type: "POST",
-                data: $(this).serialize(),
-                dataType: "json",
-                success: function (response) {
-                    if (response.status === "success") {
-                        Swal.fire("Success", response.message, "success");
-                        $("#addPawnModal").modal("hide");
-                        $("#addPawnForm")[0].reset();
-                        $("#pawnTable").DataTable().ajax.reload();
-
-                        // clear canvas + hidden input
-                        $("#pawnCapturedCanvas")[0].getContext("2d").clearRect(0, 0, 320, 240);
-                        $("#addPawnForm input[name='captured_photo']").remove();
-                    } else {
-                        Swal.fire("Error", response.message, "error");
-                    }
-                },
-                error: function () {
-                    Swal.fire("Error", "Something went wrong.", "error");
-                }
-            });
+        // --- Validate photo requirement ---
+        let capturedPhoto = $(this).find("input[name='captured_photo']").val();
+        if (!capturedPhoto) {
+            Swal.fire("Photo Required", "Please capture a photo of the pawn item before saving.", "warning");
+            return; // stop submission
         }
+
+        Swal.fire({
+            title: "Confirm Add Pawn?",
+            text: "This will save the pawned item.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Save it!",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "../processes/pawn_add_process.php",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            Swal.fire("Success", response.message, "success");
+                            $("#addPawnModal").modal("hide");
+                            $("#addPawnForm")[0].reset();
+                            $("#pawnTable").DataTable().ajax.reload();
+
+                            // clear canvas + hidden input
+                            $("#pawnCapturedCanvas")[0].getContext("2d").clearRect(0, 0, 320, 240);
+                            $("#addPawnForm input[name='captured_photo']").remove();
+
+                            // 🔹 Auto-open print page
+                            if (response.pawn_id) {
+                                let printUrl = "../processes/pawn_item_print.php?id=" + response.pawn_id;
+                                window.open(printUrl, "_blank");
+                            }
+                        } else {
+                            Swal.fire("Error", response.message, "error");
+                        }
+                    },
+
+                    error: function () {
+                        Swal.fire("Error", "Something went wrong.", "error");
+                    }
+                });
+            }
+        });
     });
-});
 
 
 

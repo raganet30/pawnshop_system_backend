@@ -104,6 +104,16 @@ if (!waiveInterest) {
     totalInterest = 0;
 }
 
+
+ // Compute months covered (minimum 1 month)
+                        let datePawned = new Date(pawn.date_pawned);
+                        let claimtoday = new Date();
+                        let claimdiffMonths =
+                            (claimtoday.getFullYear() - datePawned.getFullYear()) * 12 +
+                            (claimtoday.getMonth() - datePawned.getMonth());
+                        if (claimtoday.getDate() > datePawned.getDate()) claimdiffMonths++;
+                        if (claimdiffMonths < 1) claimdiffMonths = 1;
+
 // Fill visible fields
 fillFields({
     "#claimPawnId": "pawn_id",
@@ -113,7 +123,7 @@ fillFields({
 }, pawn);
 
 $("#claimAmountPawned").val(principal.toLocaleString(undefined, {minimumFractionDigits:2}));
-$("#claimMonths").val(monthsCovered + " month(s)");
+$("#claimMonths").val(claimdiffMonths + " month(s)");
 $("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, {minimumFractionDigits:2}));
 $("#claimTotal").val("₱" + (principal + totalInterest).toLocaleString(undefined, {minimumFractionDigits:2}));
 
@@ -156,45 +166,41 @@ $("#claimTotalValue").val((principal + totalInterest).toFixed(2));
 
 
 
+let cameraStream = document.getElementById("claimCameraStream");
+let capturedCanvas = document.getElementById("capturedCanvas");
+let capturePhotoBtn = document.getElementById("capturePhotoBtn");
+let hiddenPhotoInput = document.getElementById("claimantPhoto");
 
-    // Webcam Capture for Claimant Photo
-    // Initialize webcam stream and capture functionality
-    let cameraStream = document.getElementById("cameraStream");
-    let capturedCanvas = document.getElementById("capturedCanvas");
-    let capturePhotoBtn = document.getElementById("capturePhotoBtn");
-    let hiddenPhotoInput = document.getElementById("claimantPhoto");
-
-    // Start webcam when modal opens
-    $("#claimPawnModal").on("shown.bs.modal", function () {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then((stream) => {
-                cameraStream.srcObject = stream;
-            })
-            .catch((err) => {
-                Swal.fire("Camera Error", "Unable to access camera: " + err, "error");
+$("#claimPawnModal").on("shown.bs.modal", function () {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+            cameraStream.srcObject = stream;
+            cameraStream.addEventListener("loadedmetadata", () => {
+                cameraStream.play();
             });
-    });
+        })
+        .catch((err) => {
+            Swal.fire("Camera Error", "Unable to access camera: " + err, "error");
+        });
+});
 
-    // Capture photo
-    capturePhotoBtn.addEventListener("click", () => {
-        let context = capturedCanvas.getContext("2d");
-        context.drawImage(cameraStream, 0, 0, capturedCanvas.width, capturedCanvas.height);
+capturePhotoBtn.addEventListener("click", () => {
+    let context = capturedCanvas.getContext("2d");
+    context.drawImage(cameraStream, 0, 0, capturedCanvas.width, capturedCanvas.height);
 
-        // Save to hidden input as base64
-        let photoData = capturedCanvas.toDataURL("image/png");
-        hiddenPhotoInput.value = photoData;
-        Swal.fire("Success", "Photo captured!", "success");
-    });
+    let photoData = capturedCanvas.toDataURL("image/png");
+    hiddenPhotoInput.value = photoData;
+    Swal.fire("Success", "Photo captured!", "success");
+});
 
-    // Stop camera when modal closes
-    $("#claimPawnModal").on("hidden.bs.modal", function () {
-        let stream = cameraStream.srcObject;
-        if (stream) {
-            let tracks = stream.getTracks();
-            tracks.forEach(track => track.stop());
-        }
-        cameraStream.srcObject = null;
-    });
+$("#claimPawnModal").on("hidden.bs.modal", function () {
+    let stream = cameraStream.srcObject;
+    if (stream) {
+        let tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+    }
+    cameraStream.srcObject = null;
+});
 
 
 
