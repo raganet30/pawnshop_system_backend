@@ -37,6 +37,90 @@ $highlightPawnId = $_GET['id'] ?? '';
                 <?php endif; ?>
             </div>
 
+
+            <!-- View Pawn Modal -->
+            <div class="modal fade" id="viewPawnModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Pawn Details</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <!-- Customer -->
+                                <div class="col-md-12">
+                                    <label>Pawner</label>
+                                    <input type="text" class="form-control" id="viewCustomerName" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Contact No.</label>
+                                    <input type="text" class="form-control" id="viewContactNo" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Address</label>
+                                    <input type="text" class="form-control" id="viewAddress" readonly>
+                                </div>
+
+                                <!-- Pawn Item Details -->
+                                <div class="col-md-6">
+                                    <label>Unit</label>
+                                    <input type="text" class="form-control" id="viewUnitDescription" readonly>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label>Category</label>
+                                    <input type="text" class="form-control" id="viewCategory" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Amount Pawned</label>
+                                    <input type="text" class="form-control" id="viewAmountPawned" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Note</label>
+                                    <input type="text" class="form-control" id="viewNotes" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Date Pawned</label>
+                                    <input type="text" class="form-control" id="viewDatePawned" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Due Date</label>
+                                    <input type="text" class="form-control" id="viewDueDate" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>Status</label>
+                                    <input type="text" class="form-control" id="viewStatus" readonly>
+                                </div>
+
+                                <!-- Pawn Item Picture -->
+                                <div class="col-md-6 text-center">
+                                    <label class="form-label d-block">Item Picture</label>
+                                    <div class="mt-2">
+                                        <img id="view_pawn_preview" src="../assets/img/avatar.png" class="img-thumbnail"
+                                            style="max-width:300px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
             <!-- Add Pawn Modal -->
             <div class="modal fade" id="addPawnModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
@@ -313,7 +397,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="text" class="form-control" id="claimAmountPawned" readonly>
                                     </div>
                                     <div class="col-md-3">
-                                        <label>Interest Amount</label>
+                                        <label>Interest Amount <small>(auto compute)</small> </label>
                                         <input type="text" class="form-control" id="claimInterest" readonly>
                                     </div>
                                     <div class="col-md-3">
@@ -810,7 +894,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                                                                                                                    { title: "Actions", orderable: false }
+                        { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -979,9 +1063,46 @@ $highlightPawnId = $_GET['id'] ?? '';
                 success: function (response) {
                     if (response.status === "success") {
                         let pawn = response.pawn;
-                        let interestRate = response.branch_interest;
+                        let interestRate = parseFloat(response.branch_interest) || 0.06;
 
-                        // Compute months covered (minimum 1 month)
+                        // --- Populate histories ---
+                        // Tubo history
+                        let tuboRows = "";
+                        if (response.tubo_history && response.tubo_history.length > 0) {
+                            response.tubo_history.forEach(t => {
+                                tuboRows += `
+                                <tr>
+                                    <td>${t.date_paid}</td>
+                                    <td>${t.period_start}</td>
+                                    <td>${t.period_end}</td>
+                                    <td>₱${parseFloat(t.interest_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                            `;
+                            });
+                        } else {
+                            tuboRows = "<tr><td colspan='4'>No tubo payments</td></tr>";
+                        }
+                        $("#ppTuboHistory tbody").html(tuboRows);
+
+                        // Partial history
+                        let partialRows = "";
+                        if (response.partial_history && response.partial_history.length > 0) {
+                            response.partial_history.forEach(p => {
+                                partialRows += `
+                                <tr>
+                                    <td>${p.date_paid}</td>
+                                    <td>₱${parseFloat(p.amount_paid).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td>₱${parseFloat(p.remaining_principal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td>${p.notes || ""}</td>
+                                </tr>
+                            `;
+                            });
+                        } else {
+                            partialRows = "<tr><td colspan='4'>No partial payments</td></tr>";
+                        }
+                        $("#ppPartialHistory tbody").html(partialRows);
+
+                        // Compute months covered (default)
                         let datePawned = new Date(pawn.date_pawned);
                         let today = new Date();
                         let diffMonths =
@@ -991,8 +1112,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                         if (diffMonths < 1) diffMonths = 1;
 
                         // Fill modal fields
-                        // Fill modal fields
-                        $("#ppPawnerName").val(pawn.customer_name);  // use .val()
+                        $("#ppPawnerName").val(pawn.customer_name);
                         $("#ppUnit").val(pawn.unit_description);
                         $("#ppCategory").val(pawn.category);
                         $("#ppDatePawned").val(pawn.date_pawned);
@@ -1008,6 +1128,11 @@ $highlightPawnId = $_GET['id'] ?? '';
                         // Reset
                         $("#ppAmount").val("");
                         $("#ppSummary").html("");
+
+                        // Keep histories for live computation
+                        $("#partialPaymentModal").data("tuboHistory", response.tubo_history || []);
+                        $("#partialPaymentModal").data("partialHistory", response.partial_history || []);
+                        $("#partialPaymentModal").data("pawnDate", pawn.date_pawned);
 
                         // Show modal
                         $("#partialPaymentModal").modal("show");
@@ -1025,31 +1150,68 @@ $highlightPawnId = $_GET['id'] ?? '';
         $("#ppAmount").on("input", function () {
             let entered = parseFloat($(this).val()) || 0;
             let principal = parseFloat($("#ppPrincipal").val());
-            let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
-            let months = parseInt($("#ppMonths").val()) || 1;
+            let interestRate = parseFloat($("#ppInterestRate").val()) || 0.06;
+            let tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
+            let partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
+            let pawnDate = new Date($("#partialPaymentModal").data("pawnDate"));
+            let today = new Date();
 
             if (entered >= principal) {
                 $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to pawned amount!</span>`);
                 return;
             }
 
-            // Interest = principal × rate × months
-            let interest = principal * interestRate * months;
+            // --- Interest logic ---
+            let startDate = pawnDate;
+            let interest = 0;
+
+            // Check tubo
+            if (tuboHistory.length > 0) {
+                let lastTubo = tuboHistory[0]; // DESC ordered
+                let tuboDue = new Date(lastTubo.end_date);
+                if (tuboDue >= today) {
+                    interest = 0; // waived
+                } else {
+                    startDate = tuboDue;
+                }
+            }
+
+            // Check partials
+            if (partialHistory.length > 0) {
+                let lastPartial = partialHistory[0];
+                let partialDate = new Date(lastPartial.date_paid);
+
+                let daysSincePartial = Math.floor((today - partialDate) / (1000 * 60 * 60 * 24));
+
+                if (daysSincePartial < 31) {
+                    // Waive interest for recent partial
+                    interest = 0;
+                    startDate = partialDate;
+                } else if (partialDate > startDate) {
+                    // Otherwise, move start date to partial
+                    startDate = partialDate;
+                }
+            }
+
+            // Only compute interest if not waived
+            if (interest === 0 && tuboHistory.length === 0 && partialHistory.length === 0) {
+                let diffMonths = Math.max(1, Math.ceil((today - startDate) / (1000 * 60 * 60 * 24 * 31)));
+                interest = principal * interestRate * diffMonths;
+            }
+
 
             let remaining = principal - entered;
             let totalPay = entered + interest;
 
             $("#ppSummary").html(`
-        <div>Original Principal: ₱${principal.toLocaleString()}</div>
-        <div>Partial Payment: ₱${entered.toLocaleString()}</div>
-        <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
-        <div>Interest (${months} month/s): ₱${interest.toLocaleString()}</div>
-        <hr>
-        <strong>Total Payable Now: ₱${totalPay.toLocaleString()}</strong>
-    `);
+            <div>Original Principal: ₱${principal.toLocaleString()}</div>
+            <div>Partial Payment: ₱${entered.toLocaleString()}</div>
+            <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
+            <div>Interest: ₱${interest.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+            <hr>
+            <strong>Total Payable Now: ₱${totalPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
+        `);
         });
-
-
 
         // Handle form submit (save partial payment)
         $("#partialPaymentForm").on("submit", function (e) {
@@ -1058,8 +1220,6 @@ $highlightPawnId = $_GET['id'] ?? '';
             let pawnId = $("#ppPawnId").val();
             let partialAmount = parseFloat($("#ppAmount").val()) || 0;
             let principal = parseFloat($("#ppPrincipal").val()) || 0;
-            let interestRate = parseFloat($("#ppInterestRate").val()) || 0;
-            let notes = $("input[name='notes']").val();
 
             if (!pawnId || partialAmount <= 0) {
                 Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
@@ -1071,11 +1231,9 @@ $highlightPawnId = $_GET['id'] ?? '';
                 return;
             }
 
-            let newPrincipal = principal - partialAmount;
-
             Swal.fire({
                 title: "Confirm Partial Payment",
-                html: `Save partial payment?`,
+                html: `Save partial payment of ₱${partialAmount.toLocaleString()}?`,
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonText: "Yes, Save",
@@ -1111,10 +1269,13 @@ $highlightPawnId = $_GET['id'] ?? '';
                 }
             });
         });
-
-
-
     });
+
+
+
+
+
+
 
 
 
@@ -1323,6 +1484,47 @@ $highlightPawnId = $_GET['id'] ?? '';
                     }
                 });
             }
+        });
+    });
+
+
+    $(document).on("click", ".viewPawnBtn", function (e) {
+        e.preventDefault();
+        let pawnId = $(this).data("id");
+
+        // Open modal first
+        $("#viewPawnModal").modal("show");
+
+        // Fetch pawn details
+        $.getJSON("../api/pawn_get.php", { pawn_id: pawnId }, function (res) {
+            if (res.status === "success") {
+                let pawn = res.pawn;
+
+                $("#viewCustomerName").val(pawn.customer_name);
+                $("#viewContactNo").val(pawn.contact_no);
+                $("#viewAddress").val(pawn.address);
+                $("#viewUnitDescription").val(pawn.unit_description);
+                $("#viewCategory").val(pawn.category);
+                $("#viewAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toFixed(2));
+                $("#viewNotes").val(pawn.notes || "");
+                $("#viewDatePawned").val(pawn.date_pawned);
+                $("#viewDueDate").val(pawn.current_due_date);
+                $("#viewStatus").val(pawn.status);
+
+                if (pawn.photo_path) {
+                    $("#view_pawn_preview").attr("src", "../" + pawn.photo_path);
+                } else {
+                    $("#view_pawn_preview").attr("src", "../assets/img/avatar.png");
+                }
+
+                // (Optional) show tubo & partial history inside modal if needed
+                console.log(res.tubo_history);
+                console.log(res.partial_history);
+            } else {
+                alert(res.message || "Error loading pawn details");
+            }
+        }).fail(function () {
+            alert("Server error while fetching pawn details.");
         });
     });
 

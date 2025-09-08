@@ -79,9 +79,27 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $actions = '';
     if (in_array($user_role, ['admin', 'cashier'])) {
         $actions .= '
-            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+           <a href="#" class="text-secondary text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-three-dots fs-5"></i>
             </a>
+
+           <a href="#" 
+            class="text-info text-decoration-none viewPawnBtn" 
+            data-id="' . $row['pawn_id'] . '">
+            <i class="bi bi-eye"></i>
+            </a>
+
+
+
+           <a href="../processes/pawn_item_print.php?id=' . $row['pawn_id'] . '" 
+            target="_blank" 
+            class="text-primary text-decoration-none">
+            <i class="bi bi-printer"></i>
+            </a>
+
+           
+
+                  
             <ul class="dropdown-menu dropdown-menu-end">
         ';
 
@@ -139,7 +157,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
 
-   
+
     // Build row for DataTable
 
     $totalPawned += floatval($row['amount_pawned']);
@@ -154,7 +172,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $rowData = [
         null,
         formatDateMDY($row['date_pawned']),
-         $months . ' month(s)', // <-- new row showing months since pawned
+        $months . ' month(s)', // <-- new row showing months since pawned
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),

@@ -17,6 +17,7 @@ try {
     $branch_id = $_SESSION['user']['branch_id'];
     $user_id = $_SESSION['user']['id'];
     $notes = $_POST['claimNotes'] ?? "";
+    $date_claimed = $_POST['claimDate'] ?? "";
 
     if (!$pawn_id) {
         echo json_encode(["status" => "error", "message" => "Invalid pawn ID."]);
@@ -33,7 +34,7 @@ try {
         exit;
     }
 
-   // --- Calculate months pawned ---
+// --- Calculate months pawned ---
 $datePawned = new DateTime($pawn['date_pawned']);
 $now = new DateTime();
 
@@ -42,32 +43,43 @@ $stmt = $pdo->prepare("SELECT interest_rate, cash_on_hand FROM branches WHERE br
 $stmt->execute([$pawn['branch_id']]);
 $branch = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$interest_rate = floatval($branch['interest_rate'] ?? 0.06); // decimal format
+$interest_rate = floatval($branch['interest_rate'] ?? 0.06);
 $principal = floatval($pawn['amount_pawned']);
 
 // --- Check latest tubo payment and partial payment ---
-$stmt = $pdo->prepare("SELECT MAX(period_end) AS last_tubo_end FROM tubo_payments WHERE pawn_id = ?");
+$stmt = $pdo->prepare("SELECT MAX(new_due_date) AS last_tubo_due FROM tubo_payments WHERE pawn_id = ?");
 $stmt->execute([$pawn['pawn_id']]);
-$lastTuboEnd = $stmt->fetchColumn();
+$lastTuboDue = $stmt->fetchColumn();
 
 $stmt = $pdo->prepare("SELECT MAX(created_at) AS last_partial_paid FROM partial_payments WHERE pawn_id = ?");
 $stmt->execute([$pawn['pawn_id']]);
 $lastPartialPaid = $stmt->fetchColumn();
 
 // --- Determine start date for interest calculation ---
-if ($lastTuboEnd) {
-    $startDate = new DateTime($lastTuboEnd);
+if ($lastTuboDue) {
+    $startDate = new DateTime($lastTuboDue);
 } elseif ($lastPartialPaid) {
     $startDate = new DateTime($lastPartialPaid);
 } else {
     $startDate = $datePawned;
 }
 
-// --- Waive interest if tubo already covers today ---
+// --- Waive interest flags ---
 $waiveInterest = false;
-if ($lastTuboEnd) {
-    $lastTuboEndDate = new DateTime($lastTuboEnd);
-    if ($lastTuboEndDate >= $now) {
+
+// Waive if tubo already covers today
+if ($lastTuboDue) {
+    $lastTuboDueDate = new DateTime($lastTuboDue);
+    if ($lastTuboDueDate >= $now) {
+        $waiveInterest = true;
+    }
+}
+
+// Waive if partial payment made within last 30 days
+if ($lastPartialPaid && !$waiveInterest) {
+    $lastPartialDate = new DateTime($lastPartialPaid);
+    $daysSincePartial = $lastPartialDate->diff($now)->days;
+    if ($daysSincePartial < 31) {
         $waiveInterest = true;
     }
 }
@@ -79,10 +91,12 @@ if (!$waiveInterest) {
     $interest_amount = round($principal * $interest_rate * $months, 2);
 } else {
     $interest_amount = 0;
-    $months = 0; // optional, for display purposes
+    $months = 0; // optional
 }
 
 $total_paid = round($principal + $interest_amount, 2);
+
+
 
 
     // --- Save claimant photo ---
@@ -113,15 +127,17 @@ $total_paid = round($principal + $interest_amount, 2);
     $penalty = isset($_POST['claimPenalty']) && $_POST['claimPenalty'] !== '' ? floatval($_POST['claimPenalty']) : 0.00;
     $total_paid = $principal + $interest_amount + $penalty;
 
+    
     // --- Insert into claims ---
     $stmt = $pdo->prepare("
     INSERT INTO claims 
     (pawn_id, branch_id, date_claimed, months, interest_rate, interest_amount, principal_amount, penalty_amount, total_paid, cashier_id, notes, photo_path, created_at)
-    VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
 ");
     $stmt->execute([
         $pawn_id,               // pawn_id
         $pawn['branch_id'],     // branch_id
+        $date_claimed,
         $months,                // months
         $interest_rate,         // interest_rate
         $interest_amount,       // interest_amount
@@ -131,6 +147,7 @@ $total_paid = round($principal + $interest_amount, 2);
         $user_id,               // cashier_id
         $notes,                 // notes
         $photoPathForDb         // photo_path
+        
     ]);
 
     $claim_id = $pdo->lastInsertId();

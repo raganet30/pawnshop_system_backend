@@ -78,7 +78,7 @@ $tuboHistory = $stmtTubo->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch partial payment history
 $sqlPartial = "
-    SELECT pp_id, DATE(created_at) AS date_paid, amount_paid, remaining_principal, notes
+    SELECT pp_id, DATE(created_at) AS date_paid, amount_paid, interest_paid, principal_paid, remaining_principal, notes, status
     FROM partial_payments
     WHERE pawn_id = ?
     ORDER BY created_at DESC
