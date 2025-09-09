@@ -94,6 +94,12 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 </div>
 
                                 <div class="col-md-3">
+                                    <label>Intererest Rate</label>
+                                    <input type="text" class="form-control" id="viewInterest" readonly>
+                                </div>
+
+
+                                <div class="col-md-3">
                                     <label>Note</label>
                                     <input type="text" class="form-control" id="viewNotes" readonly>
                                 </div>
@@ -594,6 +600,11 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label class="form-label">Notes</label>
                                         <input type="text" class="form-control" id="ppNotes" name="ppNotes">
                                     </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Payment Date</label>
+                                        <input type="date" class="form-control" id="ppDatePaid" name="ppDatePaid"
+                                            required>
+                                    </div>
                                 </div>
 
                                 <!-- Live Computation -->
@@ -614,8 +625,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <thead>
                                         <tr>
                                             <th>Date Paid</th>
-                                            <th>Period Start</th>
-                                            <th>Period End</th>
+                                            <th>Covered Period</th>
                                             <th>Amount</th>
                                         </tr>
                                     </thead>
@@ -642,6 +652,10 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 <input type="hidden" id="ppPawnId" name="pawn_id">
                                 <input type="hidden" id="ppInterestRate" name="interest_rate">
                                 <input type="hidden" id="ppPrincipal" name="principal">
+
+                                <input type="hidden" id="ppInterestDue" name="interest_due" value="0">
+                                <input type="hidden" id="ppTotalPayable" name="total_payable" value="0">
+
 
                                 <button type="submit" class="btn btn-primary">Save Partial Payment</button>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -689,7 +703,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label class="form-label">Amount Pawned</label>
                                         <input type="text" class="form-control" id="tpAmountPawned" readonly>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <label class="form-label">Months period to pay</label>
                                         <select id="tpMonthsSelector" class="form-select">
                                             <option value="1">1 month</option>
@@ -699,7 +713,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         </select>
 
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <label class="form-label">Notes</label>
                                         <input type="text" class="form-control" id="tpNotes" name="tpNotes">
                                     </div>
@@ -715,7 +729,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="date" class="form-control" id="tpDatePaid" name="tpDatePaid"
                                             required>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <label class="form-label">Months Covered</label>
                                         <input type="text" class="form-control" id="tpMonthsCovered"
                                             name="tpMonthsCovered" readonly>
@@ -725,7 +739,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="text" class="form-control" id="tpInterestAmount"
                                             name="tpInterestAmount" readonly>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label class="form-label">New Due Date</label>
                                         <input type="text" class="form-control" id="tpNewDueDate" name="tpNewDueDate"
                                             readonly>

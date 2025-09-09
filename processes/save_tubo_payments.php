@@ -12,6 +12,8 @@ try {
         exit;
     }
 
+
+
     // --- Get POST data ---
     $pawn_id = $_POST['pawn_id'] ?? null;
     $branch_id = $_POST['branch_id'] ?? $_SESSION['user']['branch_id'];
@@ -41,22 +43,16 @@ try {
     }
 
     $amount_pawned = floatval($pawn['amount_pawned']);
-    $branch_interest = floatval($pawn['interest_rate'] ?? 0) / 100; // decimal
-
-    // --- Optional: recalc interest as a safety check ---
-    $expected_interest = round($amount_pawned * $branch_interest * $months_covered, 2);
-    if (abs($expected_interest - $interest_amount) > 0.01) {
-        $interest_amount = $expected_interest; // override minor discrepancy
-    }
+    $pawn_interest_rate = floatval($pawn['interest_rate'] ?? 0); // decimal
 
     // --- Insert into tubo_payments ---
     $payment_type = 'renewal'; // tubo payments considered as renewal
 
     $stmt = $pdo->prepare("
-    INSERT INTO tubo_payments
-    (pawn_id, payment_type, branch_id, date_paid, period_start, period_end, months_covered, new_due_date, interest_rate, interest_amount, cashier_id, notes, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-");
+        INSERT INTO tubo_payments
+        (pawn_id, payment_type, branch_id, date_paid, period_start, period_end, months_covered, new_due_date, interest_rate, interest_amount, cashier_id, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    ");
 
     $stmt->execute([
         $pawn_id,
@@ -67,7 +63,7 @@ try {
         $period_end,
         $months_covered,
         $new_due_date,
-        $branch_interest,
+        $pawn_interest_rate,
         $interest_amount,
         $user_id,
         $notes
@@ -75,9 +71,12 @@ try {
 
     $tubo_id = $pdo->lastInsertId();
 
-
     // --- Update pawned_items: set new due date and has_tubo_payments=1 ---
-    $stmt = $pdo->prepare("UPDATE pawned_items SET current_due_date = :new_due_date, has_tubo_payments = 1, updated_by = :user_id, updated_at = NOW() WHERE pawn_id = :pawn_id");
+    $stmt = $pdo->prepare("
+        UPDATE pawned_items 
+        SET current_due_date = :new_due_date, has_tubo_payments = 1, updated_by = :user_id, updated_at = NOW() 
+        WHERE pawn_id = :pawn_id
+    ");
     $stmt->execute([
         ':new_due_date' => $new_due_date,
         ':user_id' => $user_id,
@@ -116,7 +115,7 @@ try {
 
     echo json_encode([
         "status" => "success",
-        "message" => "Tubo payment of ₱" . number_format($interest_amount, 2) . " saved successfully! New due date: $new_due_date",
+        "message" => "Cash on Hand +₱" . number_format($interest_amount, 2) . "<br>New due date: $new_due_date",
         "pawn_id" => $pawn_id,
         "tubo_id" => $tubo_id
     ]);

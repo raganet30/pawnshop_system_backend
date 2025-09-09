@@ -25,6 +25,8 @@ $(document).on("click", ".viewPawnBtn", function (e) {
             $("#viewDatePawned").val(pawn.date_pawned);
             $("#viewDueDate").val(pawn.current_due_date);
             $("#viewStatus").val(pawn.status);
+            $("#viewInterest").val(pawn.interest_rate);
+
 
             if (pawn.photo_path) {
                 $("#view_pawn_preview").attr("src", "../" + pawn.photo_path);
@@ -40,7 +42,7 @@ $(document).on("click", ".viewPawnBtn", function (e) {
                             <td>${index + 1}</td>
                             <td>${tubo.date_paid}</td>
                             <td>${tubo.period_start} to ${tubo.period_end}</td>
-                            <td>${tubo.interest_rate ? tubo.interest_rate + '%' : '-'}</td>
+                            <td>${tubo.interest_rate ? tubo.interest_rate : '-'}</td>
                             <td>₱${parseFloat(tubo.interest_amount || 0).toFixed(2)}</td>
                         </tr>
                     `);

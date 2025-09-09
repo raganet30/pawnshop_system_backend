@@ -54,6 +54,7 @@ $sql = "
         p.unit_description,
         p.category,
         p.amount_pawned,
+        p.interest_rate,
         p.original_amount_pawned,
         p.has_partial_payments,
         p.notes,
