@@ -24,7 +24,7 @@ $user = $_SESSION['user'];
 $branch_id = $user['branch_id'];
 
 // Fetch current branch details (interest rate + cash on hand)
-$stmt = $pdo->prepare("SELECT interest_rate, cash_on_hand FROM branches WHERE branch_id = ?");
+$stmt = $pdo->prepare("SELECT interest_rate,custom_interest_rate1, cash_on_hand FROM branches WHERE branch_id = ?");
 $stmt->execute([$branch_id]);
 $branch = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -62,6 +62,11 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <label>Monthly Interest Rate (%)</label>
                             <input id="interestRateInput" type="number" class="form-control"
                                 value="<?= htmlspecialchars($branch['interest_rate']) ?>" min="1" step="0.1">
+                        </div>
+                        <div class="col-md-6">
+                            <label>Custom Monthly Interest Rate (%) - Motorcycle</label>
+                            <input id="customInterestRateInput" type="number" class="form-control"
+                                value="<?= htmlspecialchars($branch['custom_interest_rate1']) ?>" min="1" step="0.1">
                         </div>
                         <div class="col-md-6">
                             <?php if ($_SESSION['user']['role'] === 'cashier'): ?>
@@ -156,40 +161,42 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
 
     // script to save insterest rate
-    document.getElementById("saveInterestBtn")?.addEventListener("click", function () {
-        const rate = document.getElementById("interestRateInput").value;
+   document.getElementById("saveInterestBtn")?.addEventListener("click", function () {
+    const rate = document.getElementById("interestRateInput").value;
+    const customRate = document.getElementById("customInterestRateInput").value;
 
-        Swal.fire({
-            title: "Save Interest Rate?",
-            text: "This will update the monthly interest rate.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, save it"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch("../processes/save_interest.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "rate=" + encodeURIComponent(rate)
+    Swal.fire({
+        title: "Save Interest Rate?",
+        text: "This will update the monthly interest rates.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, save it"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch("../processes/save_interest.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "rate=" + encodeURIComponent(rate) +
+                      "&custom_rate=" + encodeURIComponent(customRate)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire("Saved!", data.message, "success").then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
                 })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire("Saved!", data.message, "success").then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire("Error", data.message, "error");
-                        }
-                    })
-                    .catch(() => {
-                        Swal.fire("Error", "Something went wrong.", "error");
-                    });
-            }
-        });
+                .catch(() => {
+                    Swal.fire("Error", "Something went wrong.", "error");
+                });
+        }
     });
+});
 
 
     // function sa fetch recent adjustment

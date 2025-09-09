@@ -40,7 +40,7 @@ $highlightPawnId = $_GET['id'] ?? '';
 
             <!-- View Pawn Modal -->
             <div class="modal fade" id="viewPawnModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Pawn Details</h5>
@@ -50,59 +50,99 @@ $highlightPawnId = $_GET['id'] ?? '';
                         <div class="modal-body">
                             <div class="row g-3">
                                 <!-- Customer -->
-                                <div class="col-md-12">
+                                <div class="col-md-3">
                                     <label>Pawner</label>
                                     <input type="text" class="form-control" id="viewCustomerName" readonly>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Contact No.</label>
                                     <input type="text" class="form-control" id="viewContactNo" readonly>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Address</label>
                                     <input type="text" class="form-control" id="viewAddress" readonly>
                                 </div>
 
                                 <!-- Pawn Item Details -->
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Unit</label>
                                     <input type="text" class="form-control" id="viewUnitDescription" readonly>
                                 </div>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-md-3">
                                     <label>Category</label>
                                     <input type="text" class="form-control" id="viewCategory" readonly>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Amount Pawned</label>
                                     <input type="text" class="form-control" id="viewAmountPawned" readonly>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label>Note</label>
-                                    <input type="text" class="form-control" id="viewNotes" readonly>
-                                </div>
+                                
 
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Date Pawned</label>
                                     <input type="text" class="form-control" id="viewDatePawned" readonly>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Due Date</label>
                                     <input type="text" class="form-control" id="viewDueDate" readonly>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label>Status</label>
-                                    <input type="text" class="form-control" id="viewStatus" readonly>
+                                <div class="col-md-3">
+                                    <label>Note</label>
+                                    <input type="text" class="form-control" id="viewNotes" readonly>
+                                </div>
+
+                                
+
+
+                                 <!--  Tubo Payments History -->
+                                <h6 class="mt-3">Tubo Payments History</h6>
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered table-sm" id="tuboPaymentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date Paid</th>
+                                                <th>Covered Period</th>
+                                                <th>Interest Rate</th>
+                                                <th>Interest Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!--  Partial Payments History -->
+                                <h6 class="mt-3">Partial Payments History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm" id="partialPaymentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date Paid</th>
+                                                <th>Amount Paid</th>
+                                                <th>Interest Paid</th>
+                                                <th>Principal Paid</th>
+                                                <th>Remaining Principal</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
                                 </div>
 
                                 <!-- Pawn Item Picture -->
-                                <div class="col-md-6 text-center">
+                                <div class="col-md-6 ">
                                     <label class="form-label d-block">Item Picture</label>
                                     <div class="mt-2">
                                         <img id="view_pawn_preview" src="../assets/img/avatar.png" class="img-thumbnail"
@@ -292,7 +332,6 @@ $highlightPawnId = $_GET['id'] ?? '';
                                             <option value="">-- Select Category --</option>
                                             <option value="Cellphone">Cellphone</option>
                                             <option value="Laptop ">Laptop</option>
-                                            <!-- <option value="Camera">Camera</option> -->
                                             <option value="Tablet/iPad">Tablet/iPad</option>
                                             <option value="Motorcycle">Motorcycle</option>
                                             <option value="Others">Others</option>
@@ -423,7 +462,7 @@ $highlightPawnId = $_GET['id'] ?? '';
 
                                 </div>
 
-                                <!-- 🔹 Tubo Payments History -->
+                                <!--  Tubo Payments History -->
                                 <h6 class="mt-3">Tubo Payments History</h6>
                                 <div class="table-responsive mb-3">
                                     <table class="table table-bordered table-sm" id="tuboPaymentsTable">
@@ -442,7 +481,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </table>
                                 </div>
 
-                                <!-- 🔹 Partial Payments History -->
+                                <!--  Partial Payments History -->
                                 <h6 class="mt-3">Partial Payments History</h6>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-sm" id="partialPaymentsTable">
@@ -845,11 +884,15 @@ $highlightPawnId = $_GET['id'] ?? '';
     </div>
 </div>
 
+<script src="../assets/js/pawn_view.js"></script>
 <script src="../assets/js/pawn_add.js"></script>
 <script src="../assets/js/pawn_edit.js"></script>
 <script src="../assets/js/pawn_claim.js"></script>
 <script src="../assets/js/money_separator.js"></script>
 <script src="../assets/js/receipt.js"></script>
+<script src="../assets/js/pawn_partial_payment.js"></script>
+<script src="../assets/js/pawn_tubo_payment.js"></script>
+
 
 <script>
 
@@ -1049,486 +1092,10 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
 
-    // partial payment function
-    $(document).ready(function () {
-        // Handle "Add Partial Payment" button click
-        $(document).on("click", ".addPartialPaymentBtn", function () {
-            let pawnId = $(this).data("id");
 
-            $.ajax({
-                url: "../api/pawn_get.php",
-                method: "GET",
-                data: { pawn_id: pawnId },
-                dataType: "json",
-                success: function (response) {
-                    if (response.status === "success") {
-                        let pawn = response.pawn;
-                        let interestRate = parseFloat(response.branch_interest) || 0.06;
 
-                        // --- Populate histories ---
-                        // Tubo history
-                        let tuboRows = "";
-                        if (response.tubo_history && response.tubo_history.length > 0) {
-                            response.tubo_history.forEach(t => {
-                                tuboRows += `
-                                <tr>
-                                    <td>${t.date_paid}</td>
-                                    <td>${t.period_start}</td>
-                                    <td>${t.period_end}</td>
-                                    <td>₱${parseFloat(t.interest_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                            `;
-                            });
-                        } else {
-                            tuboRows = "<tr><td colspan='4'>No tubo payments</td></tr>";
-                        }
-                        $("#ppTuboHistory tbody").html(tuboRows);
 
-                        // Partial history
-                        let partialRows = "";
-                        if (response.partial_history && response.partial_history.length > 0) {
-                            response.partial_history.forEach(p => {
-                                partialRows += `
-                                <tr>
-                                    <td>${p.date_paid}</td>
-                                    <td>₱${parseFloat(p.amount_paid).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td>₱${parseFloat(p.remaining_principal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td>${p.notes || ""}</td>
-                                </tr>
-                            `;
-                            });
-                        } else {
-                            partialRows = "<tr><td colspan='4'>No partial payments</td></tr>";
-                        }
-                        $("#ppPartialHistory tbody").html(partialRows);
-
-                        // Compute months covered (default)
-                        let datePawned = new Date(pawn.date_pawned);
-                        let today = new Date();
-                        let diffMonths =
-                            (today.getFullYear() - datePawned.getFullYear()) * 12 +
-                            (today.getMonth() - datePawned.getMonth());
-                        if (today.getDate() > datePawned.getDate()) diffMonths++;
-                        if (diffMonths < 1) diffMonths = 1;
-
-                        // Fill modal fields
-                        $("#ppPawnerName").val(pawn.customer_name);
-                        $("#ppUnit").val(pawn.unit_description);
-                        $("#ppCategory").val(pawn.category);
-                        $("#ppDatePawned").val(pawn.date_pawned);
-                        $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
-                        $("#ppNotes").val(pawn.notes);
-                        $("#ppMonths").val(diffMonths + " month(s)");
-
-                        // Hidden fields
-                        $("#ppPawnId").val(pawn.pawn_id);
-                        $("#ppInterestRate").val(interestRate);
-                        $("#ppPrincipal").val(pawn.amount_pawned);
-
-                        // Reset
-                        $("#ppAmount").val("");
-                        $("#ppSummary").html("");
-
-                        // Keep histories for live computation
-                        $("#partialPaymentModal").data("tuboHistory", response.tubo_history || []);
-                        $("#partialPaymentModal").data("partialHistory", response.partial_history || []);
-                        $("#partialPaymentModal").data("pawnDate", pawn.date_pawned);
-
-                        // Show modal
-                        $("#partialPaymentModal").modal("show");
-                    } else {
-                        alert(response.message);
-                    }
-                },
-                error: function () {
-                    alert("Failed to fetch pawn details.");
-                }
-            });
-        });
-
-        // Live computation when partial payment is entered
-        $("#ppAmount").on("input", function () {
-            let entered = parseFloat($(this).val()) || 0;
-            let principal = parseFloat($("#ppPrincipal").val());
-            let interestRate = parseFloat($("#ppInterestRate").val()) || 0.06;
-            let tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
-            let partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
-            let pawnDate = new Date($("#partialPaymentModal").data("pawnDate"));
-            let today = new Date();
-
-            if (entered >= principal) {
-                $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to pawned amount!</span>`);
-                return;
-            }
-
-            // --- Interest logic ---
-            let startDate = pawnDate;
-            let interest = 0;
-
-            // Check tubo
-            if (tuboHistory.length > 0) {
-                let lastTubo = tuboHistory[0]; // DESC ordered
-                let tuboDue = new Date(lastTubo.end_date);
-                if (tuboDue >= today) {
-                    interest = 0; // waived
-                } else {
-                    startDate = tuboDue;
-                }
-            }
-
-            // Check partials
-            if (partialHistory.length > 0) {
-                let lastPartial = partialHistory[0];
-                let partialDate = new Date(lastPartial.date_paid);
-
-                let daysSincePartial = Math.floor((today - partialDate) / (1000 * 60 * 60 * 24));
-
-                if (daysSincePartial < 31) {
-                    // Waive interest for recent partial
-                    interest = 0;
-                    startDate = partialDate;
-                } else if (partialDate > startDate) {
-                    // Otherwise, move start date to partial
-                    startDate = partialDate;
-                }
-            }
-
-            // Only compute interest if not waived
-            if (interest === 0 && tuboHistory.length === 0 && partialHistory.length === 0) {
-                let diffMonths = Math.max(1, Math.ceil((today - startDate) / (1000 * 60 * 60 * 24 * 31)));
-                interest = principal * interestRate * diffMonths;
-            }
-
-
-            let remaining = principal - entered;
-            let totalPay = entered + interest;
-
-            $("#ppSummary").html(`
-            <div>Original Principal: ₱${principal.toLocaleString()}</div>
-            <div>Partial Payment: ₱${entered.toLocaleString()}</div>
-            <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
-            <div>Interest: ₱${interest.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-            <hr>
-            <strong>Total Payable Now: ₱${totalPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
-        `);
-        });
-
-        // Handle form submit (save partial payment)
-        $("#partialPaymentForm").on("submit", function (e) {
-            e.preventDefault();
-
-            let pawnId = $("#ppPawnId").val();
-            let partialAmount = parseFloat($("#ppAmount").val()) || 0;
-            let principal = parseFloat($("#ppPrincipal").val()) || 0;
-
-            if (!pawnId || partialAmount <= 0) {
-                Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
-                return;
-            }
-
-            if (partialAmount > principal) {
-                Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
-                return;
-            }
-
-            Swal.fire({
-                title: "Confirm Partial Payment",
-                html: `Save partial payment of ₱${partialAmount.toLocaleString()}?`,
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Yes, Save",
-                cancelButtonText: "Cancel"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let formData = $("#partialPaymentForm").serialize();
-
-                    $.ajax({
-                        url: "../processes/save_partial_payment.php",
-                        method: "POST",
-                        data: formData,
-                        dataType: "json",
-                        success: function (response) {
-                            if (response.status === "success") {
-                                $("#partialPaymentModal").modal("hide");
-
-                                Swal.fire({
-                                    title: "Success!",
-                                    html: response.message,
-                                    icon: "success"
-                                });
-
-                                $("#pawnTable").DataTable().ajax.reload();
-                            } else {
-                                Swal.fire("Error", response.message, "error");
-                            }
-                        },
-                        error: function () {
-                            Swal.fire("Error", "Failed to save partial payment.", "error");
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-
-
-
-
-
-
-
-
-    // Utility function to add months to a date
-    function addMonths(date, months) {
-        let d = new Date(date);
-        d.setMonth(d.getMonth() + months);
-        return d.toISOString().slice(0, 10); // format YYYY-MM-DD
-    }
-
-    // Update default tubo values (period & interest)
-    function updateTuboDefaults(p, res) {
-        let amountPawned = parseFloat(p.amount_pawned);
-        let interestRate = parseFloat(res.branch_interest); // use as-is
-
-        let lastTubo = res.tubo_history[0] || null;
-        let lastPartial = res.partial_history[0] || null;
-
-        let startDate;
-
-        if (lastTubo) {
-            startDate = lastTubo.period_end;
-        } else if (lastPartial) {
-            startDate = lastPartial.date_paid;
-        } else {
-            startDate = p.date_pawned;
-        }
-
-        let months = parseInt($("#tpMonthsSelector").val()) || 1;
-        let endDate = addMonths(startDate, months);
-
-        // Compute end of current covered period
-        let periodEnd = addMonths(startDate, months);
-
-
-        // Compute new due date = periodEnd + 1 month
-        let newDueDate = addMonths(periodEnd, 1);
-
-        $("#tpMonthsCovered").val(`${startDate} to ${endDate}`);
-        $("#tpInterestAmount").val((amountPawned * interestRate * months).toFixed(2));
-        $("#tpNewDueDate").val(newDueDate);
-
-        $("#tuboPaymentModal").data("period_start", startDate);
-    }
-
-
-    // Load pawn, tubo, and partial history, then show modal
-    $(document).on("click", ".addTuboPaymentBtn", function (e) {
-        e.preventDefault();
-        let pawnId = $(this).data("id");
-
-        $.get("../api/pawn_get.php", { pawn_id: pawnId }, function (res) {
-            if (res.status === "success") {
-                let p = res.pawn;
-
-                // Fill pawn details
-                $("#tpPawnId").val(p.pawn_id);
-                $("#tpBranchId").val(p.branch_id);
-                $("#tpPawnerName").val(p.customer_name);
-                $("#tpCategory").val(p.category);
-                $("#tpUnit").val(p.unit_description);
-                $("#tpDatePawned").val(p.date_pawned);
-                $("#tpAmountPawned").val(parseFloat(p.amount_pawned).toFixed(2));
-
-                // ✅ Set default Payment Date to today
-                let today = new Date().toISOString().slice(0, 10);
-                $("#tpDatePaid").val(today);
-
-
-                // Store branch interest for computation
-                $("#tuboPaymentModal").data("branch_interest", res.branch_interest);
-
-                // Populate tubo history
-                let tuboRows = "";
-                res.tubo_history.forEach(h => {
-                    tuboRows += `
-                    <tr>
-                        <td>${h.date_paid}</td>
-                        <td>${h.period_start} to ${h.period_end}</td>
-                        <td>${parseFloat(h.interest_amount).toFixed(2)}</td>
-                    </tr>`;
-                });
-                $("#tpTuboHistory tbody").html(tuboRows);
-
-                // Populate partial history
-                let partialRows = "";
-                res.partial_history.forEach(h => {
-                    partialRows += `
-                    <tr>
-                        <td>${h.date_paid}</td>
-                        <td>${parseFloat(h.amount_paid).toFixed(2)}</td>
-                        <td>${parseFloat(h.remaining_principal).toFixed(2)}</td>
-                        <td>${h.notes || ""}</td>
-                    </tr>`;
-                });
-                $("#tpPartialHistory tbody").html(partialRows);
-
-                // Initialize default tubo period & interest
-                updateTuboDefaults(p, res);
-
-
-                // Show modal
-                $("#tuboPaymentModal").modal("show");
-            } else {
-                alert(res.message);
-            }
-        }, "json");
-    });
-
-    $("#tpMonthsSelector").on("change", function () {
-        let months = parseInt($(this).val());
-
-        // Get clean numeric pawn amount
-        let amountPawned = Number($("#tpAmountPawned").val().replace(/,/g, ''));
-
-        // Branch interest (already decimal, e.g., 0.06)
-        let interestRate = parseFloat($("#tuboPaymentModal").data("branch_interest"));
-
-        // Get start date
-        let startDate = $("#tuboPaymentModal").data("period_start");
-
-        // Compute end date of current covered period
-        let endDate = addMonths(startDate, months);
-
-        // Update Months Covered Period
-        $("#tpMonthsCovered").val(`${startDate} to ${endDate}`);
-
-        // Compute interest amount
-        let interestAmount = amountPawned * interestRate * months;
-        $("#tpInterestAmount").val(interestAmount.toFixed(2));
-
-        // Compute new due date = end of current period + 1 month
-        let newDueDate = addMonths(endDate, 1);
-        $("#tpNewDueDate").val(newDueDate);
-
-    });
-
-    // Optional: Update period start if you want it to follow Payment Date instead
-    $("#tpDatePaid").on("change", function () {
-        // let selectedDate = $(this).val();
-        // Optional logic to adjust period start if needed
-    });
-
-
-
-
-    // submit tubo payment
-    $("#tuboPaymentForm").on("submit", function (e) {
-        e.preventDefault();
-
-        // SweetAlert confirmation
-        Swal.fire({
-            title: 'Confirm Tubo Payment',
-            text: "Are you sure you want to save this Tubo Payment?",
-            icon: 'question',
-            showCancelButton: true,
-            cancelButtonText: 'Cancel',
-            confirmButtonText: 'Yes, Save',
-            reverseButtons: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Proceed to save
-                let formData = {
-                    pawn_id: $("#tpPawnId").val(),
-                    branch_id: $("#tpBranchId").val(),
-                    payment_date: $("#tpDatePaid").val(),
-                    months_covered: $("#tpMonthsSelector").val(),
-                    period_start: $("#tpMonthsCovered").val().split(" to ")[0],
-                    period_end: $("#tpMonthsCovered").val().split(" to ")[1],
-                    interest_amount: $("#tpInterestAmount").val(),
-                    new_due_date: $("#tpNewDueDate").val(),
-                    notes: $("#tpNotes").val()
-                };
-
-                $.ajax({
-                    url: "../processes/save_tubo_payments.php",
-                    type: "POST",
-                    data: formData,
-                    dataType: "json",
-                    success: function (res) {
-                        if (res.status === "success") {
-                            Swal.fire(
-                                'Saved!',
-                                'Tubo payment has been saved successfully.',
-                                'success'
-                            );
-                            $("#tuboPaymentModal").modal("hide");
-
-                            // Refresh histories
-                            refreshTuboHistory();
-                            refreshPartialHistory();
-                        } else {
-                            Swal.fire(
-                                'Error!',
-                                res.message,
-                                'error'
-                            );
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        Swal.fire(
-                            'Error!',
-                            'An unexpected error occurred: ' + error,
-                            'error'
-                        );
-                    }
-                });
-            }
-        });
-    });
-
-
-    $(document).on("click", ".viewPawnBtn", function (e) {
-        e.preventDefault();
-        let pawnId = $(this).data("id");
-
-        // Open modal first
-        $("#viewPawnModal").modal("show");
-
-        // Fetch pawn details
-        $.getJSON("../api/pawn_get.php", { pawn_id: pawnId }, function (res) {
-            if (res.status === "success") {
-                let pawn = res.pawn;
-
-                $("#viewCustomerName").val(pawn.customer_name);
-                $("#viewContactNo").val(pawn.contact_no);
-                $("#viewAddress").val(pawn.address);
-                $("#viewUnitDescription").val(pawn.unit_description);
-                $("#viewCategory").val(pawn.category);
-                $("#viewAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toFixed(2));
-                $("#viewNotes").val(pawn.notes || "");
-                $("#viewDatePawned").val(pawn.date_pawned);
-                $("#viewDueDate").val(pawn.current_due_date);
-                $("#viewStatus").val(pawn.status);
-
-                if (pawn.photo_path) {
-                    $("#view_pawn_preview").attr("src", "../" + pawn.photo_path);
-                } else {
-                    $("#view_pawn_preview").attr("src", "../assets/img/avatar.png");
-                }
-
-                // (Optional) show tubo & partial history inside modal if needed
-                console.log(res.tubo_history);
-                console.log(res.partial_history);
-            } else {
-                alert(res.message || "Error loading pawn details");
-            }
-        }).fail(function () {
-            alert("Server error while fetching pawn details.");
-        });
-    });
-
-
+    
 
 
 </script>

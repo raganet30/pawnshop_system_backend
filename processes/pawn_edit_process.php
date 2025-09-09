@@ -98,7 +98,7 @@ try {
     }
 
 
-
+    
 
     $old_amount = floatval($pawn['amount_pawned']);
     $branch_id = $pawn['branch_id'];
@@ -106,11 +106,17 @@ try {
     // Compute difference
     $difference = $new_amount - $old_amount;
 
+
+
+    //get interest based on item category
+    $interest_rate = getInterestRate($pdo, $branch_id, $category);
+
+
     //  Update only pawn details (NOT customer info)
     $stmt = $pdo->prepare("UPDATE pawned_items 
-        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, notes = ?, date_pawned = ?, current_due_date = ?
+        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, interest_rate=?, notes = ?, date_pawned = ?, current_due_date = ?
         WHERE pawn_id = ?");
-    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $notes, $date_pawned, $current_due_date, $pawn_id]);
+    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $interest_rate, $notes, $date_pawned, $current_due_date, $pawn_id]);
 
     //  Adjust COH only if amount changed
     if ($difference != 0) {

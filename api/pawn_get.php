@@ -30,10 +30,13 @@ $sql = "
         p.unit_description,
         p.category,
         p.amount_pawned,
-        p.original_amount_pawned,
+        p.interest_rate,
+        p.original_amount_pawned,   
         p.notes,
         p.date_pawned,
         p.status,
+        p.has_tubo_payments,
+        p.has_partial_payments,
         p.photo_path,
         p.current_due_date
     FROM pawned_items p
@@ -55,13 +58,15 @@ if (!$pawn) {
 // Fetch branch interest based on session branch
 $branch_id = $_SESSION['user']['branch_id'] ?? $pawn['branch_id'] ?? 0;
 $branchInterest = 0.06; // default if not found
+$customBranchInterest = 0.08;
 
 if ($branch_id) {
-    $stmtBranch = $pdo->prepare("SELECT interest_rate FROM branches WHERE branch_id = ?");
+    $stmtBranch = $pdo->prepare("SELECT interest_rate, custom_interest_rate1 FROM branches WHERE branch_id = ?");
     $stmtBranch->execute([$branch_id]);
     $branch = $stmtBranch->fetch(PDO::FETCH_ASSOC);
     if ($branch) {
         $branchInterest = floatval($branch['interest_rate']);
+        $customBranchInterest = floatval($branch['custom_interest_rate1']);
     }
 }
 

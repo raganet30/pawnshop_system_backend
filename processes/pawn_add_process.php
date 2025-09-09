@@ -3,6 +3,8 @@ session_start();
 require_once "../config/db.php";
 require_once "../config/helpers.php";
 
+
+
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user'])) {
@@ -104,9 +106,14 @@ try {
         $photo_path = 'uploads/pawn_items/' . $fileName;
     }
 
+
+
+    //get interest based on item category
+    $interest_rate = getInterestRate($pdo, $branch_id, $category);
+
     $stmt = $pdo->prepare("INSERT INTO pawned_items 
-    (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, notes, date_pawned, current_due_date, created_by, status, is_deleted, photo_path) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0, ?)");
+    (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, interest_rate, notes, date_pawned, current_due_date, created_by, status, is_deleted, photo_path) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0, ?)");
     $stmt->execute([
         $branch_id,
         $customer_id,
@@ -114,6 +121,7 @@ try {
         $category,
         $amount_pawned,
         $original_amount_pawned,
+        $interest_rate,
         $notes,
         $date_pawned,
         $current_due_date,
@@ -168,13 +176,13 @@ try {
 
 
 
-$pdo->commit();
+    $pdo->commit();
 
-echo json_encode([
-    "status" => "success",
-    "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2),
-    "pawn_id" => $pawn_id
-]);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2),
+        "pawn_id" => $pawn_id
+    ]);
 
 } catch (Exception $e) {
     $pdo->rollBack();

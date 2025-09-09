@@ -89,4 +89,24 @@ function formatDateMDY($date) {
 
 
 
+function getInterestRate(PDO $pdo, int $branch_id, string $item_type = "default"): float {
+    $stmt = $pdo->prepare("SELECT interest_rate, custom_interest_rate1 FROM branches WHERE branch_id = ?");
+    $stmt->execute([$branch_id]);
+    $branch = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$branch) {
+        return 0.06; // fallback default 6%
+    }
+
+    // Normalize input
+    // $item_type = strtolower(trim($item_type));
+
+    switch ($item_type) {
+        case "Motorcycle": // match your <select> option
+            return floatval($branch['custom_interest_rate1'] ?? $branch['interest_rate']);
+        default:
+            return floatval($branch['interest_rate']);
+    }
+}
+
 

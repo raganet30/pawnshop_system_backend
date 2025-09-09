@@ -43,12 +43,12 @@ $(function () {
                     if (data.tubo_history && data.tubo_history.length > 0) {
                         data.tubo_history.forEach((t, i) => {
                             tuboRows += `<tr>
-            <td>${i + 1}</td>
-            <td>${t.date_paid}</td>
-            <td>${t.period_start} to ${t.period_end}</td>
-            <td>${parseFloat(t.interest_rate).toFixed(2)}</td>
-            <td>${parseFloat(t.interest_amount).toFixed(2)}</td>
-        </tr>`;
+                        <td>${i + 1}</td>
+                        <td>${t.date_paid}</td>
+                        <td>${t.period_start} to ${t.period_end}</td>
+                        <td>${parseFloat(t.interest_rate).toFixed(2)}</td>
+                        <td>${parseFloat(t.interest_amount).toFixed(2)}</td>
+                    </tr>`;
                             lastTuboEnd = t.period_end; // track latest tubo period_end
                         });
                     }
@@ -58,15 +58,15 @@ $(function () {
                     let partialRows = "";
                     if (data.partial_history && data.partial_history.length > 0) {
                         data.partial_history.forEach((p, i) => {
-                            partialRows += `<tr>
-            <td>${i + 1}</td>
-            <td>${p.date_paid}</td>
-            <td>${parseFloat(p.amount_paid).toFixed(2)}</td>
-            <td>${parseFloat(p.interest_paid).toFixed(2)}</td>
-            <td>${parseFloat(p.principal_paid).toFixed(2)}</td>
-            <td>${parseFloat(p.remaining_principal).toFixed(2)}</td>
-            <td>${p.status}</td>
-        </tr>`;
+                                            partialRows += `<tr>
+                            <td>${i + 1}</td>
+                            <td>${p.date_paid}</td>
+                            <td>${parseFloat(p.amount_paid).toFixed(2)}</td>
+                            <td>${parseFloat(p.interest_paid).toFixed(2)}</td>
+                            <td>${parseFloat(p.principal_paid).toFixed(2)}</td>
+                            <td>${parseFloat(p.remaining_principal).toFixed(2)}</td>
+                            <td>${p.status}</td>
+                        </tr>`;
                             lastPartialDate = p.date_paid; // track latest partial payment date
                         });
                     }
@@ -267,7 +267,7 @@ if (waiveInterest) {
                             $("#pawnTable").DataTable().ajax.reload();
 
 
-                            // 🔹 Auto-print receipt after successful claim
+                            //  Auto-print receipt after successful claim
                             if (response.pawn_id) {
                                 // Fetch full claim details before printing
                                 $.ajax({

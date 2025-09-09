@@ -26,21 +26,22 @@ if (!isset($_POST['rate']) || !is_numeric($_POST['rate'])) {
 
 $newRate = floatval($_POST['rate']);
 
+$newCustomRate = isset($_POST['custom_rate']) ? floatval($_POST['custom_rate']) : null;
+if ($newCustomRate === null || !is_numeric($newCustomRate)) {
+    echo json_encode(["success" => false, "message" => "Invalid custom interest rate."]);
+    exit();
+}$newCustomRate = isset($_POST['custom_rate']) ? floatval($_POST['custom_rate']) : null;
+
+
 // Update branch interest rate
-$stmt = $pdo->prepare("UPDATE branches SET interest_rate = ? WHERE branch_id = ?");
-if ($stmt->execute([$newRate, $branch_id])) {
+$stmt = $pdo->prepare("UPDATE branches SET interest_rate = ?, custom_interest_rate1=? WHERE branch_id = ?");
+if ($stmt->execute([$newRate, $newCustomRate, $branch_id])) {
     
     
     
 
-    $description ="Updated interest rate to {$newRate}%";
-    logAudit(
-        $pdo,
-        $user_id,
-        $branch_id,
-        'Interest Rate Adjustment',
-        $description
-    );
+    $description ="Updated rates: default {$newRate}%, motorcycle {$newCustomRate}%";
+    logAudit($pdo, $user_id, $branch_id, 'Interest Rate Adjustment', $description);
 
 
 

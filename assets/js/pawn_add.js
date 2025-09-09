@@ -163,7 +163,7 @@ $(document).ready(function () {
                             $("#pawnCapturedCanvas")[0].getContext("2d").clearRect(0, 0, 320, 240);
                             $("#addPawnForm input[name='captured_photo']").remove();
 
-                            // 🔹 Auto-open print page
+                            //  Auto-open print page
                             if (response.pawn_id) {
                                 let printUrl = "../processes/pawn_item_print.php?id=" + response.pawn_id;
                                 window.open(printUrl, "_blank");

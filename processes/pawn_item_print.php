@@ -33,7 +33,7 @@ if (!$pawn) {
     die("Pawn record not found");
 }
 
-$interest = $pawn['amount_pawned'] * ($pawn['interest_rate'] / 100);
+$interest = $pawn['amount_pawned'] * ($pawn['interest_rate'] );
 $totalRepayment = $pawn['amount_pawned'] + $interest;
 ?>
 <!DOCTYPE html>
@@ -100,7 +100,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     <tr>
         <td colspan="2">
             <b>AMOUNT:</b> ₱<?= number_format($pawn['amount_pawned'], 2) ?> &nbsp;&nbsp;
-            <b>INTEREST:</b> ₱<?= number_format($pawn['amount_pawned'] * $pawn['interest_rate']/100, 2) ?> &nbsp;&nbsp;
+            <b>INTEREST (<?=$pawn['interest_rate']*100 ?>%):</b> ₱<?= number_format($pawn['amount_pawned'] * $pawn['interest_rate'], 2) ?> &nbsp;&nbsp;
             <b>TOTAL REPAYMENT:</b> ₱<?= number_format($totalRepayment, 2) ?>
         </td>
     </tr>
@@ -119,8 +119,8 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 
 <div class="section small">
     <b>PAWNER:</b> <u> <?= strtoupper($pawn['full_name']) ?></u> &nbsp;&nbsp;
-    <b>PAWNSHOP REPRESENTATIVE:</b> ____________________ &nbsp;&nbsp;
-    <b>CLAIMED BY:</b> ____________________
+    <b>PAWNSHOP REPRESENTATIVE:</b> __________________ &nbsp;&nbsp;
+    <b>CLAIMED BY:</b> __________________
 </div>
 
 <div class="section small">
@@ -133,7 +133,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 <div class="section">
     <table class="border small">
         <tr>
-            <th>MONTH</th>
+            <th>MONTHS TO BE PAID</th>
             <th>PAYMENT</th>
             <th>DATE</th>
             <th>SIGNATURE</th>

@@ -270,6 +270,7 @@ input[id*="viewPenalty"],
 input[id*="viewInterest"],
 input[id*="viewTotalPaid"],
 input[id*="interestRateInput"],
+input[id*="customInterestRateInput"],
 input[name*="cash"],
 input[name*="payment"] {
     font-weight: bold;      /* Emphasize numbers */
