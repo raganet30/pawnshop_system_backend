@@ -75,16 +75,23 @@ created_at
 
 6. tubo_payments
 ----------------
-tubo_id (PK)
-pawn_id (FK -> pawned_items.pawn_id)
-branch_id (FK -> branches.branch_id)
+tubo_id
+pawn_id
+payment_type
+branch_id
 date_paid
+period_start
+period_end
 months_covered
+new_due_date
 interest_rate
 interest_amount
 cashier_id
+txn_code
+payment_method
 notes
-created_at
+created_at	
+
 
 7. cash_ledger
 --------------
