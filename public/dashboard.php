@@ -21,7 +21,7 @@ checkSessionTimeout($pdo);
 
 // role restriction: only admin/cashier allowed here
 if ($_SESSION['user']['role'] == 'super_admin') {
-    header("Location: ../public/dashboard_super.php");
+    header("Location: ../public/dashboard_super");
     exit();
 }
 ?>

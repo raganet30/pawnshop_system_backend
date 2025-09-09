@@ -2,7 +2,7 @@
 session_start();
 // Restrict only super_admin
 if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'super_admin') {
-    header("Location: dashboard.php");
+    header("Location: dashboard");
     exit();
 }
 include '../views/header.php';

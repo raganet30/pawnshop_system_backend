@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $stmt = $pdo->prepare("SELECT u.user_id, u.full_name, u.username, u.password_hash, u.role, 
-                                        u.branch_id, b.branch_name, u.status
+                                        u.branch_id, b.branch_name,b.branch_address, u.status
                                     FROM users u
                                     LEFT JOIN branches b ON u.branch_id = b.branch_id
                                     WHERE u.username = ? AND u.status = 'active'
@@ -40,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'full_name' => htmlspecialchars($user['full_name'], ENT_QUOTES),
                 'role' => htmlspecialchars($user['role'], ENT_QUOTES),
                 'branch_id' => filter_var($user['branch_id'], FILTER_SANITIZE_NUMBER_INT),
-                'branch_name' => htmlspecialchars($user['branch_name'] ?? '', ENT_QUOTES)
+                'branch_name' => htmlspecialchars($user['branch_name'] ?? '', ENT_QUOTES),
+                'branch_address' => htmlspecialchars($user['branch_address'] ?? '', ENT_QUOTES)
             ];
 
 

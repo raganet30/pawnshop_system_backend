@@ -13,6 +13,13 @@ require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
 
 
+// role restriction: only admin/cashier allowed here
+if ($_SESSION['user']['role'] == 'super_admin') {
+    header("Location: ../public/dashboard_super");
+    exit();
+}
+
+
 $user = $_SESSION['user'];
 $branch_id = $user['branch_id'];
 

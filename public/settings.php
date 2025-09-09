@@ -4,6 +4,13 @@ if (!isset($_SESSION['user'])) {
     header("Location: index.php");
     exit();
 }
+
+// Restrict only super_admin
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'super_admin') {
+    header("Location: dashboard");
+    exit();
+}
+
 include '../config/db.php';
 include '../views/header.php';
 // session checker

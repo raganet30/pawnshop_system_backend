@@ -25,6 +25,15 @@ try {
     $notes = $_POST['notes'] ?? null;
     $date_pawned = $_POST['date_pawned'] ?? date("Y-m-d");
 
+    // Create DateTime object from date pawned
+    $dt = new DateTime($date_pawned);
+
+    // Add 1 month
+    $dt->modify("+1 month");
+
+    // Format back to Y-m-d
+    $current_due_date = $dt->format("Y-m-d");
+
     // --- 1. Lock COH row ---
     $stmt = $pdo->prepare("SELECT cash_on_hand FROM branches WHERE branch_id = ? FOR UPDATE");
     $stmt->execute([$branch_id]);
@@ -68,9 +77,36 @@ try {
     }
 
     // --- 3. Insert pawn item ---
+// Handle captured photo if provided
+    $photo_path = null;
+    if (!empty($_POST['captured_photo'])) {
+        $imageData = $_POST['captured_photo'];
+
+        // Clean the base64 string
+        $imageData = str_replace('data:image/png;base64,', '', $imageData);
+        $imageData = str_replace(' ', '+', $imageData);
+        $imageDecoded = base64_decode($imageData);
+
+        // Generate unique filename
+        $fileName = 'pawn_' . time() . '_' . uniqid() . '.png';
+        $uploadDir = __DIR__ . '/../uploads/pawn_items/';
+        $filePath = $uploadDir . $fileName;
+
+        // Ensure upload folder exists
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        // Save file
+        file_put_contents($filePath, $imageDecoded);
+
+        // Save relative path (to serve later in UI)
+        $photo_path = 'uploads/pawn_items/' . $fileName;
+    }
+
     $stmt = $pdo->prepare("INSERT INTO pawned_items 
-        (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, notes, date_pawned, current_due_date, created_by, status, is_deleted) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0)");
+    (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, notes, date_pawned, current_due_date, created_by, status, is_deleted, photo_path) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0, ?)");
     $stmt->execute([
         $branch_id,
         $customer_id,
@@ -80,10 +116,13 @@ try {
         $original_amount_pawned,
         $notes,
         $date_pawned,
-        $date_pawned,
-        $user_id
+        $current_due_date,
+        $user_id,
+        $photo_path
     ]);
+
     $pawn_id = $pdo->lastInsertId();
+
 
 
 
@@ -92,7 +131,7 @@ try {
 
 
 
-    
+
 
     // --- 5. Log Audit ---
     $customerLabel = !empty($customer_name) ? $customer_name : "Customer #$customer_id";
@@ -128,9 +167,15 @@ try {
 
 
 
-    $pdo->commit();
 
-    echo json_encode(["status" => "success", "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2)]);
+$pdo->commit();
+
+echo json_encode([
+    "status" => "success",
+    "message" => "Pawn item added successfully.<br>Cash on Hand adjusted -₱" . number_format($amount_pawned, 2),
+    "pawn_id" => $pawn_id
+]);
+
 } catch (Exception $e) {
     $pdo->rollBack();
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);

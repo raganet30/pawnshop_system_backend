@@ -79,9 +79,27 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $actions = '';
     if (in_array($user_role, ['admin', 'cashier'])) {
         $actions .= '
-            <a href="#" class="text-secondary" data-bs-toggle="dropdown" aria-expanded="false">
+           <a href="#" class="text-secondary text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-three-dots fs-5"></i>
             </a>
+
+           <a href="#" 
+            class="text-info text-decoration-none viewPawnBtn" 
+            data-id="' . $row['pawn_id'] . '">
+            <i class="bi bi-eye"></i>
+            </a>
+
+
+
+           <a href="../processes/pawn_item_print.php?id=' . $row['pawn_id'] . '" 
+            target="_blank" 
+            class="text-primary text-decoration-none">
+            <i class="bi bi-printer"></i>
+            </a>
+
+           
+
+                  
             <ul class="dropdown-menu dropdown-menu-end">
         ';
 
@@ -103,6 +121,13 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     <i class="bi bi-cash-coin text-success"></i> Claim
                 </a>
             </li>
+
+            <li>
+                <a class="dropdown-item addTuboPaymentBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                    <i class="bi bi-cash text-primary"></i> Tubo Payment
+                </a>
+            </li>
+
             <li>
                 <a class="dropdown-item addPartialPaymentBtn" href="#" data-id="' . $row['pawn_id'] . '">
                     <i class="bi bi-wallet2 text-info"></i> Partial Payment
@@ -132,17 +157,6 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 
 
-    // Decide what to display for amount
-    // if (!empty($row['has_partial_payments']) && $row['has_partial_payments'] == 1) {
-    //     // Show original amount pawned
-    //     $amountDisplay = '₱' . number_format($row['original_amount_pawned'], 2);
-    //     // For totals, use original amount so it's transparent
-    //     $totalPawned += floatval($row['original_amount_pawned']);
-    // } else {
-    //     // Show current amount (no partials yet)
-    //     $amountDisplay = '₱' . number_format($row['amount_pawned'], 2);
-    //      $totalPawned += floatval($row['amount_pawned']);
-    // }
 
     // Build row for DataTable
 
@@ -158,7 +172,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $rowData = [
         null,
         formatDateMDY($row['date_pawned']),
-         $months . ' month(s)', // <-- new row showing months since pawned
+        $months . ' month(s)', // <-- new row showing months since pawned
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),

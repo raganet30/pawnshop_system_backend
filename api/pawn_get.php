@@ -18,10 +18,11 @@ if (!isset($_GET['pawn_id']) || !is_numeric($_GET['pawn_id'])) {
 
 $pawn_id = intval($_GET['pawn_id']);
 
-// Fetch pawn item with customer details
+// Fetch pawn item with customer details + photo_path
 $sql = "
     SELECT 
         p.pawn_id,
+        p.branch_id,
         p.customer_id,
         c.full_name AS customer_name,
         c.contact_no,
@@ -32,7 +33,9 @@ $sql = "
         p.original_amount_pawned,
         p.notes,
         p.date_pawned,
-        p.status
+        p.status,
+        p.photo_path,
+        p.current_due_date
     FROM pawned_items p
     LEFT JOIN customers c ON p.customer_id = c.customer_id
     WHERE p.pawn_id = ?
@@ -50,11 +53,11 @@ if (!$pawn) {
 }
 
 // Fetch branch interest based on session branch
-$branch_id = $_SESSION['user']['branch_id'] ?? 0;
-$branchInterest = 6; // default if not found
+$branch_id = $_SESSION['user']['branch_id'] ?? $pawn['branch_id'] ?? 0;
+$branchInterest = 0.06; // default if not found
 
 if ($branch_id) {
-    $stmtBranch = $pdo->prepare("SELECT interest_rate FROM branches WHERE branch_id = ? LIMIT 1");
+    $stmtBranch = $pdo->prepare("SELECT interest_rate FROM branches WHERE branch_id = ?");
     $stmtBranch->execute([$branch_id]);
     $branch = $stmtBranch->fetch(PDO::FETCH_ASSOC);
     if ($branch) {
@@ -62,47 +65,27 @@ if ($branch_id) {
     }
 }
 
-// Fetch tubo payments history (latest first)
+// Fetch tubo history
 $sqlTubo = "
-    SELECT 
-        t.tubo_id,
-        t.pawn_id,
-        t.date_paid,
-        t.period_start,
-        t.period_end,
-        CONCAT(DATE_FORMAT(t.period_start, '%Y-%m-%d'), ' - ', DATE_FORMAT(t.period_end, '%Y-%m-%d')) AS covered_period,
-        t.interest_amount,
-        u.full_name AS cashier
-    FROM tubo_payments t
-    LEFT JOIN users u ON t.cashier_id = u.user_id
-    WHERE t.pawn_id = ?
-    ORDER BY t.date_paid DESC
+    SELECT *
+    FROM tubo_payments
+    WHERE pawn_id = ?
+    ORDER BY date_paid DESC
 ";
 $stmtTubo = $pdo->prepare($sqlTubo);
 $stmtTubo->execute([$pawn_id]);
-$tuboPayments = $stmtTubo->fetchAll(PDO::FETCH_ASSOC);
+$tuboHistory = $stmtTubo->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch partial payments history (latest first)
+// Fetch partial payment history
 $sqlPartial = "
-    SELECT 
-        pp.pp_id,
-        pp.pawn_id,
-        pp.amount_paid,
-        pp.interest_paid,
-        pp.principal_paid,
-        pp.remaining_principal,
-        pp.status,
-        pp.notes,
-        pp.created_at,
-        u.full_name AS cashier
-    FROM partial_payments pp
-    LEFT JOIN users u ON pp.user_id = u.user_id
-    WHERE pp.pawn_id = ?
-    ORDER BY pp.created_at DESC
+    SELECT pp_id, DATE(created_at) AS date_paid, amount_paid, interest_paid, principal_paid, remaining_principal, notes, status
+    FROM partial_payments
+    WHERE pawn_id = ?
+    ORDER BY created_at DESC
 ";
 $stmtPartial = $pdo->prepare($sqlPartial);
 $stmtPartial->execute([$pawn_id]);
-$partialPayments = $stmtPartial->fetchAll(PDO::FETCH_ASSOC);
+$partialHistory = $stmtPartial->fetchAll(PDO::FETCH_ASSOC);
 
 // Return JSON
 header('Content-Type: application/json');
@@ -110,6 +93,6 @@ echo json_encode([
     "status" => "success",
     "pawn" => $pawn,
     "branch_interest" => $branchInterest,
-    "tubo_payments" => $tuboPayments,
-    "partial_payments" => $partialPayments
+    "tubo_history" => $tuboHistory,
+    "partial_history" => $partialHistory
 ]);
