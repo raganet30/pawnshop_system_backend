@@ -30,7 +30,7 @@ $(function () {
 
                     const pawn = data.pawn;
                     const principal = parseFloat(pawn.amount_pawned);
-                    const interestRate = parseFloat(data.branch_interest) || 0.06; // decimal
+                    const interestRate = parseFloat(pawn.interest_rate) || 0.06; // decimal
                     const today = new Date();
 
                     // --- Determine default interest based on tubo and partial payments ---

@@ -43,7 +43,8 @@ try {
 
     // --- Compute new principal ---
     $new_principal = $current_principal - $partial_amount;
-    if ($new_principal < 0) $new_principal = 0;
+    if ($new_principal < 0)
+        $new_principal = 0;
 
     // --- Insert partial payment ---
     $stmt = $pdo->prepare("
@@ -64,33 +65,44 @@ try {
     ]);
     $pp_id = $pdo->lastInsertId();
 
-    // --- Update current_due_date if tubo payments exist within period ---
-    $stmtTubo = $pdo->prepare("SELECT * FROM tubo_payments WHERE pawn_id = ? ORDER BY date_paid DESC");
-    $stmtTubo->execute([$pawn_id]);
-    $tuboHistory = $stmtTubo->fetchAll(PDO::FETCH_ASSOC);
+    // Current due date from pawned_items
+    $lastDueDate = $current_due_date;
+   $monthsCovered = 0;
 
-    $updatedDueDate = $current_due_date;
-    foreach ($tuboHistory as $t) {
-        $period_start = new DateTime($t['period_start']);
-        $period_end = new DateTime($t['period_end']);
-        if ($paymentDate >= $period_start && $paymentDate <= $period_end) {
-            $updatedDueDate = $period_end;
-            break;
-        }
+if ($paymentDate > $lastDueDate) {
+    // Payment after due date → compute months between last due and payment date
+    $yearsDiff = (int)$paymentDate->format('Y') - (int)$lastDueDate->format('Y');
+    $monthsDiff = (int)$paymentDate->format('m') - (int)$lastDueDate->format('m');
+    $monthsCovered = $yearsDiff * 12 + $monthsDiff;
+
+    // Count partial month as full if day of payment >= day of last due
+    if ((int)$paymentDate->format('d') >= (int)$lastDueDate->format('d')) {
+        $monthsCovered += 1;
     }
 
-    // --- Update pawned_items ---
-    $stmt = $pdo->prepare("
-        UPDATE pawned_items 
-        SET amount_pawned = ?, current_due_date = ?, has_partial_payments = 1, updated_by = ?, updated_at = NOW()
-        WHERE pawn_id = ?
-    ");
-    $stmt->execute([
-        $new_principal,
-        $updatedDueDate->format('Y-m-d'),
-        $user_id,
-        $pawn_id
-    ]);
+    if ($monthsCovered < 1) $monthsCovered = 1; // minimum 1 month
+} else {
+    // Payment within current period → default 1 month
+    $monthsCovered = 1;
+}
+
+// --- Update current due date ---
+$updatedDueDate = clone $lastDueDate;
+$updatedDueDate->modify("+{$monthsCovered} month");
+
+// --- Update pawned_items ---
+$stmt = $pdo->prepare("
+    UPDATE pawned_items
+    SET amount_pawned = ?, current_due_date = ?, has_partial_payments = 1, updated_by = ?, updated_at = NOW()
+    WHERE pawn_id = ?
+");
+$stmt->execute([
+    $new_principal,
+    $updatedDueDate->format('Y-m-d'),
+    $user_id,
+    $pawn_id
+]);
+
 
     // --- Update branch cash on hand ---
     updateCOH($pdo, $branch_id, $total_paid, 'add');

@@ -456,16 +456,19 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label>Total Payment</label>
                                         <input type="text" class="form-control" id="claimTotal" readonly>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label>Notes</label>
-                                        <input type="text" class="form-control" id="claimNotes" name="claimNotes">
-                                    </div>
+                                    
                                     <div class="col-md-3">
-                                        <label class="form-label">Date Claimed</label>
+                                        <label >Date Claimed</label>
                                         <input type="date" class="form-control" id="claimDate" name="claimDate"
                                             required>
                                     </div>
 
+
+                                    <div class="col-md-4">
+                                        <label>Notes</label>
+                                        <input type="text" class="form-control" id="claimNotes" name="claimNotes">
+                                    </div>
+                                    
                                 </div>
 
                                 <!--  Tubo Payments History -->
@@ -600,6 +603,12 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label class="form-label">Notes</label>
                                         <input type="text" class="form-control" id="ppNotes" name="ppNotes">
                                     </div>
+
+                                    <div class="col-md-3">
+                                        <label>Due Date</label>
+                                        <input type="text" class="form-control" id="ppDueDate" readonly>
+                                    </div>
+
                                     <div class="col-md-3">
                                         <label class="form-label">Payment Date</label>
                                         <input type="date" class="form-control" id="ppDatePaid" name="ppDatePaid"

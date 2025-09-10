@@ -3,20 +3,23 @@
 $(document).ready(function () {
     // Handle "Add Partial Payment" button click
     $(document).on("click", ".addPartialPaymentBtn", function () {
-        let pawnId = $(this).data("id");
+    let pawnId = $(this).data("id");
 
-        $.ajax({
-            url: "../api/pawn_get.php",
-            method: "GET",
-            data: { pawn_id: pawnId },
-            dataType: "json",
-            success: function (response) {
-                if (response.status === "success") {
-                    let pawn = response.pawn;
-                    let interestRate = parseFloat(response.pawn.interest_rate) || 0.06;
+    $.ajax({
+        url: "../api/pawn_get.php",
+        method: "GET",
+        data: { pawn_id: pawnId },
+        dataType: "json",
+        success: function (response) {
+            if (response.status === "success") {
+                let pawn = response.pawn;
+                let interestRate = parseFloat(response.pawn.interest_rate) || 0.06;
 
+                // --- Show modal immediately (Fix A) ---
+                $("#partialPaymentModal").modal("show");
 
-                    // --- Populate histories ---
+                // --- Populate modal content AFTER short delay ---
+                setTimeout(() => {
                     // Tubo history
                     let tuboRows = "";
                     if (response.tubo_history && response.tubo_history.length > 0) {
@@ -52,7 +55,8 @@ $(document).ready(function () {
                     }
                     $("#ppPartialHistory tbody").html(partialRows);
 
-                    // Compute months covered (default)
+
+                     // Compute months covered (default)
                     let datePawned = new Date(pawn.date_pawned);
                     let today = new Date();
                     let diffMonths =
@@ -75,40 +79,46 @@ $(document).ready(function () {
                     $("#ppInterestRate").val(interestRate);
                     $("#ppPrincipal").val(pawn.amount_pawned);
 
-                    // Reset
+                    // Reset inputs & summary
                     $("#ppAmount").val("");
                     $("#ppSummary").html("");
 
-                    // Set default payment date
-                    const todayStr = new Date().toISOString().split("T")[0];
-                    $("#ppDatePaid").val(todayStr);
+                    // Default payment date
+                    $("#ppDatePaid").val(new Date().toISOString().split("T")[0]);
 
+                    //Due Date
+                    $("#ppDueDate").val(pawn.current_due_date);
 
                     // Keep histories for live computation
                     $("#partialPaymentModal").data("tuboHistory", response.tubo_history || []);
                     $("#partialPaymentModal").data("partialHistory", response.partial_history || []);
                     $("#partialPaymentModal").data("pawnDate", pawn.date_pawned);
+                }, 50); // 50ms delay
 
-                    // Show modal
-                    $("#partialPaymentModal").modal("show");
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function () {
-                alert("Failed to fetch pawn details.");
+                // --- Focus the amount input when modal fully shown (Fix B) ---
+                $("#partialPaymentModal").on('shown.bs.modal', function () {
+                    $("#ppAmount").focus();
+                });
+
+            } else {
+                alert(response.message);
             }
-        });
+        },
+        error: function () {
+            alert("Failed to fetch pawn details.");
+        }
     });
+});
+
 
     // Live computation when partial payment is entered
     // Helper: calculate months between two dates (partial month counts as full)
 function monthsBetween(start, end) {
     let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-    if (end.getDate() >= start.getDate()) {
-        months += 1; // count partial month as full
+    if (end.getDate() > start.getDate()) { // strictly greater
+        months += 1;
     }
-    return Math.max(1, months); // minimum 1 month
+    return Math.max(1, months);
 }
 
 // Live computation when partial payment is entered
@@ -119,7 +129,8 @@ $("#ppAmount").on("input", function () {
     let tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
     let partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
     let currentDueDate = new Date($("#partialPaymentModal").data("currentDueDate")); // from pawned item
-    let today = new Date();
+    // Instead of using today = new Date();
+let today = new Date($("#ppDatePaid").val()); // take the date from input
 
     if (entered <= 0) {
         $("#ppSummary").html(`<span class="text-danger">Enter a valid partial amount!</span>`);
@@ -188,6 +199,11 @@ $("#ppTotalPayable").val(totalPay.toFixed(2));
     `);
 });
 
+
+// --- Add this right after ---
+    $("#ppDatePaid").on("change", function () {
+        $("#ppAmount").trigger("input"); // retrigger the computation
+    });
 
 
     // Handle form submit (save partial payment)
