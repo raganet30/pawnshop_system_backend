@@ -2,7 +2,13 @@
 // partial payment function
 $(document).ready(function () {
     // Handle "Add Partial Payment" button click
-    $(document).on("click", ".addPartialPaymentBtn", function () {
+    // Attach once
+$("#partialPaymentModal").on("shown.bs.modal", function () {
+    $("#ppAmount").focus();
+});
+
+// Handle Add Partial Payment button
+$(document).on("click", ".addPartialPaymentBtn", function () {
     let pawnId = $(this).data("id");
 
     $.ajax({
@@ -13,93 +19,76 @@ $(document).ready(function () {
         success: function (response) {
             if (response.status === "success") {
                 let pawn = response.pawn;
-                let interestRate = parseFloat(response.pawn.interest_rate) || 0.06;
+                let interestRate = parseFloat(pawn.interest_rate) || 0.06;
 
-                // --- Show modal immediately (Fix A) ---
+                // --- Tubo history ---
+                let tuboRows = "";
+                if (response.tubo_history?.length) {
+                    response.tubo_history.forEach(t => {
+                        tuboRows += `
+                            <tr>
+                                <td>${t.date_paid}</td>
+                                <td>${t.period_start} to ${t.period_end}</td>
+                                <td>₱${parseFloat(t.interest_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            </tr>`;
+                    });
+                } else {
+                    tuboRows = "<tr><td colspan='4'>No tubo payments</td></tr>";
+                }
+                $("#ppTuboHistory tbody").html(tuboRows);
+
+                // --- Partial history ---
+                let partialRows = "";
+                if (response.partial_history?.length) {
+                    response.partial_history.forEach(p => {
+                        partialRows += `
+                            <tr>
+                                <td>${p.date_paid}</td>
+                                <td>₱${parseFloat(p.amount_paid).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                <td>₱${parseFloat(p.remaining_principal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                <td>${p.notes || ""}</td>
+                            </tr>`;
+                    });
+                } else {
+                    partialRows = "<tr><td colspan='4'>No partial payments</td></tr>";
+                }
+                $("#ppPartialHistory tbody").html(partialRows);
+
+                // --- Compute months covered ---
+                let datePawned = new Date(pawn.date_pawned);
+                let today = new Date();
+                let diffMonths =
+                    (today.getFullYear() - datePawned.getFullYear()) * 12 +
+                    (today.getMonth() - datePawned.getMonth());
+                if (today.getDate() > datePawned.getDate()) diffMonths++;
+                if (diffMonths < 1) diffMonths = 1;
+
+                // --- Fill modal fields ---
+                $("#ppPawnerName").val(pawn.customer_name);
+                $("#ppUnit").val(pawn.unit_description);
+                $("#ppCategory").val(pawn.category);
+                $("#ppDatePawned").val(pawn.date_pawned);
+                $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
+                $("#ppNotes").val(pawn.notes);
+                $("#ppMonths").val(diffMonths + " month(s)");
+
+                $("#ppPawnId").val(pawn.pawn_id);
+                $("#ppInterestRate").val(interestRate);
+                $("#ppPrincipal").val(pawn.amount_pawned);
+
+                $("#ppAmount").val("");
+                $("#ppSummary").html("");
+
+                $("#ppDatePaid").val(new Date().toISOString().split("T")[0]);
+                $("#ppDueDate").val(pawn.current_due_date);
+
+                // Save histories
+                $("#partialPaymentModal").data("tuboHistory", response.tubo_history || []);
+                $("#partialPaymentModal").data("partialHistory", response.partial_history || []);
+                $("#partialPaymentModal").data("pawnDate", pawn.date_pawned);
+
+                // Show modal
                 $("#partialPaymentModal").modal("show");
-
-                // --- Populate modal content AFTER short delay ---
-                setTimeout(() => {
-                    // Tubo history
-                    let tuboRows = "";
-                    if (response.tubo_history && response.tubo_history.length > 0) {
-                        response.tubo_history.forEach(t => {
-                            tuboRows += `
-                                <tr>
-                                    <td>${t.date_paid}</td>
-                                    <td>${t.period_start} to ${t.period_end}</td>
-                                    <td>₱${parseFloat(t.interest_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        tuboRows = "<tr><td colspan='4'>No tubo payments</td></tr>";
-                    }
-                    $("#ppTuboHistory tbody").html(tuboRows);
-
-                    // Partial history
-                    let partialRows = "";
-                    if (response.partial_history && response.partial_history.length > 0) {
-                        response.partial_history.forEach(p => {
-                            partialRows += `
-                                <tr>
-                                    <td>${p.date_paid}</td>
-                                    <td>₱${parseFloat(p.amount_paid).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td>₱${parseFloat(p.remaining_principal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td>${p.notes || ""}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        partialRows = "<tr><td colspan='4'>No partial payments</td></tr>";
-                    }
-                    $("#ppPartialHistory tbody").html(partialRows);
-
-
-                     // Compute months covered (default)
-                    let datePawned = new Date(pawn.date_pawned);
-                    let today = new Date();
-                    let diffMonths =
-                        (today.getFullYear() - datePawned.getFullYear()) * 12 +
-                        (today.getMonth() - datePawned.getMonth());
-                    if (today.getDate() > datePawned.getDate()) diffMonths++;
-                    if (diffMonths < 1) diffMonths = 1;
-
-                    // Fill modal fields
-                    $("#ppPawnerName").val(pawn.customer_name);
-                    $("#ppUnit").val(pawn.unit_description);
-                    $("#ppCategory").val(pawn.category);
-                    $("#ppDatePawned").val(pawn.date_pawned);
-                    $("#ppAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toLocaleString());
-                    $("#ppNotes").val(pawn.notes);
-                    $("#ppMonths").val(diffMonths + " month(s)");
-
-                    // Hidden fields
-                    $("#ppPawnId").val(pawn.pawn_id);
-                    $("#ppInterestRate").val(interestRate);
-                    $("#ppPrincipal").val(pawn.amount_pawned);
-
-                    // Reset inputs & summary
-                    $("#ppAmount").val("");
-                    $("#ppSummary").html("");
-
-                    // Default payment date
-                    $("#ppDatePaid").val(new Date().toISOString().split("T")[0]);
-
-                    //Due Date
-                    $("#ppDueDate").val(pawn.current_due_date);
-
-                    // Keep histories for live computation
-                    $("#partialPaymentModal").data("tuboHistory", response.tubo_history || []);
-                    $("#partialPaymentModal").data("partialHistory", response.partial_history || []);
-                    $("#partialPaymentModal").data("pawnDate", pawn.date_pawned);
-                }, 50); // 50ms delay
-
-                // --- Focus the amount input when modal fully shown (Fix B) ---
-                $("#partialPaymentModal").on('shown.bs.modal', function () {
-                    $("#ppAmount").focus();
-                });
-
             } else {
                 alert(response.message);
             }

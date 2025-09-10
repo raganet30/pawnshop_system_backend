@@ -231,7 +231,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                             <option value="">-- Select Category --</option>
                                             <option value="Cellphone">Cellphone</option>
                                             <option value="Laptop">Laptop</option>
-                                            <option value="Camera">Camera</option>
+                                            <option value="Tablet/iPad">Tablet/iPad</option>
                                             <option value="Motorcycle">Motorcycle</option>
                                             <option value="Others">Others</option>
                                         </select>
@@ -434,8 +434,9 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="text" class="form-control" id="claimDatePawned" readonly>
                                     </div>
                                     <div class="col-md-3">
-                                        <label>Months Pawned</label>
+                                        <label>Months to be paid</label>
                                         <input type="text" class="form-control" id="claimMonths" readonly>
+                                        <input type="hidden" id="claimMonthsValue" name="claimMonthsValue">
                                     </div>
                                     <div class="col-md-3">
                                         <label>Amount Pawned</label>
@@ -444,6 +445,10 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <div class="col-md-3">
                                         <label>Interest Amount <small>(auto compute)</small> </label>
                                         <input type="text" class="form-control" id="claimInterest" readonly>
+                                        
+                                        <input type="hidden" class="form-control" id="claimInterestValue"
+                                            name="claimInterestValue">
+
                                     </div>
                                     <div class="col-md-3">
                                         <label for="claimPenalty">Penalty (optional)</label>
@@ -455,6 +460,14 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <div class="col-md-3">
                                         <label>Total Payment</label>
                                         <input type="text" class="form-control" id="claimTotal" readonly>
+
+                                        <input type="number" step="0.01" class="form-control" id="claimTotalValue"
+                                            name="claimTotalValue" hidden >
+                                    </div>
+
+                                     <div class="col-md-3">
+                                        <label>Current Due Date</label>
+                                        <input type="text" class="form-control" id="claimDueDate" readonly>
                                     </div>
                                     
                                     <div class="col-md-3">
@@ -470,6 +483,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </div>
                                     
                                 </div>
+                               <p id="waiveInfo" class="small d-none mt-2"></p>
 
                                 <!--  Tubo Payments History -->
                                 <h6 class="mt-3">Tubo Payments History</h6>
@@ -511,10 +525,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </table>
                                 </div>
 
-                                <p class="small text-muted">
-                                    * If prepaid interest or partial payments exist, interest amount will be waived
-                                    during covered period
-                                </p>
+                                
 
                                 <hr>
 
