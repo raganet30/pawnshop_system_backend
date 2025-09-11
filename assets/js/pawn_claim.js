@@ -109,12 +109,12 @@ $(function () {
 
                             totalInterest = principal * interestRate * claimdiffMonths;
 
-                            console.debug("STEP 1 (no partial/no tubo):", {
-                                startDate: formatDateLocal(startDate),
-                                claimDate: formatDateLocal(todayLocal),
-                                claimdiffMonths,
-                                totalInterest
-                            });
+                            // console.debug("STEP 1 (no partial/no tubo):", {
+                            //     startDate: formatDateLocal(startDate),
+                            //     claimDate: formatDateLocal(todayLocal),
+                            //     claimdiffMonths,
+                            //     totalInterest
+                            // });
                         }
 
                         // -------- Step 2: if HAS tubo payments --------
@@ -150,12 +150,12 @@ $(function () {
 
                                     totalInterest = principal * interestRate * claimdiffMonths;
 
-                                    console.debug("STEP 2 (tubo, compute):", {
-                                        startDate: formatDateLocal(startDate),
-                                        claimDate: formatDateLocal(todayLocal),
-                                        claimdiffMonths,
-                                        totalInterest
-                                    });
+                                    // console.debug("STEP 2 (tubo, compute):", {
+                                    //     startDate: formatDateLocal(startDate),
+                                    //     claimDate: formatDateLocal(todayLocal),
+                                    //     claimdiffMonths,
+                                    //     totalInterest
+                                    // });
                                 }
                             }
                         }
@@ -184,12 +184,12 @@ $(function () {
 
                                 totalInterest = principal * interestRate * claimdiffMonths;
 
-                                console.debug("STEP 3 (partial, compute):", {
-                                    startDate: formatDateLocal(startDate),
-                                    claimDate: formatDateLocal(todayLocal),
-                                    claimdiffMonths,
-                                    totalInterest
-                                });
+                                // console.debug("STEP 3 (partial, compute):", {
+                                //     startDate: formatDateLocal(startDate),
+                                //     claimDate: formatDateLocal(todayLocal),
+                                //     claimdiffMonths,
+                                //     totalInterest
+                                // });
                             }
                         }
 
@@ -226,12 +226,12 @@ $(function () {
 
                                 totalInterest = principal * interestRate * claimdiffMonths;
 
-                                console.debug("STEP 4 (partial+tubo, compute):", {
-                                    startDate: formatDateLocal(startDate),
-                                    claimDate: formatDateLocal(todayLocal),
-                                    claimdiffMonths,
-                                    totalInterest
-                                });
+                                // console.debug("STEP 4 (partial+tubo, compute):", {
+                                //     startDate: formatDateLocal(startDate),
+                                //     claimDate: formatDateLocal(todayLocal),
+                                //     claimdiffMonths,
+                                //     totalInterest
+                                // });
                             }
                         }
 
@@ -402,6 +402,12 @@ $(function () {
                                             printClaimReceipt(res.data);
 
                                             // Open print preview in new tab
+
+                                            // if (response.pawn_id) {
+                                            //     //  Directly open the print receipt page
+                                            //     let printUrl = "../processes/receipt_print.php?pawn_id=" + response.pawn_id;
+                                            //     window.open(printUrl, "_blank"); // open in new tab for printing
+                                            // }
 
                                         } else {
                                             console.error("Failed to fetch claim details:", res.message);

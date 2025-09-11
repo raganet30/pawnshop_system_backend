@@ -79,6 +79,10 @@ $(document).ready(function () {
                     $("#partialPaymentModal").data("tuboHistory", response.tubo_history || []);
                     $("#partialPaymentModal").data("partialHistory", response.partial_history || []);
                     $("#partialPaymentModal").data("pawnDate", pawn.date_pawned);
+                    $("#partialPaymentModal").data("currentDueDate", pawn.current_due_date);
+
+                
+
 
                     // Show modal
                     $("#partialPaymentModal").modal("show");
@@ -107,90 +111,173 @@ $(document).ready(function () {
 
     // Live computation when partial payment is entered
     // Helper: calculate months between two dates (partial month counts as full)
-function monthsBetween(start, end) {
-    let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
-    if (end.getDate() > start.getDate()) { // strictly greater
-        months += 1;
-    }
-    return Math.max(1, months);
+// --- Helpers ---
+function parseYMD(ymd) {
+    if (!ymd) return null;
+    const parts = String(ymd).split("-").map(Number);
+    if (parts.length !== 3) return null;
+
+    // Build a "local date only" (no timezone shift)
+    return new Date(parts[0], parts[1] - 1, parts[2], 12); 
+    // 👆 Noon avoids timezone rollbacks
 }
 
-// Live computation when partial payment is entered
-$("#ppAmount").on("input", function () {
-    let entered = parseFloat($(this).val()) || 0;
-    let principal = parseFloat($("#ppPrincipal").val());
-    let interestRate = parseFloat($("#ppInterestRate").val()) || 0.06;
-    let tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
-    let partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
-    let currentDueDate = new Date($("#partialPaymentModal").data("currentDueDate")); // from pawned item
-    // Instead of using today = new Date();
-let today = new Date($("#ppDatePaid").val()); // take the date from input
 
-    if (entered <= 0) {
-        $("#ppSummary").html(`<span class="text-danger">Enter a valid partial amount!</span>`);
-        return;
-    }
+function monthsBetween(startDate, endDate) {
+    if (!(startDate instanceof Date) || !(endDate instanceof Date)) return 0;
+    // normalize time-of-day
+    startDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    endDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
 
-    if (entered >= principal) {
-        $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to remaining principal!</span>`);
-        return;
-    }
+    let months = (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+                 (endDate.getMonth() - startDate.getMonth());
 
-    let interest = 0;
-    let startDate = new Date($("#partialPaymentModal").data("pawnDate")); // default start
+    if (endDate.getDate() > startDate.getDate()) months++;
 
-    // --- 1. Check if today is within any tubo coverage period ---
-    let inTuboPeriod = tuboHistory.some(t => {
-        let start = new Date(t.period_start);
-        let end = new Date(t.period_end);
-        return today >= start && today <= end;
-    });
+    if (months < 1 && endDate >= startDate) months = 1;
+    return months;
+}
 
-    if (!inTuboPeriod) {
-        // --- 2. Check last partial payment for 31-day waiver ---
-        if (partialHistory.length > 0) {
-            let lastPartial = partialHistory[0]; // assuming DESC order
-            let lastPartialDate = new Date(lastPartial.date_paid);
-            let daysSince = Math.floor((today - lastPartialDate) / (1000 * 60 * 60 * 24));
+function findLatestDate(arr, key) {
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    let latest = null;
+    for (const r of arr) {
+        if (!r || !r[key]) continue;
+        const d = parseYMD(r[key]);
+        if (!d) continue;
+        if (!latest || d.getTime() > latest.getTime()) latest = d;
+    }
+    return latest;
+}
 
-            if (daysSince >= 31) {
-                // Compute months based on startDate to today
-                startDate = lastPartialDate > startDate ? lastPartialDate : startDate;
-                let diffMonths = monthsBetween(startDate, today);
-                interest = principal * interestRate * diffMonths;
-            } else {
-                // Waive interest for recent partial
-                interest = 0;
-                startDate = lastPartialDate;
-            }
-        } else {
-            // No prior partial → compute months from pawned date / start date
-            let diffMonths = monthsBetween(startDate, today);
-            interest = principal * interestRate * diffMonths;
-        }
-    } else {
-        // Inside tubo period → waive interest
-        interest = 0;
-    }
+// --- Core compute function (callable) ---
+function computePartialSummary() {
+    // Read inputs (safe parsing)
+    const entered = parseFloat($("#ppAmount").val()) || 0;
+    const principal = parseFloat($("#ppPrincipal").val()) || 0;
+    const interestRate = parseFloat($("#ppInterestRate").val()) || 0.06;
 
-    // --- Compute remaining and total payable ---
-    let remaining = principal - entered;
-    let totalPay = entered + interest;
+    const tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
+    const partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
 
-// Update hidden inputs
-$("#ppInterestDue").val(interest.toFixed(2));
-$("#ppTotalPayable").val(totalPay.toFixed(2));
+    const currentDueDateRaw = $("#partialPaymentModal").data("currentDueDate"); // ex: "2025-11-11"
+    const pawnDateRaw = $("#partialPaymentModal").data("pawnDate");
+    const todayRaw = $("#ppDatePaid").val(); // payment date input (YYYY-MM-DD)
 
+    const currentDueDate = parseYMD(currentDueDateRaw);
+    const pawnDate = parseYMD(pawnDateRaw) || null;
+    const todayLocal = parseYMD(todayRaw) || new Date();
 
-   $("#ppSummary").html(`
-    <div>Original Principal: ₱${principal.toLocaleString()}</div>
-    <div>Partial Payment: ₱${entered.toLocaleString()}</div>
-    <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
-    <div>Interest: ₱${interest.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-    <hr>
-    <strong>Total Payable: ₱${totalPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
-`);
+    // Basic validations shown to user
+    if (entered <= 0) {
+        $("#ppSummary").html(`<span class="text-danger">Enter a valid partial amount!</span>`);
+        $("#ppInterestDue").val("0.00");
+        $("#ppTotalPayable").val("0.00");
+        return;
+    }
+    if (entered >= principal) {
+        $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to remaining principal!</span>`);
+        $("#ppInterestDue").val("0.00");
+        $("#ppTotalPayable").val("0.00");
+        return;
+    }
+
+    // Prepare vars
+    let interest = 0;
+    let waiveInterest = false;
+    let startDate = null;
+
+    // Get latest tubo coverage end (period_end or new_due_date depending on your data)
+    // Try 'period_end' first (tubo period coverage) then 'new_due_date'
+    let lastTuboEnd = findLatestDate(tuboHistory, 'period_end') || findLatestDate(tuboHistory, 'new_due_date');
+
+    // Determine flags
+    const hasTubo = !!lastTuboEnd;
+    const hasPartial = (partialHistory && partialHistory.length > 0);
+
+    // --- Step 2: If has tubo payments, check coverage
+    if (hasTubo) {
+        // if today is strictly before coverage end -> waive. If equal or after, compute.
+        if (todayLocal <= lastTuboEnd) {
+            waiveInterest = true;
+            interest = 0;
+        } else {
+            // start exactly from tubo end date (you said you want start at tubo new_due_date)
+            startDate = new Date(lastTuboEnd);
+        }
+    }
+    // --- Step 3: If has partial payments (and no tubo) ---
+    else if (hasPartial) {
+        // Use current_due_date as base
+        if (currentDueDate && todayLocal <= currentDueDate) {
+            // if payment is strictly before due date -> waive
+            waiveInterest = true;
+            interest = 0;
+        } else if (currentDueDate) {
+            // start from current due date (exactly)
+            startDate = new Date(currentDueDate);
+        } else {
+            // fallback if no current due date: start from pawnDate
+            startDate = pawnDate || new Date();
+        }
+    }
+    // --- No tubo & no partial (fallback) ---
+    else {
+        // compute from currentDueDate if available, otherwise pawn date
+        if (currentDueDate && todayLocal >= currentDueDate) {
+            startDate = new Date(currentDueDate);
+        } else if (pawnDate) {
+            startDate = new Date(pawnDate);
+        } else {
+            startDate = new Date();
+        }
+    }
+
+    // --- Compute interest if we need to ---
+    if (!waiveInterest && startDate) {
+        const diffMonths = monthsBetween(startDate, todayLocal);
+        interest = principal * interestRate * diffMonths;
+    } else {
+        interest = 0;
+    }
+
+    // Final values
+    const remaining = principal - entered;
+    const totalPay = entered + interest;
+
+    // Update hidden inputs / summary
+    $("#ppInterestDue").val(interest.toFixed(2));
+    $("#ppTotalPayable").val(totalPay.toFixed(2));
+
+    $("#ppSummary").html(`
+        <div>Original Principal: ₱${principal.toLocaleString()}</div>
+        <div>Partial Payment: ₱${entered.toLocaleString()}</div>
+        <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
+        <div>Interest: ₱${interest.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+        <hr>
+        <strong>Total Payable: ₱${totalPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
+    `);
+
+    // Debug: quickly show details in console to verify
+    // console.debug("computePartialSummary debug:", {
+    //     today: todayLocal && todayLocal.toISOString().split("T")[0],
+    //     currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
+    //     lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
+    //     startDate: startDate && startDate.toISOString().split("T")[0],
+    //     hasTubo, hasPartial, waiveInterest,
+    //     principal, interestRate, interest
+    // });
+}
+
+// --- Bind handlers: amount input AND date change (so selecting date re-calculates) ---
+$(document).off("input", "#ppAmount").on("input", "#ppAmount", computePartialSummary);
+$(document).off("change", "#ppDatePaid").on("change", "#ppDatePaid", computePartialSummary);
+
+// optional: run once when modal shows (if you set defaults)
+$("#partialPaymentModal").on("shown.bs.modal", function () {
+    computePartialSummary();
 });
+
 
 
 // --- Add this right after ---
