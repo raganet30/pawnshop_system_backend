@@ -125,7 +125,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 
 <div class="section small">
     <b>Business Hours:</b> Mon–Sat (9:00 AM – 6:00 PM) <br>
-    <b>facebook:</b> https://www.facebook.com/ldgadgetpawnshop/
+    <!-- <b>facebook:</b> https://www.facebook.com/ldgadgetpawnshop/ -->
 </div>
 
 

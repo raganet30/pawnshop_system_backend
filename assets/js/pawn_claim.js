@@ -279,7 +279,7 @@ $(function () {
                                     dataType: "json",
                                     success: function (res) {
                                         if (res.status === "success") {
-                                            // printClaimReceipt(res.data);
+                                            printClaimReceipt(res.data);
 
                                             // Open print preview in new tab
 

@@ -148,33 +148,33 @@ function printClaimReceipt(d) {
 
 
     //  Add QR code after receipt
-    const qrContainer = w.document.createElement('div');
-    qrContainer.style.textAlign = 'center';
-    qrContainer.style.marginTop = '2px';
-    qrContainer.style.fontFamily = 'Arial, sans-serif';
-    qrContainer.style.fontSize = '12px';
+    // const qrContainer = w.document.createElement('div');
+    // qrContainer.style.textAlign = 'center';
+    // qrContainer.style.marginTop = '2px';
+    // qrContainer.style.fontFamily = 'Arial, sans-serif';
+    // qrContainer.style.fontSize = '12px';
 
-    // Add instruction text
-    const qrText = w.document.createElement('div');
-    qrText.innerText = "Scan QR for inquiries";
-    qrText.style.marginBottom = '5px';
-    qrContainer.appendChild(qrText);
+    // // Add instruction text
+    // const qrText = w.document.createElement('div');
+    // qrText.innerText = "Scan QR for inquiries";
+    // qrText.style.marginBottom = '5px';
+    // qrContainer.appendChild(qrText);
 
-    // Append QR code
-    const qrDiv = w.document.createElement('div');
-    qrContainer.appendChild(qrDiv);
-    w.document.body.appendChild(qrContainer);
+    // // Append QR code
+    // const qrDiv = w.document.createElement('div');
+    // qrContainer.appendChild(qrDiv);
+    // w.document.body.appendChild(qrContainer);
 
-    // Generate QR code
-    let fbURL = "https://www.facebook.com/ldgadgetpawnshop/"; // <-- replace with your FB page
-    new QRCode(qrDiv, {
-        text: fbURL,
-        width: 120,     // proportional size
-        height: 120,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    // // Generate QR code
+    // let fbURL = "https://www.facebook.com/ldgadgetpawnshop/"; // <-- replace with your FB page
+    // new QRCode(qrDiv, {
+    //     text: fbURL,
+    //     width: 120,     // proportional size
+    //     height: 120,
+    //     colorDark: "#000000",
+    //     colorLight: "#ffffff",
+    //     correctLevel: QRCode.CorrectLevel.H
+    // });
 
     w.document.close();
     w.print();
