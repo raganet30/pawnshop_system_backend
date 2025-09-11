@@ -14,19 +14,29 @@ function formatDate(dateStr) {
     return d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
 }
 
-// Build Tubo selector dynamically (based on current_due_date)
-function buildTuboSelector(currentDueDate, pawnedDate, tuboHistory = [], maxMonths = 4) {
+// Build Tubo selector dynamically
+function buildTuboSelector(startDate, maxMonths = 4) {
     const $selector = $("#tpMonthsSelector");
     $selector.empty();
 
-    // Ensure dates are valid
-    const startDate = tuboHistory.length === 0 ? pawnedDate : currentDueDate;
-    if (!startDate) return; // exit if startDate invalid
+    function addMonths(dateStr, months) {
+        const d = new Date(dateStr);
+        d.setMonth(d.getMonth() + months);
+        if (d.getDate() !== new Date(dateStr).getDate()) {
+            d.setDate(0); // adjust for shorter months
+        }
+        return d.toISOString().split("T")[0];
+    }
 
-    const startDateObj = new Date(startDate); // JS Date object
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+    }
+
+    if (!startDate) return;
 
     for (let i = 1; i <= maxMonths; i++) {
-        const periodStart = startDateObj.toISOString().split("T")[0];
+        const periodStart = startDate;
         const periodEnd = addMonths(periodStart, i);
 
         const label = (i === 1)
@@ -43,6 +53,7 @@ function buildTuboSelector(currentDueDate, pawnedDate, tuboHistory = [], maxMont
         );
     }
 }
+
 
 
 // Populate tubo history table
@@ -109,14 +120,28 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
             $("#tpDatePawned").val(pawn.date_pawned);
             $("#tpCategory").val(pawn.category);
             $("#tpUnit").val(pawn.unit_description);
+            $("#tpDueDate").val(pawn.current_due_date);
+
 
             // Build selector based on current_due_date
-           buildTuboSelector(
-    pawn.current_due_date,   // current due date
-    pawn.date_pawned,        // pawned date
-    res.tubo_history,        // previously made tubo payments
-    4                        // max months to show
-);
+            let tuboStartDate;
+
+            // Priority 1: tubo history
+            if (res.tubo_history && res.tubo_history.length > 0) {
+                const lastTubo = res.tubo_history[res.tubo_history.length - 1];
+                tuboStartDate = lastTubo.new_due_date;
+            }
+            // Priority 2: partial history (no tubo yet)
+            else if (res.partial_history && res.partial_history.length > 0) {
+                tuboStartDate = pawn.current_due_date;
+            }
+            // Priority 3: fresh pawn
+            else {
+                tuboStartDate = pawn.date_pawned;
+            }
+
+            buildTuboSelector(tuboStartDate, 4);
+
 
             // Default payment date = today
             $("#tpDatePaid").val(new Date().toISOString().split("T")[0]);

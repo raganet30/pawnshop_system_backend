@@ -89,7 +89,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label>Due Date</label>
+                                    <label>Current Due Date</label>
                                     <input type="text" class="form-control" id="viewDueDate" readonly>
                                 </div>
 
@@ -616,7 +616,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </div>
 
                                     <div class="col-md-3">
-                                        <label>Due Date</label>
+                                        <label>Current Due Date</label>
                                         <input type="text" class="form-control" id="ppDueDate" readonly>
                                     </div>
 
@@ -719,6 +719,12 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label class="form-label">Date Pawned</label>
                                         <input type="text" class="form-control" id="tpDatePawned" readonly>
                                     </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Current Due Date</label>
+                                        <input type="text" class="form-control" id="tpDueDate" readonly>
+                                    </div>
+
                                     <div class="col-md-3">
                                         <label class="form-label">Amount Pawned</label>
                                         <input type="text" class="form-control" id="tpAmountPawned" readonly>

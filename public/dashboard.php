@@ -104,7 +104,7 @@ if ($_SESSION['user']['role'] == 'super_admin') {
             <div class="card">
                 <div class="card-header">Upcoming Due Items</div>
                 <div class="card-body">
-                    <table id="upcomingDueItemsTable" class="table table-striped table-bordered">
+                    <table id="upcomingDueItemsTable" class="table table-striped table-bordered" style="width: 100%" >
                         <thead>
                             <tr>
                                 <th>#</th>
