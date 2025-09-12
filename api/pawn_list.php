@@ -57,6 +57,7 @@ $sql = "
         p.interest_rate,
         p.original_amount_pawned,
         p.has_partial_payments,
+        p.has_tubo_payments,
         p.notes,
         c.full_name,
         c.contact_no,
@@ -106,14 +107,30 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
         // Edit (admin only)
         if ($user_role === 'admin') {
-            $actions .= '
-                <li>
-                    <a class="dropdown-item editPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                        <i class="bi bi-pencil-square text-primary"></i> Edit
-                    </a>
-                </li>
-            ';
+            // Check if pawn has partials or tubo
+            $isReadOnly = $row['has_partial_payments'] == 1 || $row['has_tubo_payments'] == 1;
+
+            if ($isReadOnly) {
+                // Show as read-only (disabled edit)
+                $actions .= '
+            <li>
+                <a class="dropdown-item disabled text-muted" href="#" tabindex="-1" aria-disabled="true">
+                    <i class="bi bi-pencil-square"></i> Edit (Locked)
+                </a>
+            </li>
+        ';
+            } else {
+                // Allow edit
+                $actions .= '
+            <li>
+                <a class="dropdown-item editPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                    <i class="bi bi-pencil-square text-primary"></i> Edit
+                </a>
+            </li>
+        ';
+            }
         }
+
 
         // Claim (admin + cashier)
         $actions .= '
@@ -136,23 +153,39 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             </li>
         ';
 
+
+
         // Forfeit + Delete (admin only)
         if ($user_role === 'admin') {
             $actions .= '
-                <li>
-                    <a class="dropdown-item forfeitPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
-                        <i class="bi bi-exclamation-triangle text-warning"></i> Forfeit
-                    </a>
-                </li>
-              
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">
-                        <i class="bi bi-trash"></i> Move to Trash
-                    </a>
-                </li>
-            ';
+        <li>
+            <a class="dropdown-item forfeitPawnBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                <i class="bi bi-exclamation-triangle text-warning"></i> Forfeit
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+    ';
+
+            // Move to Trash only if no partial/tubo payments
+            if ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) {
+                $actions .= '
+            <li>
+                <a class="dropdown-item deletePawnBtn text-danger" href="#" data-id="' . $row['pawn_id'] . '">
+                    <i class="bi bi-trash"></i> Move to Trash
+                </a>
+            </li>
+        ';
+            } else {
+                $actions .= '
+            <li>
+                <a class="dropdown-item disabled text-muted" href="#" tabindex="-1" aria-disabled="true">
+                    <i class="bi bi-trash"></i> Move to Trash (Locked)
+                </a>
+            </li>
+        ';
+            }
         }
+
 
         $actions .= '</ul>';
     }

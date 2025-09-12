@@ -138,6 +138,7 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
             // Priority 3: fresh pawn
             else {
                 tuboStartDate = pawn.date_pawned;
+
             }
 
             buildTuboSelector(tuboStartDate, 4);
@@ -166,7 +167,20 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
                 const months = parseInt($(this).val(), 10);
 
                 $("#tpMonthsCovered").val(`${formatDate(start)} → ${formatDate(end)}`);
-                $("#tpNewDueDate").val(end);
+
+                let newDueDate;
+
+                //  Check if fresh pawn (no tubo payments & no partial payments)
+                if ((!res.tubo_history || res.tubo_history.length === 0) &&
+                    (!res.partial_history || res.partial_history.length === 0)) {
+                    // For fresh pawn, base it on current_due_date
+                    newDueDate = addMonths(pawn.current_due_date, months);
+                } else {
+                    // Otherwise, use selector end
+                    newDueDate = end;
+                }
+
+                $("#tpNewDueDate").val(newDueDate);
 
                 // Compute interest
                 const principal = parseFloat(pawn.amount_pawned);
@@ -175,6 +189,7 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
 
                 $("#tpInterestAmount").val("₱" + interestAmount.toFixed(2));
             });
+
 
             //  Force default to 1st option (1 month) and trigger computation
             $("#tpMonthsSelector").prop("selectedIndex", 0).trigger("change");
@@ -204,7 +219,7 @@ $("#tuboPaymentForm").on("submit", function (e) {
         icon: 'question',
         showCancelButton: true,
         cancelButtonText: 'Cancel',
-        confirmButtonText: 'Yes, Save',
+        confirmButtonText: 'Save',
         reverseButtons: false
     }).then((result) => {
         if (result.isConfirmed) {

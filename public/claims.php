@@ -320,23 +320,18 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
 
 
 
-    // call print receipt js function
-    $(document).on("click", ".printClaimBtn", function () {
-        const pawn_id = $(this).data("id");
+    
+   // Handle manual print from dropdown
+$(document).on("click", ".printClaimBtn", function (e) {
+    e.preventDefault();
 
-        $.ajax({
-            url: "../api/claim_view.php",
-            type: "GET",
-            data: { pawn_id },
-            dataType: "json",
-            success: function (res) {
-                if (res.status === "success") {
-                    printClaimReceipt(res.data);
-                } else {
-                    alert(res.message);
-                }
-            }
-        });
-    });
+    let pawnId = $(this).data("id");
+
+    if (pawnId) {
+        let printUrl = "../processes/receipt_print.php?pawn_id=" + pawnId;
+        window.open(printUrl, "_blank"); // open receipt in new tab for printing
+    }
+});
+
 
 </script>

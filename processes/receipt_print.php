@@ -2,147 +2,169 @@
 session_start();
 require_once "../config/db.php";
 
-// --- Validate ---
 if (!isset($_GET['pawn_id']) || !is_numeric($_GET['pawn_id'])) {
-    die("Invalid request.");
+    die("Invalid Pawn ID");
 }
+
 $pawn_id = intval($_GET['pawn_id']);
 
-// --- Pawn + Customer ---
-$sql = "
+// Fetch the latest claim for this pawn
+$query = "
     SELECT 
-        p.*,
-        c.full_name, c.contact_no, c.address
-    FROM pawned_items p
-    JOIN customers c ON p.customer_id = c.customer_id
-    WHERE p.pawn_id = ?
+        c.claim_id, c.date_claimed, c.months, c.interest_rate, c.interest_amount,
+        c.principal_amount, c.penalty_amount, c.total_paid, c.notes,
+        p.pawn_id, p.unit_description, p.category, p.amount_pawned, 
+        p.date_pawned, p.original_amount_pawned,
+        cust.full_name, cust.address, cust.contact_no
+    FROM claims c
+    INNER JOIN pawned_items p ON c.pawn_id = p.pawn_id
+    INNER JOIN customers cust ON p.customer_id = cust.customer_id
+    WHERE c.pawn_id = ?
+    ORDER BY c.date_claimed DESC
     LIMIT 1
 ";
-$stmt = $pdo->prepare($sql);
+
+$stmt = $pdo->prepare($query);
 $stmt->execute([$pawn_id]);
-$pawn = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$pawn) die("Pawn record not found.");
+$claim = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// --- Claim record (latest if multiple) ---
-$sqlClaim = "
-    SELECT *
-    FROM claims
-    WHERE pawn_id = ?
-    ORDER BY date_claimed DESC
-    LIMIT 1
-";
-$stmtClaim = $pdo->prepare($sqlClaim);
-$stmtClaim->execute([$pawn_id]);
-$claim = $stmtClaim->fetch(PDO::FETCH_ASSOC);
+if (!$claim) {
+    die("No claim found for this pawn record.");
+}
 
-// --- Tubo history ---
-$sqlTubo = "
-    SELECT *
-    FROM tubo_payments
-    WHERE pawn_id = ?
+// Fetch payment history (partial + tubo + final claim)
+$history = [];
+$payments = $pdo->query("
+    SELECT created_at AS date_paid, amount_paid, interest_paid, principal_paid, 0 AS penalty, remaining_principal, 'Partial Payment' AS remarks
+    FROM partial_payments WHERE pawn_id = {$pawn_id}
+    UNION ALL
+    SELECT date_paid, interest_amount, interest_amount, 0, 0, 0, 'Tubo Payment'
+    FROM tubo_payments WHERE pawn_id = {$pawn_id}
+    UNION ALL
+    SELECT date_claimed, total_paid, interest_amount, principal_amount, penalty_amount, 0, 'Full Settlement'
+    FROM claims WHERE pawn_id = {$pawn_id} AND claim_id = {$claim['claim_id']}
     ORDER BY date_paid ASC
-";
-$stmtTubo = $pdo->prepare($sqlTubo);
-$stmtTubo->execute([$pawn_id]);
-$tuboHistory = $stmtTubo->fetchAll(PDO::FETCH_ASSOC);
+");
 
-// --- Partial history ---
-$sqlPartial = "
-    SELECT *
-    FROM partial_payments
-    WHERE pawn_id = ?
-    ORDER BY created_at ASC
-";
-$stmtPartial = $pdo->prepare($sqlPartial);
-$stmtPartial->execute([$pawn_id]);
-$partialHistory = $stmtPartial->fetchAll(PDO::FETCH_ASSOC);
-
-// --- Totals ---
-$totalTubo = 0;
-foreach ($tuboHistory as $tubo) {
-    $totalTubo += $tubo['interest_amount'];
+while ($row = $payments->fetch(PDO::FETCH_ASSOC)) {
+    $history[] = $row;
 }
 
-$totalPartial = 0;
-$totalInterestPaid = 0;
-$totalPrincipalPaid = 0;
-$remainingPrincipal = $pawn['amount_pawned'];
-foreach ($partialHistory as $pp) {
-    $totalPartial += $pp['amount_paid'];
-    $totalInterestPaid += $pp['interest_paid'];
-    $totalPrincipalPaid += $pp['principal_paid'];
-    $remainingPrincipal = $pp['remaining_principal']; // last recorded
-}
+// Session branch + cashier info
+$branch_name    = $_SESSION['user']['branch_name'] ?? "Branch Name";
+$branch_address = $_SESSION['user']['branch_address'] ?? "Branch Address";
+$branch_contact = $_SESSION['user']['branch_phone'] ?? "Contact No";
+$cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
 
-$grandTotal = $totalTubo + $totalPartial;
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pawn Claim Receipt</title>
-    <style>
-        body { font-family: monospace; font-size: 12px; }
-        .receipt { width: 280px; }
-        .center { text-align: center; }
-        .line { border-top: 1px dashed #000; margin: 4px 0; }
-    </style>
+  <title>Pawn Claim Receipt</title>
+  <style>
+    body {
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      margin: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    td, th {
+      border: none;
+      padding: 3px 5px;
+      vertical-align: top;
+    }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+  </style>
 </head>
 <body onload="window.print()">
-    <div class="receipt">
-        <div class="center">
-            <h3>Pawnshop Claim Receipt</h3>
-        </div>
-        <div class="line"></div>
-        <strong>Customer:</strong> <?= htmlspecialchars($pawn['full_name']) ?><br>
-        <strong>Contact:</strong> <?= htmlspecialchars($pawn['contact_no']) ?><br>
-        <strong>Address:</strong> <?= htmlspecialchars($pawn['address']) ?><br>
-        <div class="line"></div>
-        <strong>Item:</strong> <?= htmlspecialchars($pawn['unit_description']) ?><br>
-        <strong>Category:</strong> <?= htmlspecialchars($pawn['category']) ?><br>
-        <strong>Amount Pawned:</strong> ₱<?= number_format($pawn['amount_pawned'], 2) ?><br>
-        <strong>Date Pawned:</strong> <?= htmlspecialchars($pawn['date_pawned']) ?><br>
-        <strong>Due Date:</strong> <?= htmlspecialchars($pawn['current_due_date']) ?><br>
-        <div class="line"></div>
 
-        <?php if ($claim): ?>
-        <strong>Claim Info:</strong><br>
-        Date Claimed: <?= $claim['date_claimed'] ?><br>
-        Months: <?= $claim['months'] ?><br>
-        Interest: ₱<?= number_format($claim['interest_amount'], 2) ?><br>
-        Principal: ₱<?= number_format($claim['principal_amount'], 2) ?><br>
-        Penalty: ₱<?= number_format($claim['penalty_amount'], 2) ?><br>
-        Total Paid: ₱<?= number_format($claim['total_paid'], 2) ?><br>
-        <div class="line"></div>
-        <?php endif; ?>
+  <div class="center">
+    <h3 style="margin:0;">LD GADGET PAWNSHOP</h3>
+    <div><?= htmlspecialchars($branch_name) ?></div>
+    <div><?= htmlspecialchars($branch_address) ?></div>
+    <div>Cell: <?= htmlspecialchars($branch_contact) ?></div>
+  </div>
 
-        <strong>Tubo Payments:</strong><br>
-        <?php if ($tuboHistory): ?>
-            <?php foreach ($tuboHistory as $t): ?>
-                <?= $t['date_paid'] ?> — ₱<?= number_format($t['interest_amount'], 2) ?> (New Due: <?= $t['new_due_date'] ?>)<br>
-            <?php endforeach; ?>
-        <?php else: ?>None<br><?php endif; ?>
-        <div class="line"></div>
+  <hr>
+  <table>
+    <tr>
+      <td><b>OR NO:</b> <?= $claim['claim_id'] ."-". date("mdy", strtotime($claim['date_pawned'])) ?>
+</td>
+      <td><b>Item:</b> <?= htmlspecialchars($claim['unit_description']) ?></td>
+    </tr>
+    <tr>
+      <td><b>Customer:</b> <?= htmlspecialchars($claim['full_name']) ?></td>
+      <td><b>Category:</b> <?= htmlspecialchars($claim['category']) ?></td>
+    </tr>
+    <tr>
+      <td><b>Address:</b> <?= htmlspecialchars($claim['address']) ?></td>
+      <td><b>Amount Pawned:</b> ₱<?= number_format($claim['original_amount_pawned'], 2) ?></td>
+    </tr>
+    <tr>
+      <td><b>Date Pawned:</b> <?= date("m/d/Y", strtotime($claim['date_pawned'])) ?></td>
+      <td><b>Interest Rate:</b> <?= $claim['interest_rate'] *100 ?>%</td>
+    </tr>
+    <tr>
+      <td><b>Date Claimed:</b> <?= date("m/d/Y", strtotime($claim['date_claimed'])) ?></td>
+    </tr>
+  </table>
 
-        <strong>Partial Payments:</strong><br>
-        <?php if ($partialHistory): ?>
-            <?php foreach ($partialHistory as $pp): ?>
-                <?= $pp['created_at'] ?> — ₱<?= number_format($pp['amount_paid'], 2) ?> 
-                (Interest: ₱<?= number_format($pp['interest_paid'], 2) ?>, Principal: ₱<?= number_format($pp['principal_paid'], 2) ?>)<br>
-            <?php endforeach; ?>
-        <?php else: ?>None<br><?php endif; ?>
-        <div class="line"></div>
+  <hr>
+  <div class="section-title">Payment History</div>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th class="right">Payment</th>
+      <th class="right">Interest</th>
+      <th class="right">Principal</th>
+      <th class="right">Penalty</th>
+      <th class="right">Balance</th>
+      <th>Remarks</th>
+    </tr>
+    <?php foreach ($history as $h): ?>
+      <tr>
+        <td><?= date("m/d/Y", strtotime($h['date_paid'])) ?></td>
+        <td class="right">₱<?= number_format($h['amount_paid'], 2) ?></td>
+        <td class="right">₱<?= number_format($h['interest_paid'], 2) ?></td>
+        <td class="right">₱<?= number_format($h['principal_paid'], 2) ?></td>
+        <td class="right">₱<?= number_format($h['penalty'], 2) ?></td>
+        <td class="right">₱<?= number_format($h['remaining_principal'], 2) ?></td>
+        <td><?= $h['remarks'] ?></td>
+      </tr>
+    <?php endforeach; ?>
+  </table>
 
-        <strong>Totals:</strong><br>
-        Total Tubo Paid: ₱<?= number_format($totalTubo, 2) ?><br>
-        Total Partial Paid: ₱<?= number_format($totalPartial, 2) ?><br>
-        Total Interest Paid: ₱<?= number_format($totalInterestPaid, 2) ?><br>
-        Total Principal Paid: ₱<?= number_format($totalPrincipalPaid, 2) ?><br>
-        Remaining Principal: ₱<?= number_format($remainingPrincipal, 2) ?><br>
-        <div class="line"></div>
-        <strong>Grand Total Paid: ₱<?= number_format($grandTotal, 2) ?></strong><br>
+  <hr>
+  <table>
+    <tr><td><b>Amount Pawned:</b> ₱<?= number_format($claim['original_amount_pawned'], 2) ?></td></tr>
+    <?php
+      $total_interest_paid = 0;
+      $total_interest_amount = 0;
+      foreach ($history as $h) {
+        if (isset($h['interest_paid'])) {
+          $total_interest_paid += $h['interest_paid'];
+        }
+        elseif (isset($h['interest_amount'])) {
+          $total_interest_amount += $h['interest_amount'];
+        }
+      }
+    ?>
+    <tr><td><b>Total Interest:</b> ₱<?= number_format($claim['interest_amount'] + $total_interest_paid + $total_interest_amount, 2) ?></td></tr>
+    <tr><td><b>Total Penalty:</b> ₱<?= number_format($claim['penalty_amount'], 2) ?></td></tr>
+    <tr><td><b>Total Paid:</b> ₱<?= number_format($claim['penalty_amount'] + $claim['interest_amount'] + $claim['original_amount_pawned'] + $total_interest_paid + $total_interest_amount, 2) ?></td></tr>
+  </table>
 
-        <div class="line"></div>
-        <div class="center">*** Thank you! ***</div>
-    </div>
+  <small>Cashier: <?= htmlspecialchars($cashier_name) ?></small><br>
+  <small>Printed on: <?= date("m/d/Y H:i") ?></small>
+
+  <br>
+  <div class="center">***** THANK YOU *****</div>
+
 </body>
 </html>

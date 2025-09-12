@@ -144,7 +144,7 @@ $(document).ready(function () {
             text: "This will save the pawned item.",
             icon: "question",
             showCancelButton: true,
-            confirmButtonText: "Yes, Save it!",
+            confirmButtonText: "Save",
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({

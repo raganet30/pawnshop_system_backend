@@ -44,21 +44,22 @@ if ($userRole === 'super_admin') {
 // --- Nearing Maturity ---
 $sqlNearing = "
     SELECT 
-        p.pawn_id,
-        p.unit_description,
-        p.category,
-        p.amount_pawned,
-        p.date_pawned,
-        DATE_ADD(p.date_pawned, INTERVAL 2 MONTH) AS maturity_date,
-        c.full_name AS customer_name,
-        b.branch_name
-    FROM pawned_items p
-    LEFT JOIN customers c ON p.customer_id = c.customer_id
-    LEFT JOIN branches b ON p.branch_id = b.branch_id
-    $where
-      AND DATE_ADD(p.date_pawned, INTERVAL 2 MONTH) 
-            BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
-    ORDER BY maturity_date ASC
+    p.pawn_id,
+    p.unit_description,
+    p.category,
+    p.amount_pawned,
+    p.date_pawned,
+    DATE_ADD(p.current_due_date, INTERVAL 1 MONTH) AS maturity_date,
+    c.full_name AS customer_name,
+    b.branch_name
+FROM pawned_items p
+LEFT JOIN customers c ON p.customer_id = c.customer_id
+LEFT JOIN branches b ON p.branch_id = b.branch_id
+$where
+AND DATE_ADD(p.current_due_date, INTERVAL 1 MONTH) 
+        BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
+ORDER BY maturity_date ASC;
+
 ";
 $stmtNearing = $pdo->prepare($sqlNearing);
 $stmtNearing->execute([...$params, $reminderDays]);

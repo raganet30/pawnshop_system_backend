@@ -102,11 +102,6 @@ $(document).ready(function () {
     });
 
 
-    // Remove the original event listener that caused the issue
-    // The code below is removed from your original file:
-    // $("#partialPaymentModal").on("shown.bs.modal", function () {
-    //     $("#ppAmount").focus();
-    // });
 
 
     // Live computation when partial payment is entered
@@ -259,14 +254,14 @@ function computePartialSummary() {
     `);
 
     // Debug: quickly show details in console to verify
-    // console.debug("computePartialSummary debug:", {
-    //     today: todayLocal && todayLocal.toISOString().split("T")[0],
-    //     currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
-    //     lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
-    //     startDate: startDate && startDate.toISOString().split("T")[0],
-    //     hasTubo, hasPartial, waiveInterest,
-    //     principal, interestRate, interest
-    // });
+    console.debug("computePartialSummary debug:", {
+        today: todayLocal && todayLocal.toISOString().split("T")[0],
+        currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
+        lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
+        startDate: startDate && startDate.toISOString().split("T")[0],
+        hasTubo, hasPartial, waiveInterest,
+        principal, interestRate, interest
+    });
 }
 
 // --- Bind handlers: amount input AND date change (so selecting date re-calculates) ---
@@ -309,7 +304,7 @@ $("#partialPaymentModal").on("shown.bs.modal", function () {
             html: `Save partial payment of ₱${partialAmount.toLocaleString()}?`,
             icon: "question",
             showCancelButton: true,
-            confirmButtonText: "Yes, Save",
+            confirmButtonText: "Save",
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
