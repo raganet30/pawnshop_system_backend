@@ -1,16 +1,134 @@
-<?php
-require_once "../config/db.php";
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pawn Claim Receipt</title>
+  <style>
+    body {
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      margin: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    td, th {
+      border: 1px solid black;
+      padding: 3px 5px;
+      vertical-align: top;
+    }
+    .no-border td {
+      border: none;
+    }
+    .center {
+      text-align: center;
+    }
+    .right {
+      text-align: right;
+    }
+    .section-title {
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
 
-echo "<h3>⏰ Debugging Timestamp Alignment</h3>";
+  <div class="center">
+    <h3 style="margin:0;">LD GADGET PAWNSHOP</h3>
+    <div>Calbayog Branch - Main</div>
+    <div>Navarro St., Calbayog City, Samar</div>
+    <div>Cell: 09171234567</div>
+  </div>
 
-// PHP time
-echo "<p><b>PHP time:</b> " . date("Y-m-d H:i:s") . " (" . date_default_timezone_get() . ")</p>";
+  <br>
 
-// MySQL time
-$stmt = $pdo->query("SELECT NOW() AS mysql_now, @@session.time_zone AS session_tz, @@global.time_zone AS global_tz");
-$row = $stmt->fetch();
+  <table>
+    <tr>
+      <td><b>OR NO:</b> 00012345</td>
+      <td><b>Date Claimed:</b> 09/12/2025</td>
+    </tr>
+    <tr>
+      <td><b>Customer:</b> KEN KEN</td>
+      <td><b>Contact:</b> 09123456789</td>
+    </tr>
+    <tr>
+      <td><b>Address:</b> Test Address</td>
+      <td><b>Cashier:</b> Admin Main User</td>
+    </tr>
+  </table>
 
-echo "<p><b>MySQL NOW():</b> " . $row['mysql_now'] . "</p>";
-echo "<p><b>MySQL session timezone:</b> " . $row['session_tz'] . "</p>";
-echo "<p><b>MySQL global timezone:</b> " . $row['global_tz'] . "</p>";
-?>
+  <table>
+    <tr>
+      <td><b>Item:</b> Samsung Galaxy S21</td>
+      <td><b>Category:</b> Cellphone</td>
+    </tr>
+    <tr>
+      <td><b>Date Pawned:</b> 08/05/2025</td>
+      <td><b>Due Date:</b> 09/05/2025</td>
+    </tr>
+    <tr>
+      <td><b>Principal:</b> ₱5,000.00</td>
+      <td><b>Interest Rate:</b> 6%</td>
+    </tr>
+  </table>
+
+  <div class="section-title">Payment History</div>
+  <table>
+    <tr>
+      <th>Date</th>
+      <th class="right">Payment</th>
+      <th class="right">Interest</th>
+      <th class="right">Principal</th>
+      <th class="right">Penalty</th>
+      <th class="right">Balance</th>
+      <th>Remarks</th>
+    </tr>
+    <tr>
+      <td>08/20/2025</td>
+      <td class="right">₱1,300.00</td>
+      <td class="right">₱300.00</td>
+      <td class="right">₱1,000.00</td>
+      <td class="right">₱0.00</td>
+      <td class="right">₱4,000.00</td>
+      <td>Partial Payment</td>
+    </tr>
+    <tr>
+      <td>09/05/2025</td>
+      <td class="right">₱600.00</td>
+      <td class="right">₱600.00</td>
+      <td class="right">₱0.00</td>
+      <td class="right">₱0.00</td>
+      <td class="right">₱4,000.00</td>
+      <td>Tubo</td>
+    </tr>
+    <tr>
+      <td>09/11/2025</td>
+      <td class="right">₱4,000.00</td>
+      <td class="right">₱0.00</td>
+      <td class="right">₱4,000.00</td>
+      <td class="right">₱0.00</td>
+      <td class="right">₱0.00</td>
+      <td>Full Settlement</td>
+    </tr>
+  </table>
+
+  <table>
+    <tr>
+      <td><b>Original Principal:</b> ₱5,000.00</td>
+      <td><b>Total Interest:</b> ₱900.00</td>
+    </tr>
+    <tr>
+      <td><b>Total Penalty:</b> ₱0.00</td>
+      <td><b>Total Paid:</b> ₱5,900.00</td>
+    </tr>
+  </table>
+
+  <br>
+  <div class="center">***** THANK YOU *****</div>
+
+</body>
+</html>
