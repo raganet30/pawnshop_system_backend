@@ -56,12 +56,18 @@ function active($page, $currentPage)
              <a href="partial_payments" class="list-group-item <?= active('partial_payments', $currentPage) ?>">
                 <i class="bi bi-cash-stack"></i> Partial Payments
             </a>
-            <a href="pawners" class="list-group-item <?= active('pawners', $currentPage) ?>">
-                <i class="bi bi-people"></i> Pawners
-            </a>
+          
             <!-- Tubo Payments -->
             <a href="tubo_payments" class="list-group-item <?= active('tubo_payments', $currentPage) ?>">
                 <i class="bi bi-cash"></i> Tubo Payments
+            </a>
+            
+              <a href="pawners" class="list-group-item <?= active('pawners', $currentPage) ?>">
+                <i class="bi bi-people"></i> Pawners
+            </a>
+
+
+
         </div>
 
         <!-- Claims -->
