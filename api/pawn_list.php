@@ -140,6 +140,12 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 </a>
             </li>
 
+       
+            <li>
+                <a class="dropdown-item addPawnAmountBtn" href="#" data-id="' . $row['pawn_id'] . '">
+                    <i class="bi bi-plus-circle text-success"></i> Add Amount
+                </a>
+
             <li>
                 <a class="dropdown-item addTuboPaymentBtn" href="#" data-id="' . $row['pawn_id'] . '">
                     <i class="bi bi-cash text-primary"></i> Tubo Payment

@@ -81,7 +81,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <input type="text" class="form-control" id="viewAmountPawned" readonly>
                                 </div>
 
-                                
+
 
                                 <div class="col-md-3">
                                     <label>Date Pawned</label>
@@ -104,10 +104,10 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <input type="text" class="form-control" id="viewNotes" readonly>
                                 </div>
 
-                                
 
 
-                                 <!--  Tubo Payments History -->
+
+                                <!--  Tubo Payments History -->
                                 <h6 class="mt-3">Tubo Payments History</h6>
                                 <div class="table-responsive mb-3">
                                     <table class="table table-bordered table-sm" id="tuboPaymentsTable">
@@ -403,6 +403,75 @@ $highlightPawnId = $_GET['id'] ?? '';
                 </div>
             </div>
 
+            <!-- Add Pawn Amount Modal -->
+            <div class="modal fade" id="addPawnAmountModal" tabindex="-1" aria-labelledby="addPawnAmountModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addPawnAmountModalLabel">
+                                Add Pawn Amount <i class="bi bi-cash-stack me-2 text-success"></i>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <!-- Pawn Details -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>Owner:</strong> <span id="pawnOwner"></span><br>
+                                    <strong>Item:</strong> <span id="pawnItem"></span><br>
+                                    <strong>Category:</strong> <span id="pawnCategory"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Original Amount:</strong> ₱<span id="pawnOriginalAmount"></span><br>
+                                    <strong>Current Due Date:</strong> <span id="pawnDueDate"></span>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Pawn Amount Control -->
+                            <div class="text-center">
+                                <label class="form-label fw-bold">Add Amount</label>
+                                <div class="input-group justify-content-center mb-2"
+                                    style="max-width: 300px; margin: 0 auto;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decreaseAmount"><i
+                                            class="bi bi-dash-lg"></i></button>
+                                    <input type="number" class="form-control text-center" id="pawnAmountInput"
+                                        value="100" min="100" step="100">
+                                    <button class="btn btn-outline-secondary" type="button" id="increaseAmount"><i
+                                            class="bi bi-plus-lg"></i></button>
+                                </div>
+                                <div>
+                                    <label for="quickAmountSelect" class="form-label small">Quick Select</label>
+                                    <select id="quickAmountSelect"
+                                        class="form-select form-select-sm w-auto d-inline-block">
+                                        <option value="100">+100</option>
+                                        <option value="500">+500</option>
+                                        <option value="1000">+1000</option>
+                                    </select>
+                                </div>
+                                <p class="mt-3">
+                                    <strong>New Amount:</strong> ₱<span id="pawnNewAmount"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-success" id="confirmAddPawnAmount">
+                                <i class="bi bi-check2-circle me-1"></i> Confirm
+                            </button>
+                            <button type="button" id="resetPawnAmount" class="btn btn-secondary">
+                                Reset
+                            </button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Claim Pawn Modal -->
             <div class="modal fade" id="claimPawnModal" tabindex="-1" aria-labelledby="claimPawnModalLabel"
@@ -445,7 +514,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     <div class="col-md-3">
                                         <label>Interest Amount <small>(auto compute)</small> </label>
                                         <input type="text" class="form-control" id="claimInterest" readonly>
-                                        
+
                                         <input type="hidden" class="form-control" id="claimInterestValue"
                                             name="claimInterestValue">
 
@@ -462,16 +531,16 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <input type="text" class="form-control" id="claimTotal" readonly>
 
                                         <input type="number" step="0.01" class="form-control" id="claimTotalValue"
-                                            name="claimTotalValue" hidden >
+                                            name="claimTotalValue" hidden>
                                     </div>
 
-                                     <div class="col-md-3">
+                                    <div class="col-md-3">
                                         <label>Current Due Date</label>
                                         <input type="text" class="form-control" id="claimDueDate" readonly>
                                     </div>
-                                    
+
                                     <div class="col-md-3">
-                                        <label >Date Claimed</label>
+                                        <label>Date Claimed</label>
                                         <input type="date" class="form-control" id="claimDate" name="claimDate"
                                             required>
                                     </div>
@@ -481,9 +550,9 @@ $highlightPawnId = $_GET['id'] ?? '';
                                         <label>Notes</label>
                                         <input type="text" class="form-control" id="claimNotes" name="claimNotes">
                                     </div>
-                                    
+
                                 </div>
-                               <p id="waiveInfo" class="small d-none mt-2"></p>
+                                <p id="waiveInfo" class="small d-none mt-2"></p>
 
                                 <!--  Tubo Payments History -->
                                 <h6 class="mt-3">Tubo Payments History</h6>
@@ -525,7 +594,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                     </table>
                                 </div>
 
-                                
+
 
                                 <hr>
 
@@ -932,7 +1001,7 @@ $highlightPawnId = $_GET['id'] ?? '';
 <script src="../assets/js/receipt.js"></script>
 <script src="../assets/js/pawn_partial_payment.js"></script>
 <script src="../assets/js/pawn_tubo_payment.js"></script>
-
+<script src="../assets/js/add_pawn_amount.js"></script>
 
 <script>
 
@@ -977,7 +1046,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                        { title: "Actions", orderable: false }
+                                    { title: "Actions", orderable: false }
             <?php endif; ?>
             ]
         });
@@ -1135,7 +1204,7 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
 
-    
+
 
 
 </script>
