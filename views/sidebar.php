@@ -51,7 +51,7 @@ function active($page, $currentPage)
                 <i class="bi bi-caret-down-fill"></i>
             </a>
         </div>
-        <div class="collapse ps-3 <?= in_array($currentPage, ['pawners','partial_payments']) ? 'show' : '' ?>"
+        <div class="collapse ps-3 <?= in_array($currentPage, ['pawners','partial_payments','tubo_payments' ]) ? 'show' : '' ?>"
             id="submenuPawns">
              <a href="partial_payments" class="list-group-item <?= active('partial_payments', $currentPage) ?>">
                 <i class="bi bi-cash-stack"></i> Partial Payments
@@ -59,6 +59,9 @@ function active($page, $currentPage)
             <a href="pawners" class="list-group-item <?= active('pawners', $currentPage) ?>">
                 <i class="bi bi-people"></i> Pawners
             </a>
+            <!-- Tubo Payments -->
+            <a href="tubo_payments" class="list-group-item <?= active('tubo_payments', $currentPage) ?>">
+                <i class="bi bi-cash"></i> Tubo Payments
         </div>
 
         <!-- Claims -->

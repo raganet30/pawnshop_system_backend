@@ -42,7 +42,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 <!-- Pawn Maturity Reminder -->
                 <div class="col-md-3">
-                    <label class="form-label">Pawn Maturity Reminder (days before)</label>
+                    <label class="form-label">Pawn Maturity Reminder (days)</label>
                     <input type="number" class="form-control" name="pawn_maturity_reminder_days" min="1" required>
                 </div>
 
