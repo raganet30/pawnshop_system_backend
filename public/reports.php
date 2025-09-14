@@ -102,6 +102,7 @@ checkSessionTimeout($pdo);
                                             <tr>
                                                 <th>#</th>
                                                 <th>Date Pawned</th>
+                                                <th>Months</th>
                                                 <th>Owner</th>
                                                 <th>Unit</th>
                                                 <th>Category</th>
@@ -113,7 +114,7 @@ checkSessionTimeout($pdo);
                                         </thead>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="5" class="text-end">Total Pawned Amount</th>
+                                                <th colspan="6" class="text-end">Total Pawned Amount</th>
                                                 <th id="pawned_total_amount">0.00</th>
                                                 <th colspan="3"></th>
 

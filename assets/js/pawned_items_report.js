@@ -22,7 +22,8 @@ $(document).ready(function () {
             { data: 5 },
             { data: 6 },
             { data: 7 },
-            { data: 8 }
+            { data: 8 },
+            { data: 9 }
         ],
         order: [[1, 'desc']], // sort by Date Pawned
         footerCallback: function (row, data, start, end, display) {
@@ -36,7 +37,7 @@ $(document).ready(function () {
             };
 
             let totalAmount = api
-                .column(5, { page: 'current' }) // current page only
+                .column(6, { page: 'current' }) // current page only
                 .data()
                 .reduce((a, b) => intVal(a) + intVal(b), 0);
 

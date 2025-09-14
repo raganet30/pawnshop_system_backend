@@ -71,6 +71,36 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
                     <canvas id="branchComparisonChart" height="200"></canvas>
                 </div>
             </div>
+
+
+            <!-- Upcoming Due Items -->
+            <div class="card">
+                <div class="card-header">Upcoming Due Items</div>
+                <div class="card-body">
+                    <table id="upcomingDueItemsTable" class="table table-striped table-bordered" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date Pawned</th>
+                                <th>Owner</th>
+                                <th>Contact #</th>
+                                <th>Item</th>
+                                <!-- <th>Category</th> -->
+                                <th>Amount Pawned</th>
+                                <th>Months Period</th>
+                                <th>Due Date</th>
+                                <th>Maturity Date</th>
+                                <th>Days Before Maturity</th>
+                                <th>Status</th>
+                                <th>Branch</th> 
+                            </tr>
+                        </thead>
+
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
         <?php include '../views/footer.php'; ?>
     </div>
@@ -207,4 +237,55 @@ if ($_SESSION['user']['role'] !== 'super_admin') {
     loadDashboardSuper();
     // Refresh every 5 min
     setInterval(loadDashboardSuper, 300000);
+
+
+
+
+     // script to populate upcomingDueItemsTable
+    $(document).ready(function () {
+        $('#upcomingDueItemsTable').DataTable({
+            processing: true,
+            serverSide: false, // we return JSON, not paginated SQL
+            ajax: {
+                url: "../api/upcoming_due_items.php", // adjust path if needed
+                type: "GET",
+                data: {
+                    days: 7 // how many days ahead to check for "nearing maturity"
+                },
+                dataSrc: "data"
+            },
+            columns: [
+                { data: "#" },
+                { data: "date_pawned" },
+                { data: "owner" },
+                {data: "contact_no" },
+                { data: "item" },
+                // { data: "category" },
+                { data: "amount_pawned" },
+                { data: "months_period" },
+                { data: "due_date" },
+                { data: "maturity_date" },
+                {
+                    data: "days_before_maturity",
+                    render: function (data, type, row) {
+                        if (data < 0) {
+                            return Math.abs(data) + " days overdue";
+                        } else {
+                            return data + " days left";
+                        }
+                    }
+                },
+                {
+                    data: "status",
+                    render: function (data, type, row) {
+                        let badgeClass = data === "Overdue" ? "badge bg-danger" : "badge bg-success";
+                        return `<span class="${badgeClass}">${data}</span>`;
+                    }
+                },
+                { data: "branch" }
+            ],
+            order: [[8, "asc"]] // sort by maturity_date
+        });
+    });
+
 </script>

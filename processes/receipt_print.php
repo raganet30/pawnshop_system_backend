@@ -144,20 +144,18 @@ $cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
   <table>
     <tr><td><b>Amount Pawned:</b> ₱<?= number_format($claim['original_amount_pawned'], 2) ?></td></tr>
     <?php
-      $total_interest_paid = 0;
+      $total_payment = 0;
       $total_interest_amount = 0;
+      $total_penalty = 0;
       foreach ($history as $h) {
-        if (isset($h['interest_paid'])) {
-          $total_interest_paid += $h['interest_paid'];
-        }
-        elseif (isset($h['interest_amount'])) {
-          $total_interest_amount += $h['interest_amount'];
-        }
+          $total_payment += $h['amount_paid'];
+          $total_interest_amount += $h['interest_paid'];
+          $total_penalty += $h['penalty'];
       }
     ?>
-    <tr><td><b>Total Interest:</b> ₱<?= number_format($claim['interest_amount'] + $total_interest_paid + $total_interest_amount, 2) ?></td></tr>
-    <tr><td><b>Total Penalty:</b> ₱<?= number_format($claim['penalty_amount'], 2) ?></td></tr>
-    <tr><td><b>Total Paid:</b> ₱<?= number_format($claim['penalty_amount'] + $claim['interest_amount'] + $claim['original_amount_pawned'] + $total_interest_paid + $total_interest_amount, 2) ?></td></tr>
+    <tr><td><b>Total Interest:</b> ₱<?= number_format($total_interest_amount, 2) ?></td></tr>
+    <tr><td><b>Total Penalty:</b> ₱<?= number_format($total_penalty, 2) ?></td></tr>
+    <tr><td><b>Total Paid:</b> ₱<?= number_format ($total_payment, 2) ?></td></tr>
   </table>
 
   <small>Cashier: <?= htmlspecialchars($cashier_name) ?></small><br>
