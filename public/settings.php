@@ -32,6 +32,65 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
         <div class="container-fluid mt-4">
             <h2 class="mb-4">System Settings</h2>
 
+
+            <!-- Datatabel for downloaded sql backeup files, add download actions in the last columns, columns should be #, Date, SQL File, Action, etc. -->
+            <!-- Datatable for SQL Backup Files -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-database"></i> Database Backups</span>
+                    <button id="generateBackupBtn" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i> Generate Backup
+                    </button>
+                </div>
+                <div class="card-body">
+                    <table id="backupTable" class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>SQL File</th>
+                                <th>Size</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $backupDir = __DIR__ . "/../backups"; // root-level backups folder // adjust path
+                            if (is_dir($backupDir)) {
+                                $files = glob($backupDir . "/*.sql");
+                                usort($files, function ($a, $b) {
+                                    return filemtime($b) - filemtime($a); // newest first
+                                });
+                                $i = 1;
+                                foreach ($files as $file) {
+                                    $filename = basename($file);
+                                    $filesize = round(filesize($file) / 1024, 2) . " KB";
+                                    $date = date("Y-m-d H:i:s", filemtime($file));
+                                    echo "<tr>
+                            <td>{$i}</td>
+                            <td>{$date}</td>
+                            <td>{$filename}</td>
+                            <td>{$filesize}</td>
+                            <td>
+                                <a href='../processes/download_backup.php?file={$filename}' class='btn btn-sm btn-success'>
+                                    <i class='bi bi-download'></i> Download
+                                </a>
+                            </td>
+                        </tr>";
+                                    $i++;
+                                }
+                            } else {
+                                echo "<tr><td colspan='5' class='text-center'>No backups found.</td></tr>";
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+
             <form id="settingsForm" class="row g-3">
 
                 <!-- Low Cash Alert Threshold -->
@@ -132,26 +191,61 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
 
-    document.getElementById('resetSettingsBtn').addEventListener('click', function() {
-    if (confirm('Are you sure you want to reset the database?')) {
-        fetch('../processes/reset_db.php', { // replace with your backend URL
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success){
-                alert('Settings have been reset successfully.');
-                location.reload(); // reload page to reflect changes
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('An unexpected error occurred.');
-        });
-    }
+    document.getElementById('resetSettingsBtn').addEventListener('click', function () {
+        if (confirm('Are you sure you want to reset the database?')) {
+            fetch('../processes/reset_db.php', { // replace with your backend URL
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Settings have been reset successfully.');
+                        location.reload(); // reload page to reflect changes
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('An unexpected error occurred.');
+                });
+        }
+    });
+
+
+
+
+    $(document).ready(function () {
+    $('#backupTable').DataTable({
+        "pageLength": 10,          // show 10 rows per page
+        "lengthMenu": [5, 10, 20, 50],
+        "order": [[1, "desc"]]     // sort by Date descending
+    });
 });
+
+
+
+    // Generate Backup button
+    document.getElementById("generateBackupBtn").addEventListener("click", function () {
+        if (confirm("Generate a new database backup now?")) {
+            fetch("../processes/generate_backup.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire("Success!", "Backup generated: " + data.file, "success")
+                            .then(() => location.reload()); // refresh table
+                    } else {
+                        Swal.fire("Error", data.message || "Failed to generate backup", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire("Error", "An unexpected error occurred.", "error");
+                });
+        }
+    });
+
+
 
 
 </script>

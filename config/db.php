@@ -8,13 +8,13 @@ date_default_timezone_set('Asia/Manila');
 $serverHost = $_SERVER['HTTP_HOST'] ?? 'cli'; // fallback for CLI (artisan, cron, etc.)
 
 if ($serverHost === 'localhost' || $serverHost === '127.0.0.1' || $serverHost === 'cli') {
-    // 🖥 Localhost settings
+    //  Localhost settings
     $host = "127.0.0.1";
     $dbname = "pawnshop_db";
     $user = "root";   // change if your local MySQL has a password
     $pass = "";
 } else {
-    // 🌐 InfinityFree settings
+    //  InfinityFree settings
     $host = "sql213.infinityfree.com";     // InfinityFree SQL host
     $dbname = "if0_39781345_pawnshop_db";   //  InfinityFree DB name
     $user = "if0_39781345";        //  InfinityFree username
