@@ -209,46 +209,54 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
 
 
-    $today = new DateTime();
-    $unpaidMonths = 0;
+  $today = new DateTime();
+$unpaidMonths = 0;
 
-    // 1. Get latest tubo due date (if any)
-    $tuboStmt = $pdo->prepare("
-        SELECT new_due_date 
-        FROM tubo_payments 
-        WHERE pawn_id = ? 
-        ORDER BY new_due_date DESC 
-        LIMIT 1
-    ");
-    $tuboStmt->execute([$row['pawn_id']]);
-    $lastTuboDue = $tuboStmt->fetchColumn();
+// 1. Get latest tubo payment (if any)
+$tuboStmt = $pdo->prepare("
+    SELECT new_due_date, period_end 
+    FROM tubo_payments 
+    WHERE pawn_id = ? 
+    ORDER BY new_due_date DESC 
+    LIMIT 1
+");
+$tuboStmt->execute([$row['pawn_id']]);
+$lastTuboRow = $tuboStmt->fetch(PDO::FETCH_ASSOC);
 
-    // 2. Determine effective start date
+$lastTuboPeriodEnd = $lastTuboRow['period_end'] ?? null;
+
+// 2. Determine effective start date
+if ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) {
+    // No payments at all → start from pawn date
+    $startDate = new DateTime($row['date_pawned']);
+} else {
+    // With payments → start from end of last tubo coverage
+    if (!empty($lastTuboPeriodEnd) && $lastTuboPeriodEnd != '0000-00-00') {
+        $startDate = new DateTime($lastTuboPeriodEnd);
+    } else {
+        // fallback to current_due_date or pawn date
+        $startDate = new DateTime($row['current_due_date'] ?? $row['date_pawned']);
+    }
+}
+
+// 3. Calculate unpaid months
+if ($today > $startDate) {
+    $interval = $startDate->diff($today);
+    $unpaidMonths = $interval->y * 12 + $interval->m;
+
+    // Count partial month as full
+    if ($interval->d > 0) {
+        $unpaidMonths++;
+    }
+
+    // Ensure minimum 1 month if no payments
     if ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) {
-        // No payments at all → start from pawn date
-        $startDate = new DateTime($row['date_pawned']);
-    } else {
-        // With payments → start from latest tubo due date or current_due_date
-        $effectiveDue = $lastTuboDue ?: $row['current_due_date'];
-        $startDate = new DateTime($effectiveDue);
+        $unpaidMonths = max($unpaidMonths, 1);
     }
-
-    // 3. Calculate unpaid months
-    if ($today > $startDate) {
-        $interval = $startDate->diff($today);
-        $unpaidMonths = $interval->m + ($interval->y * 12);
-        if ($interval->d > 0) {
-            $unpaidMonths++;
-        }
-        if ($unpaidMonths < 1) $unpaidMonths = 1; // minimum 1 month
-    } else {
-        // Still before start date → count as 1 unpaid if no payments
-        if ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) {
-            $unpaidMonths = 1;
-        } else {
-            $unpaidMonths = 0; // covered by tubo/partial
-        }
-    }
+} else {
+    // Still before start date
+    $unpaidMonths = ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) ? 1 : 0;
+}
 
 
 

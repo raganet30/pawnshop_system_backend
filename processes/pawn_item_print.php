@@ -131,21 +131,6 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 
 
 <br><br>
-<div class="section">
-    <table class="border small">
-        <tr>
-            <th>MONTHS TO BE PAID</th>
-            <th>PAYMENT</th>
-            <th>DATE</th>
-            <th>SIGNATURE</th>
-        </tr>
-        <?php for ($i=0; $i<6; $i++): ?>
-        <tr>
-            <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-        </tr>
-        <?php endfor; ?>
-    </table>
-</div>
 
 </body>
 </html>

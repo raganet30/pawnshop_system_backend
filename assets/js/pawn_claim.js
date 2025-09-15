@@ -122,7 +122,7 @@ $(function () {
                             let lastTuboEnd = null;
                             if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
                                 let lastTuboIndex = data.tubo_history.length - 1;
-                                lastTuboEnd = parseYMD(data.tubo_history[lastTuboIndex].new_due_date);
+                                lastTuboEnd = parseYMD(data.tubo_history[lastTuboIndex].period_end);
                             }
 
                             if (lastTuboEnd) {
