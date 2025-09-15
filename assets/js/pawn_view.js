@@ -22,6 +22,7 @@ $(document).on("click", ".viewPawnBtn", function (e) {
             $("#viewCategory").val(pawn.category);
             $("#viewAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toFixed(2));
             $("#viewNotes").val(pawn.notes || "");
+            $("#viewPassKey").val(pawn.pass_key || "");
             $("#viewDatePawned").val(pawn.date_pawned);
             $("#viewDueDate").val(pawn.current_due_date);
             $("#viewStatus").val(pawn.status);

@@ -44,6 +44,8 @@ try {
     $stmt->execute([$pawn_id]);
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    $pawn_item = htmlspecialchars($pawn['unit_description']);
+
     if (!$pawn) {
         echo json_encode(["status" => "error", "message" => "Pawn record not found or already claimed."]);
         exit;
@@ -123,7 +125,7 @@ $stmt->execute([
 
 
 
-    // ✅ Ledger entry (Cash IN for total claim amount)
+    // Ledger entry (Cash IN for total claim amount)
     if ($total_paid > 0) {
         $description = "Claim (ID #$claim_id)";
         $notes = "Pawn ID #$pawn_id claimed with interest + penalty (if any)";
@@ -146,9 +148,9 @@ $stmt->execute([
 
     // --- Insert into audit_logs ---
     $description = sprintf(
-        "Claimed pawn ID: %d, Unit: %s, Total Amount Paid: ₱%s",
-        $pawn_id,
-        $pawn['unit_description'],
+        "Claimed pawn item: %s, Category: %s, Total Amount Paid: ₱%s",
+        $pawn_item,
+        $pawn['category'],
         number_format($total_paid, 2)
     );
 

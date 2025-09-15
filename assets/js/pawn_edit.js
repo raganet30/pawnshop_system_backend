@@ -19,6 +19,7 @@ $(document).on("click", ".editPawnBtn", function (e) {
                 $("#editUnitDescription").val(pawn.unit_description);
                 $("#editCategory").val(pawn.category);
                 $("#editNotes").val(pawn.notes);
+                $("#editPassKey").val(pawn.pass_key);
                 $("#editDatePawned").val(pawn.date_pawned);
 
                 // Amount fields: hidden raw value + formatted visible value
@@ -124,7 +125,7 @@ $("#editPawnForm").on("submit", function (e) {
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, save it!'
+        confirmButtonText: 'Save'
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({

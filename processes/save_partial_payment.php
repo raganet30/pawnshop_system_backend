@@ -33,6 +33,10 @@ try {
     $stmt->execute([$pawn_id]);
     $pawn = $stmt->fetch(PDO::FETCH_ASSOC);
 
+
+    $pawn_item = htmlspecialchars($pawn['unit_description']);
+
+
     if (!$pawn) {
         echo json_encode(["status" => "error", "message" => "Pawned item not found or already closed."]);
         exit;
@@ -107,6 +111,8 @@ $stmt->execute([
     // --- Update branch cash on hand ---
     updateCOH($pdo, $branch_id, $total_paid, 'add');
 
+
+
     // --- Ledger entry ---
     $ledgerNotes = "Partial payment: Principal ₱" . number_format($partial_amount, 2) . " | Interest ₱" . number_format($interest_due, 2);
     insertCashLedger(
@@ -122,10 +128,11 @@ $stmt->execute([
         $user_id
     );
 
+
     // --- Audit log ---
     $log_desc = sprintf(
-        "Partial payment recorded. Pawn ID: %d, Total Amount Paid: ₱%s (Partial ₱%s + Interest ₱%s), New Principal: ₱%s",
-        $pawn_id,
+        "Partial payment recorded. Pawn Item: %s, Total Amount Paid: ₱%s (Partial ₱%s + Interest ₱%s), New Principal: ₱%s",
+        $pawn_item,
         number_format($total_paid, 2),
         number_format($partial_amount, 2),
         number_format($interest_due, 2),

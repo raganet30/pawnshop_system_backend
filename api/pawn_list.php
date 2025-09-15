@@ -51,6 +51,7 @@ $sql = "
     SELECT 
         p.pawn_id,
         p.date_pawned,
+        p.current_due_date,
         p.unit_description,
         p.category,
         p.amount_pawned,
@@ -206,13 +207,56 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $today = new DateTime();
     $daysDiff = $datePawned->diff($today)->days;
 
-    // Calculate months (minimum 1 month, assume 31-day month)
-    $months = max(1, ceil($daysDiff / 31));
+
+
+    $today = new DateTime();
+    $unpaidMonths = 0;
+
+    // 1. Get latest tubo due date (if any)
+    $tuboStmt = $pdo->prepare("
+        SELECT new_due_date 
+        FROM tubo_payments 
+        WHERE pawn_id = ? 
+        ORDER BY new_due_date DESC 
+        LIMIT 1
+    ");
+    $tuboStmt->execute([$row['pawn_id']]);
+    $lastTuboDue = $tuboStmt->fetchColumn();
+
+    // 2. Determine effective start date
+    if ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) {
+        // No payments at all → start from pawn date
+        $startDate = new DateTime($row['date_pawned']);
+    } else {
+        // With payments → start from latest tubo due date or current_due_date
+        $effectiveDue = $lastTuboDue ?: $row['current_due_date'];
+        $startDate = new DateTime($effectiveDue);
+    }
+
+    // 3. Calculate unpaid months
+    if ($today > $startDate) {
+        $interval = $startDate->diff($today);
+        $unpaidMonths = $interval->m + ($interval->y * 12);
+        if ($interval->d > 0) {
+            $unpaidMonths++;
+        }
+        if ($unpaidMonths < 1) $unpaidMonths = 1; // minimum 1 month
+    } else {
+        // Still before start date → count as 1 unpaid if no payments
+        if ($row['has_partial_payments'] == 0 && $row['has_tubo_payments'] == 0) {
+            $unpaidMonths = 1;
+        } else {
+            $unpaidMonths = 0; // covered by tubo/partial
+        }
+    }
+
+
 
     $rowData = [
         null,
         formatDateMDY($row['date_pawned']),
-        $months . ' month(s)', // <-- new row showing months since pawned
+        // $months . ' month(s)', // <-- new row showing months since pawned
+        $unpaidMonths . ' mo(s) unpaid', // Placeholder for Unpaid Months (to be computed client-side)
         htmlspecialchars($row['full_name']),
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),

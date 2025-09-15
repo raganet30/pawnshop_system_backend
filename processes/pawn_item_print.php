@@ -19,6 +19,7 @@ $stmt = $pdo->prepare("
         p.date_pawned,
         p.current_due_date,
         p.notes,
+        p.pass_key,
         c.full_name,
         c.contact_no,
         c.address
@@ -94,8 +95,8 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     </tr>
     
     <tr>
-        <td><b>ITEM CONDITION:</b> </td>
-        <td><b>PASSWORD/PATTERN/PIN:</b> </td>
+        <td><b>REMARKS:</b> <?= $pawn['notes'] ?></td>
+        <td><b>PASSWORD/PIN:</b> <?= $pawn['pass_key'] ?> </td>
     </tr>
     <tr>
         <td colspan="2">

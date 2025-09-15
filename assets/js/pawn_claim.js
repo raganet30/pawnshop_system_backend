@@ -127,7 +127,7 @@ $(function () {
 
                             if (lastTuboEnd) {
                                 if (todayLocal <= lastTuboEnd) {
-                                    // ✅ within tubo coverage → waive interest
+                                    //  within tubo coverage → waive interest
                                     waiveInterest = true;
                                     claimdiffMonths = 0;
                                     totalInterest = 0;
@@ -138,7 +138,7 @@ $(function () {
                                         totalInterest
                                     });
                                 } else {
-                                    // ❌ tubo coverage expired → compute from tubo due date forward
+                                    //  tubo coverage expired → compute from tubo due date forward
                                     startDate = new Date(lastTuboEnd);
                                     startDate.setMonth(startDate.getMonth());
 

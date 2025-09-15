@@ -37,911 +37,39 @@ $highlightPawnId = $_GET['id'] ?? '';
                 <?php endif; ?>
             </div>
 
+                    <!-- view pawn modal -->
+           <?php include '../public/modals/view_pawn_modal.php';?>
 
-            <!-- View Pawn Modal -->
-            <div class="modal fade" id="viewPawnModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Pawn Details</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
 
-                        <div class="modal-body">
-                            <div class="row g-3">
-                                <!-- Customer -->
-                                <div class="col-md-3">
-                                    <label>Pawner</label>
-                                    <input type="text" class="form-control" id="viewCustomerName" readonly>
-                                </div>
+                    <!-- add pawn modal -->
+            <?php include '../public/modals/add_pawn_modal.php';?>
 
-                                <div class="col-md-3">
-                                    <label>Contact No.</label>
-                                    <input type="text" class="form-control" id="viewContactNo" readonly>
-                                </div>
 
-                                <div class="col-md-3">
-                                    <label>Address</label>
-                                    <input type="text" class="form-control" id="viewAddress" readonly>
-                                </div>
+                    <!-- edit pawn modal -->
+            <?php include '../public/modals/edit_pawn_modal.php';?>
 
-                                <!-- Pawn Item Details -->
-                                <div class="col-md-3">
-                                    <label>Unit</label>
-                                    <input type="text" class="form-control" id="viewUnitDescription" readonly>
-                                </div>
 
-                                <div class="col-md-3">
-                                    <label>Category</label>
-                                    <input type="text" class="form-control" id="viewCategory" readonly>
-                                </div>
+                    <!-- add pawn amount modal -->
+            <?php include '../public/modals/add_pawn_amount_modal.php';?>
 
-                                <div class="col-md-3">
-                                    <label>Amount Pawned</label>
-                                    <input type="text" class="form-control" id="viewAmountPawned" readonly>
-                                </div>
 
+                    <!-- claim pawn modal -->
+            <?php include '../public/modals/claim_pawn_modal.php';?>
 
 
-                                <div class="col-md-3">
-                                    <label>Date Pawned</label>
-                                    <input type="text" class="form-control" id="viewDatePawned" readonly>
-                                </div>
+                    <!-- partial payment modal -->
+            <?php include '../public/modals/partial_payment_modal.php';?>
 
-                                <div class="col-md-3">
-                                    <label>Current Due Date</label>
-                                    <input type="text" class="form-control" id="viewDueDate" readonly>
-                                </div>
 
-                                <div class="col-md-3">
-                                    <label>Intererest Rate</label>
-                                    <input type="text" class="form-control" id="viewInterest" readonly>
-                                </div>
+                    <!-- tubo payment modal -->
+            <?php include '../public/modals/tubo_payment_modal.php';?>
 
 
-                                <div class="col-md-3">
-                                    <label>Note</label>
-                                    <input type="text" class="form-control" id="viewNotes" readonly>
-                                </div>
+                    <!-- forfeit pawn modal -->
+            <?php include '../public/modals/forfeit_pawn_modal.php';?>
 
 
-
-
-                                <!--  Tubo Payments History -->
-                                <h6 class="mt-3">Tubo Payments History</h6>
-                                <div class="table-responsive mb-3">
-                                    <table class="table table-bordered table-sm" id="tuboPaymentsTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Date Paid</th>
-                                                <th>Covered Period</th>
-                                                <th>Interest Rate</th>
-                                                <th>Interest Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- JS will populate this -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!--  Partial Payments History -->
-                                <h6 class="mt-3">Partial Payments History</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm" id="partialPaymentsTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Date Paid</th>
-                                                <th>Amount Paid</th>
-                                                <th>Interest Paid</th>
-                                                <th>Principal Paid</th>
-                                                <th>Remaining Principal</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- JS will populate this -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Pawn Item Picture -->
-                                <div class="col-md-6 ">
-                                    <label class="form-label d-block">Item Picture</label>
-                                    <div class="mt-2">
-                                        <img id="view_pawn_preview" src="../assets/img/avatar.png" class="img-thumbnail"
-                                            style="max-width:300px;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Add Pawn Modal -->
-            <div class="modal fade" id="addPawnModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <form id="addPawnForm" method="POST" action="../processes/pawn_add_process.php">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Add New Pawn Item</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                <div class="row g-3">
-
-                                    <!-- Owner Details -->
-                                    <!-- Customer Selection/Add New -->
-                                    <div class="col-md-12">
-                                        <label>Pawner</label>
-                                        <select id="customer_id" name="customer_id" class="form-control" required>
-                                            <option value="">-- Select Pawner --</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-12 mt-2">
-
-                                        <input type="checkbox" class="btn-check" id="addNewCustomer" autocomplete="off">
-                                        <label class="btn btn-primary" for="addNewCustomer">Add New Pawner</label>
-
-
-
-                                    </div>
-
-                                    <div id="newCustomerFields" class="row g-3" style="display:none;">
-                                        <div class="col-md-6">
-                                            <label>Full Name</label>
-                                            <input type="text" class="form-control" name="customer_name">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label>Contact No.</label>
-                                            <input type="text" class="form-control" name="contact_no"
-                                                placeholder="09XXXXXXXXX">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label>Address</label>
-                                            <input type="text" class="form-control" name="address"
-                                                placeholder="Pawner Address">
-                                        </div>
-
-
-                                    </div>
-
-
-                                    <!-- Pawn Item Details -->
-                                    <div class="col-md-6">
-                                        <label>Unit</label>
-                                        <input type="text" class="form-control" name="unit_description" required>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label for="category">Category</label>
-                                        <select name="category" id="category" class="form-control" required>
-                                            <option value="">-- Select Category --</option>
-                                            <option value="Cellphone">Cellphone</option>
-                                            <option value="Laptop">Laptop</option>
-                                            <option value="Tablet/iPad">Tablet/iPad</option>
-                                            <option value="Motorcycle">Motorcycle</option>
-                                            <option value="Others">Others</option>
-                                        </select>
-                                    </div>
-
-
-                                    <div class="col-md-6">
-                                        <label>Amount Pawned</label>
-                                        <!-- Visible input with formatting -->
-                                        <input type="text" class="form-control" id="addAmountPawnedVisible"
-                                            placeholder="0.00" required>
-                                        <!-- Hidden input for raw numeric value -->
-                                        <input type="hidden" name="amount_pawned" id="addAmountPawned">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Note</label>
-                                        <input type="text" class="form-control" name="notes">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Date Pawned</label>
-                                        <input type="date" class="form-control" name="date_pawned"
-                                            value="<?php echo date('Y-m-d'); ?>" required>
-                                    </div>
-
-                                    <!-- Claimant Photo Capture -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label>Live Camera</label>
-                                            <video id="cameraStream" width="100%" height="240" autoplay
-                                                playsinline></video>
-                                            <button type="button" class="btn btn-sm btn-primary mt-2"
-                                                id="pawnCapturePhotoBtn">
-                                                <i class="bi bi-camera"></i> Capture Photo
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label>Captured Photo</label>
-                                            <canvas id="pawnCapturedCanvas" width="320" height="240"
-                                                class="border d-block mb-2"></canvas>
-                                            <p class="text-muted small">Captured photo will appear here.</p>
-                                        </div>
-                                    </div>
-
-
-                                </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-success">Save</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                    aria-label="Close">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Edit Pawn Modal -->
-            <div class="modal fade" id="editPawnModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <form id="editPawnForm" method="POST" action="../processes/pawn_edit_process.php">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Pawn Item</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                <input type="hidden" name="pawn_id" id="editPawnId">
-
-                                <div class="row g-3">
-                                    <!-- Customer (read-only) -->
-                                    <div class="col-md-12">
-                                        <label>Pawner</label>
-                                        <input type="text" class="form-control" id="editCustomerName" readonly>
-                                    </div>
-
-                                    <!-- Contact (read-only for reference) -->
-                                    <div class="col-md-6">
-                                        <label>Contact No.</label>
-                                        <input type="text" class="form-control" id="editContactNo" readonly>
-                                    </div>
-
-                                    <!-- Address (read-only for reference) -->
-                                    <div class="col-md-6">
-                                        <label>Address</label>
-                                        <input type="text" class="form-control" id="editAddress" readonly>
-                                    </div>
-
-                                    <!-- Pawn Item Details -->
-                                    <div class="col-md-6">
-                                        <label>Unit</label>
-                                        <input type="text" class="form-control" name="unit_description"
-                                            id="editUnitDescription" required>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <label>Category</label>
-                                        <select name="category" id="editCategory" class="form-control" required>
-                                            <option value="">-- Select Category --</option>
-                                            <option value="Cellphone">Cellphone</option>
-                                            <option value="Laptop ">Laptop</option>
-                                            <option value="Tablet/iPad">Tablet/iPad</option>
-                                            <option value="Motorcycle">Motorcycle</option>
-                                            <option value="Others">Others</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Amount Pawned</label>
-                                        <!-- Visible input with formatting -->
-                                        <input type="text" class="form-control" id="editAmountPawnedVisible"
-                                            placeholder="0.00" required>
-                                        <!-- Hidden input for raw numeric value -->
-                                        <input type="hidden" name="amount_pawned" id="editAmountPawned">
-
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Note</label>
-                                        <input type="text" class="form-control" name="notes" id="editNotes">
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label>Date Pawned</label>
-                                        <input type="date" class="form-control" name="date_pawned" id="editDatePawned"
-                                            required>
-                                    </div>
-
-
-
-                                    <!-- Pawn Item Picture -->
-                                    <div class="col-md-6 text-center">
-                                        <label class="form-label d-block">Item Picture</label>
-                                        <div class="mt-2">
-                                            <img id="edit_pawn_preview" src="../assets/img/avatar.png"
-                                                class="img-thumbnail" style="max-width:300px; ">
-
-                                            <!-- Replace photo controls -->
-                                            <div class="mt-3">
-                                                <input type="file" id="editPawnPhoto" name="pawn_photo" accept="image/*"
-                                                    class="form-control form-control-sm mb-2">
-                                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                                    id="editPawnCaptureBtn">
-                                                    <i class="bi bi-camera"></i> Capture New Photo
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Hidden canvas for capture -->
-                                        <canvas id="editPawnCanvas" width="320" height="240" class="d-none"></canvas>
-                                    </div>
-
-
-
-                                </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-success">Save Changes</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add Pawn Amount Modal -->
-            <div class="modal fade" id="addPawnAmountModal" tabindex="-1" aria-labelledby="addPawnAmountModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addPawnAmountModalLabel">
-                                Add Pawn Amount <i class="bi bi-cash-stack me-2 text-success"></i>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-
-                        <div class="modal-body">
-                            <!-- Pawn Details -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <strong>Owner:</strong> <span id="pawnOwner"></span><br>
-                                    <strong>Item:</strong> <span id="pawnItem"></span><br>
-                                    <strong>Category:</strong> <span id="pawnCategory"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <strong>Original Amount:</strong> ₱<span id="pawnOriginalAmount"></span><br>
-                                    <strong>Current Due Date:</strong> <span id="pawnDueDate"></span>
-                                </div>
-                            </div>
-
-                            <hr>
-
-                            <!-- Pawn Amount Control -->
-                            <div class="text-center">
-                                <label class="form-label fw-bold">Add Amount</label>
-                                <div class="input-group justify-content-center mb-2"
-                                    style="max-width: 300px; margin: 0 auto;">
-                                    <button class="btn btn-outline-secondary" type="button" id="decreaseAmount"><i
-                                            class="bi bi-dash-lg"></i></button>
-                                    <input type="number" class="form-control text-center" id="pawnAmountInput"
-                                        value="100" min="100" step="100">
-                                    <button class="btn btn-outline-secondary" type="button" id="increaseAmount"><i
-                                            class="bi bi-plus-lg"></i></button>
-                                </div>
-                                <div>
-                                    <label for="quickAmountSelect" class="form-label small">Quick Select</label>
-                                    <select id="quickAmountSelect"
-                                        class="form-select form-select-sm w-auto d-inline-block">
-                                        <option value="100">+100</option>
-                                        <option value="500">+500</option>
-                                        <option value="1000">+1000</option>
-                                    </select>
-                                </div>
-                                <p class="mt-3">
-                                    <strong>New Amount:</strong> ₱<span id="pawnNewAmount"></span>
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-success" id="confirmAddPawnAmount">
-                                <i class="bi bi-check2-circle me-1"></i> Confirm
-                            </button>
-                            <button type="button" id="resetPawnAmount" class="btn btn-secondary">
-                                Reset
-                            </button>
-                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Claim Pawn Modal -->
-            <div class="modal fade" id="claimPawnModal" tabindex="-1" aria-labelledby="claimPawnModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <form id="claimPawnForm" method="POST" action="../processes/pawn_claim_process.php">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="claimPawnModalLabel">Claim Pawned Item</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                <input type="hidden" name="pawn_id" id="claimPawnId">
-                                <input type="hidden" name="claimantPhoto" id="claimantPhoto">
-
-                                <!-- Pawn Details -->
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-3">
-                                        <label>Owner Name</label>
-                                        <input type="text" class="form-control" id="claimOwnerName" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>Unit Description</label>
-                                        <input type="text" class="form-control" id="claimUnitDescription" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>Date Pawned</label>
-                                        <input type="text" class="form-control" id="claimDatePawned" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>Months to be paid</label>
-                                        <input type="text" class="form-control" id="claimMonths" readonly>
-                                        <input type="hidden" id="claimMonthsValue" name="claimMonthsValue">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>Amount Pawned</label>
-                                        <input type="text" class="form-control" id="claimAmountPawned" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>Interest Amount <small>(auto compute)</small> </label>
-                                        <input type="text" class="form-control" id="claimInterest" readonly>
-
-                                        <input type="hidden" class="form-control" id="claimInterestValue"
-                                            name="claimInterestValue">
-
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="claimPenalty">Penalty (optional)</label>
-                                        <input type="number" step="0.01" class="form-control" id="claimPenalty"
-                                            name="claimPenalty" placeholder="Enter penalty amount">
-                                        <input type="number" step="0.01" class="form-control" id="claimPenaltyHidden"
-                                            name="claimPenaltyHidden" hidden>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label>Total Payment</label>
-                                        <input type="text" class="form-control" id="claimTotal" readonly>
-
-                                        <input type="number" step="0.01" class="form-control" id="claimTotalValue"
-                                            name="claimTotalValue" hidden>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label>Current Due Date</label>
-                                        <input type="text" class="form-control" id="claimDueDate" readonly>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label>Date Claimed</label>
-                                        <input type="date" class="form-control" id="claimDate" name="claimDate"
-                                            required>
-                                    </div>
-
-
-                                    <div class="col-md-4">
-                                        <label>Notes</label>
-                                        <input type="text" class="form-control" id="claimNotes" name="claimNotes">
-                                    </div>
-
-                                </div>
-                                <p id="waiveInfo" class="small d-none mt-2"></p>
-
-                                <!--  Tubo Payments History -->
-                                <h6 class="mt-3">Tubo Payments History</h6>
-                                <div class="table-responsive mb-3">
-                                    <table class="table table-bordered table-sm" id="tuboPaymentsTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Date Paid</th>
-                                                <th>Covered Period</th>
-                                                <th>Interest Rate</th>
-                                                <th>Interest Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- JS will populate this -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!--  Partial Payments History -->
-                                <h6 class="mt-3">Partial Payments History</h6>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-sm" id="partialPaymentsTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Date Paid</th>
-                                                <th>Amount Paid</th>
-                                                <th>Interest Paid</th>
-                                                <th>Principal Paid</th>
-                                                <th>Remaining Principal</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- JS will populate this -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-
-
-                                <hr>
-
-                                <!-- Claimant Photo Capture -->
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label>Live Camera</label>
-                                        <video id="claimCameraStream" width="100%" height="240" autoplay
-                                            playsinline></video>
-                                        <button type="button" class="btn btn-sm btn-primary mt-2" id="capturePhotoBtn">
-                                            <i class="bi bi-camera"></i> Capture Photo
-                                        </button>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Captured Photo</label>
-                                        <canvas id="capturedCanvas" width="320" height="240"
-                                            class="border d-block mb-2"></canvas>
-                                        <p class="text-muted small">Captured photo will appear here.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-success">Confirm Claim</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Partial Payment Modal -->
-            <div class="modal fade" id="partialPaymentModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <form id="partialPaymentForm">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Add Partial Payment</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="row g-3 mb-3">
-                                    <!-- Pawn Details -->
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Pawner Name</label>
-                                        <input type="text" class="form-control" id="ppPawnerName" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Category</label>
-                                        <input type="text" class="form-control" id="ppCategory" readonly>
-                                    </div>
-
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Unit</label>
-                                        <input type="text" class="form-control" id="ppUnit" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Date Pawned</label>
-                                        <input type="text" class="form-control" id="ppDatePawned" readonly>
-                                    </div>
-
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Amount Pawned</label>
-                                        <input type="text" class="form-control" id="ppAmountPawned" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Months Covered</label>
-                                        <input type="text" class="form-control" id="ppMonths" readonly>
-                                    </div>
-
-
-
-                                    <!-- Partial Payment -->
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Enter Partial Payment</label>
-                                        <input type="number" class="form-control" id="ppAmount" name="partial_amount"
-                                            min="1" required>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Notes</label>
-                                        <input type="text" class="form-control" id="ppNotes" name="ppNotes">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label>Current Due Date</label>
-                                        <input type="text" class="form-control" id="ppDueDate" readonly>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Payment Date</label>
-                                        <input type="date" class="form-control" id="ppDatePaid" name="ppDatePaid"
-                                            required>
-                                    </div>
-                                </div>
-
-                                <!-- Live Computation -->
-                                <div id="ppSummary" class="alert alert-info">
-                                    <div>Original Principal: ₱0.00</div>
-                                    <div>Partial Payment: ₱0.00</div>
-                                    <div>Remaining Principal: ₱0.00</div>
-                                    <div>1-Month Interest: ₱0.00</div>
-                                    <hr>
-                                    <strong>Total Payable Now: ₱0.00</strong>
-                                </div>
-
-
-
-                                <hr>
-                                <h6>Tubo History</h6>
-                                <table class="table table-sm table-bordered" id="ppTuboHistory">
-                                    <thead>
-                                        <tr>
-                                            <th>Date Paid</th>
-                                            <th>Covered Period</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-
-                                <h6>Partial Payment History</h6>
-                                <table class="table table-sm table-bordered" id="ppPartialHistory">
-                                    <thead>
-                                        <tr>
-                                            <th>Date Paid</th>
-                                            <th>Amount Paid</th>
-                                            <th>Remaining Principal</th>
-                                            <th>Notes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-
-
-                            </div>
-                            <div class="modal-footer">
-                                <!-- Hidden Fields -->
-                                <input type="hidden" id="ppPawnId" name="pawn_id">
-                                <input type="hidden" id="ppInterestRate" name="interest_rate">
-                                <input type="hidden" id="ppPrincipal" name="principal">
-
-                                <input type="hidden" id="ppInterestDue" name="interest_due" value="0">
-                                <input type="hidden" id="ppTotalPayable" name="total_payable" value="0">
-
-
-                                <button type="submit" class="btn btn-primary">Save Partial Payment</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-
-
-
-
-
-            <!-- Tubo Payment Modal -->
-            <div class="modal fade" id="tuboPaymentModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <form id="tuboPaymentForm">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Add Tubo Payment</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                <!-- Pawn Details (readonly, for reference only) -->
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Pawner Name</label>
-                                        <input type="text" class="form-control" id="tpPawnerName" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Category</label>
-                                        <input type="text" class="form-control" id="tpCategory" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Unit</label>
-                                        <input type="text" class="form-control" id="tpUnit" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Date Pawned</label>
-                                        <input type="text" class="form-control" id="tpDatePawned" readonly>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Current Due Date</label>
-                                        <input type="text" class="form-control" id="tpDueDate" readonly>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Amount Pawned</label>
-                                        <input type="text" class="form-control" id="tpAmountPawned" readonly>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Months period to pay</label>
-                                        <select id="tpMonthsSelector" class="form-select">
-                                            <option value="1">1 month</option>
-                                            <option value="2">2 months</option>
-                                            <option value="3">3 months</option>
-                                            <option value="4">4 months</option>
-                                        </select>
-
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Notes</label>
-                                        <input type="text" class="form-control" id="tpNotes" name="tpNotes">
-                                    </div>
-                                </div>
-
-                                <hr>
-
-                                <!-- New Tubo Payment Section -->
-                                <h6>New Tubo Payment</h6>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Payment Date</label>
-                                        <input type="date" class="form-control" id="tpDatePaid" name="tpDatePaid"
-                                            required>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Months Covered</label>
-                                        <input type="text" class="form-control" id="tpMonthsCovered"
-                                            name="tpMonthsCovered" readonly>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label">Interest Amount</label>
-                                        <input type="text" class="form-control" id="tpInterestAmount"
-                                            name="tpInterestAmount" readonly>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label">New Due Date</label>
-                                        <input type="text" class="form-control" id="tpNewDueDate" name="tpNewDueDate"
-                                            readonly>
-                                    </div>
-
-                                </div>
-
-                                <hr>
-
-                                <!-- Tubo History -->
-                                <h6>Tubo History</h6>
-                                <table class="table table-sm table-bordered" id="tpTuboHistory">
-                                    <thead>
-                                        <tr>
-                                            <th>Date Paid</th>
-                                            <th>Months Covered</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-
-
-                                <h6>Partial Payment History</h6>
-                                <table class="table table-sm table-bordered" id="tpPartialHistory">
-                                    <thead>
-                                        <tr>
-                                            <th>Date Paid</th>
-                                            <th>Amount Paid</th>
-                                            <th>Remaining Principal</th>
-                                            <th>Notes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-
-
-
-                                <!-- Hidden Fields -->
-                                <input type="hidden" id="tpPawnId" name="tpPawnId">
-                                <input type="hidden" id="tpBranchId" name="tpBranchId">
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Save Tubo Payment</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-
-
-
-            <!-- Forfeit Modal -->
-            <div class="modal fade" id="forfeitPawnModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <form id="forfeitPawnForm" method="POST">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Forfeit Pawned Item</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="hidden" name="pawn_id" id="forfeitPawnId">
-
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label>Owner Name</label>
-                                        <input type="text" class="form-control" id="forfeitOwnerName" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Unit</label>
-                                        <input type="text" class="form-control" id="forfeitUnit" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Date Pawned</label>
-                                        <input type="text" class="form-control" id="forfeitDatePawned" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Months</label>
-                                        <input type="text" class="form-control" id="forfeitMonths" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Amount Pawned</label>
-                                        <input type="text" class="form-control" id="forfeitAmount" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label>Reason</label>
-                                        <input type="text" class="form-control" id="forfeitReason" name="forfeitReason"
-                                            required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" class="btn btn-danger">Confirm Forfeit</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-
-
-
+    
             <!-- add branch filtering when super admin is the user -->
             <!-- DataTable -->
             <!-- Branch filter for Super Admin -->
@@ -957,7 +85,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                             <tr>
                                 <th>#</th>
                                 <th>Date Pawned</th>
-                                <th>Months</th>
+                                <th>Unpaid Months</th>
                                 <th>Owner</th>
                                 <th>Unit</th>
                                 <th>Category</th>
@@ -1037,7 +165,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                     }
                 },
                 { title: "Date Pawned" },
-                { title: "Months" },
+                { title: "Unpaid Months" },
                 { title: "Owner" },
                 { title: "Unit" },
                 { title: "Category" },
@@ -1201,6 +329,92 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
 
+function getUnpaidMonths(pawn, data, todayLocal = new Date()) {
+    let unpaidMonths = 0;
+
+    // -------- Step 1: if NO partials, NO tubo --------
+    if (!pawn.has_partial_payments && !pawn.has_tubo_payments && pawn.status == 'pawned') {
+        let startDate = new Date(pawn.current_due_date);
+
+        if (todayLocal > startDate) {
+            unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                           (todayLocal.getMonth() - startDate.getMonth());
+
+            if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+            if (unpaidMonths < 1) unpaidMonths = 1;
+        }
+    }
+
+    // -------- Step 2: if HAS tubo payments --------
+    else if (pawn.has_tubo_payments && pawn.status == 'pawned') {
+        let lastTuboEnd = null;
+        if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
+            let lastTuboIndex = data.tubo_history.length - 1;
+            lastTuboEnd = new Date(data.tubo_history[lastTuboIndex].new_due_date);
+        }
+
+        if (lastTuboEnd) {
+            if (todayLocal <= lastTuboEnd) {
+                unpaidMonths = 0; // still covered
+            } else {
+                let startDate = new Date(lastTuboEnd);
+
+                unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                               (todayLocal.getMonth() - startDate.getMonth());
+
+                if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+                if (unpaidMonths < 1) unpaidMonths = 1;
+            }
+        }
+    }
+
+    // -------- Step 3: Partial payments --------
+    else if (pawn.has_partial_payments) {
+        let currentDueDate = new Date(pawn.current_due_date);
+
+        if (currentDueDate && todayLocal <= currentDueDate) {
+            unpaidMonths = 0; // still covered
+        } else if (currentDueDate) {
+            let startDate = new Date(currentDueDate);
+
+            unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                           (todayLocal.getMonth() - startDate.getMonth());
+
+            if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+            if (unpaidMonths < 1) unpaidMonths = 1;
+        }
+    }
+
+    // -------- Step 4: Both tubo + partial payments --------
+    else if (pawn.has_partial_payments && pawn.has_tubo_payments) {
+        let currentDueDate = pawn.current_due_date ? new Date(pawn.current_due_date) : null;
+        let tuboDueDate = (data.tubo_history && data.tubo_history.length > 0)
+            ? new Date(data.tubo_history[data.tubo_history.length - 1].new_due_date)
+            : null;
+
+        // pick whichever is later
+        let latestDueDate = null;
+        if (currentDueDate && tuboDueDate) {
+            latestDueDate = (tuboDueDate > currentDueDate) ? tuboDueDate : currentDueDate;
+        } else {
+            latestDueDate = currentDueDate || tuboDueDate;
+        }
+
+        if (latestDueDate && todayLocal <= latestDueDate) {
+            unpaidMonths = 0;
+        } else if (latestDueDate) {
+            let startDate = new Date(latestDueDate);
+
+            unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                           (todayLocal.getMonth() - startDate.getMonth());
+
+            if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+            if (unpaidMonths < 1) unpaidMonths = 1;
+        }
+    }
+
+    return unpaidMonths;
+}
 
 
 

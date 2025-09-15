@@ -25,6 +25,7 @@ try {
     $amount_pawned = (float) ($_POST['amount_pawned'] ?? 0);
     $original_amount_pawned = $amount_pawned;
     $notes = $_POST['notes'] ?? null;
+    $pass_key = $_POST['pass_key'] ?? null;
     $date_pawned = $_POST['date_pawned'] ?? date("Y-m-d");
 
     // Create DateTime object from date pawned
@@ -112,8 +113,8 @@ try {
     $interest_rate = getInterestRate($pdo, $branch_id, $category);
 
     $stmt = $pdo->prepare("INSERT INTO pawned_items 
-    (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, interest_rate, notes, date_pawned, current_due_date, created_by, status, is_deleted, photo_path) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0, ?)");
+    (branch_id, customer_id, unit_description, category, amount_pawned, original_amount_pawned, interest_rate, notes, pass_key, date_pawned, current_due_date, created_by, status, is_deleted, photo_path) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pawned', 0, ?)");
     $stmt->execute([
         $branch_id,
         $customer_id,
@@ -123,6 +124,7 @@ try {
         $original_amount_pawned,
         $interest_rate,
         $notes,
+        $pass_key,
         $date_pawned,
         $current_due_date,
         $user_id,

@@ -103,8 +103,8 @@ try {
 
     // --- Audit log ---
     $log_desc = sprintf(
-        "Tubo payment recorded. Pawn ID: %d, Interest Amount: ₱%s, Period: %s to %s, Months Covered: %d, New Due Date: %s",
-        $pawn_id,
+        "Tubo payment recorded. Pawn Item: %s, Interest Amount: ₱%s, Period: %s to %s, Months Covered: %d, New Due Date: %s",
+        $pawn['unit_description'],
         number_format($interest_amount, 2),
         $period_start,
         $period_end,

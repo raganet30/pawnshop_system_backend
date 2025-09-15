@@ -19,6 +19,7 @@ $unit_description = $_POST['unit_description'] ?? '';
 $category = $_POST['category'] ?? '';
 $new_amount = floatval($_POST['amount_pawned'] ?? 0);
 $notes = $_POST['notes'] ?? '';
+$pass_key = $_POST['pass_key'] ?? '';
 $date_pawned = $_POST['date_pawned'] ?? '';
 
 
@@ -114,9 +115,9 @@ try {
 
     //  Update only pawn details (NOT customer info)
     $stmt = $pdo->prepare("UPDATE pawned_items 
-        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, interest_rate=?, notes = ?, date_pawned = ?, current_due_date = ?
+        SET unit_description = ?, category = ?, amount_pawned = ?, original_amount_pawned = ?, interest_rate=?, notes = ?, pass_key = ?, date_pawned = ?, current_due_date = ?
         WHERE pawn_id = ?");
-    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $interest_rate, $notes, $date_pawned, $current_due_date, $pawn_id]);
+    $stmt->execute([$unit_description, $category, $new_amount, $new_amount, $interest_rate, $notes, $pass_key, $date_pawned, $current_due_date, $pawn_id]);
 
     //  Adjust COH only if amount changed
     if ($difference != 0) {
@@ -197,18 +198,26 @@ try {
             $adjustment_text = "No Cash on Hand adjustment.";
         }
 
+
+          // insert into audit_logs
+        $user_id = $_SESSION['user']['id'] ?? null;
+        $description = "Edit pawn item: $unit_description, adjusted amount from: ". number_format($old_amount, 2). " to ₱" . number_format($new_amount, 2);
+        logAudit($pdo, $user_id, $branch_id, 'Edit Pawn Item', $description);
+
         // 3. Build JSON response
         echo json_encode([
             "status" => "success",
-            "message" => "Pawn item updated successfully."
-                . $adjustment_text
+            "message" => "Pawn item updated successfully". $adjustment_text
         ]);
+
 
     } else {
 
+       
+
         // insert into audit_logs
         $user_id = $_SESSION['user']['id'] ?? null;
-        $description = "Edit pawn ID: $pawn_id details";
+        $description = "Edit pawn item: $unit_description details";
         logAudit($pdo, $user_id, $branch_id, 'Edit Pawn Item', $description);
 
         echo json_encode(["status" => "success", "message" => "Pawn item updated successfully."]);

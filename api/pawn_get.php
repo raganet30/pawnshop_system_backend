@@ -33,6 +33,7 @@ $sql = "
         p.interest_rate,
         p.original_amount_pawned,   
         p.notes,
+        p.pass_key,
         p.date_pawned,
         p.status,
         p.has_tubo_payments,
