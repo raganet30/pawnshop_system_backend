@@ -329,92 +329,92 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
 
-function getUnpaidMonths(pawn, data, todayLocal = new Date()) {
-    let unpaidMonths = 0;
+// function getUnpaidMonths(pawn, data, todayLocal = new Date()) {
+//     let unpaidMonths = 0;
 
-    // -------- Step 1: if NO partials, NO tubo --------
-    if (!pawn.has_partial_payments && !pawn.has_tubo_payments && pawn.status == 'pawned') {
-        let startDate = new Date(pawn.current_due_date);
+//     // -------- Step 1: if NO partials, NO tubo --------
+//     if (!pawn.has_partial_payments && !pawn.has_tubo_payments && pawn.status == 'pawned') {
+//         let startDate = new Date(pawn.current_due_date);
 
-        if (todayLocal > startDate) {
-            unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                           (todayLocal.getMonth() - startDate.getMonth());
+//         if (todayLocal > startDate) {
+//             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+//                            (todayLocal.getMonth() - startDate.getMonth());
 
-            if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-            if (unpaidMonths < 1) unpaidMonths = 1;
-        }
-    }
+//             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+//             if (unpaidMonths < 1) unpaidMonths = 1;
+//         }
+//     }
 
-    // -------- Step 2: if HAS tubo payments --------
-    else if (pawn.has_tubo_payments && pawn.status == 'pawned') {
-        let lastTuboEnd = null;
-        if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
-            let lastTuboIndex = data.tubo_history.length - 1;
-            lastTuboEnd = new Date(data.tubo_history[lastTuboIndex].new_due_date);
-        }
+//     // -------- Step 2: if HAS tubo payments --------
+//     else if (pawn.has_tubo_payments && pawn.status == 'pawned') {
+//         let lastTuboEnd = null;
+//         if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
+//             let lastTuboIndex = data.tubo_history.length - 1;
+//             lastTuboEnd = new Date(data.tubo_history[lastTuboIndex].new_due_date);
+//         }
 
-        if (lastTuboEnd) {
-            if (todayLocal <= lastTuboEnd) {
-                unpaidMonths = 0; // still covered
-            } else {
-                let startDate = new Date(lastTuboEnd);
+//         if (lastTuboEnd) {
+//             if (todayLocal <= lastTuboEnd) {
+//                 unpaidMonths = 0; // still covered
+//             } else {
+//                 let startDate = new Date(lastTuboEnd);
 
-                unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                               (todayLocal.getMonth() - startDate.getMonth());
+//                 unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+//                                (todayLocal.getMonth() - startDate.getMonth());
 
-                if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-                if (unpaidMonths < 1) unpaidMonths = 1;
-            }
-        }
-    }
+//                 if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+//                 if (unpaidMonths < 1) unpaidMonths = 1;
+//             }
+//         }
+//     }
 
-    // -------- Step 3: Partial payments --------
-    else if (pawn.has_partial_payments) {
-        let currentDueDate = new Date(pawn.current_due_date);
+//     // -------- Step 3: Partial payments --------
+//     else if (pawn.has_partial_payments) {
+//         let currentDueDate = new Date(pawn.current_due_date);
 
-        if (currentDueDate && todayLocal <= currentDueDate) {
-            unpaidMonths = 0; // still covered
-        } else if (currentDueDate) {
-            let startDate = new Date(currentDueDate);
+//         if (currentDueDate && todayLocal <= currentDueDate) {
+//             unpaidMonths = 0; // still covered
+//         } else if (currentDueDate) {
+//             let startDate = new Date(currentDueDate);
 
-            unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                           (todayLocal.getMonth() - startDate.getMonth());
+//             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+//                            (todayLocal.getMonth() - startDate.getMonth());
 
-            if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-            if (unpaidMonths < 1) unpaidMonths = 1;
-        }
-    }
+//             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+//             if (unpaidMonths < 1) unpaidMonths = 1;
+//         }
+//     }
 
-    // -------- Step 4: Both tubo + partial payments --------
-    else if (pawn.has_partial_payments && pawn.has_tubo_payments) {
-        let currentDueDate = pawn.current_due_date ? new Date(pawn.current_due_date) : null;
-        let tuboDueDate = (data.tubo_history && data.tubo_history.length > 0)
-            ? new Date(data.tubo_history[data.tubo_history.length - 1].new_due_date)
-            : null;
+//     // -------- Step 4: Both tubo + partial payments --------
+//     else if (pawn.has_partial_payments && pawn.has_tubo_payments) {
+//         let currentDueDate = pawn.current_due_date ? new Date(pawn.current_due_date) : null;
+//         let tuboDueDate = (data.tubo_history && data.tubo_history.length > 0)
+//             ? new Date(data.tubo_history[data.tubo_history.length - 1].new_due_date)
+//             : null;
 
-        // pick whichever is later
-        let latestDueDate = null;
-        if (currentDueDate && tuboDueDate) {
-            latestDueDate = (tuboDueDate > currentDueDate) ? tuboDueDate : currentDueDate;
-        } else {
-            latestDueDate = currentDueDate || tuboDueDate;
-        }
+//         // pick whichever is later
+//         let latestDueDate = null;
+//         if (currentDueDate && tuboDueDate) {
+//             latestDueDate = (tuboDueDate > currentDueDate) ? tuboDueDate : currentDueDate;
+//         } else {
+//             latestDueDate = currentDueDate || tuboDueDate;
+//         }
 
-        if (latestDueDate && todayLocal <= latestDueDate) {
-            unpaidMonths = 0;
-        } else if (latestDueDate) {
-            let startDate = new Date(latestDueDate);
+//         if (latestDueDate && todayLocal <= latestDueDate) {
+//             unpaidMonths = 0;
+//         } else if (latestDueDate) {
+//             let startDate = new Date(latestDueDate);
 
-            unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                           (todayLocal.getMonth() - startDate.getMonth());
+//             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+//                            (todayLocal.getMonth() - startDate.getMonth());
 
-            if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-            if (unpaidMonths < 1) unpaidMonths = 1;
-        }
-    }
+//             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+//             if (unpaidMonths < 1) unpaidMonths = 1;
+//         }
+//     }
 
-    return unpaidMonths;
-}
+//     return unpaidMonths;
+// }
 
 
 

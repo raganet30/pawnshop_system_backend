@@ -35,7 +35,7 @@
                                     <button class="btn btn-outline-secondary" type="button" id="decreaseAmount"><i
                                             class="bi bi-dash-lg"></i></button>
                                     <input type="number" class="form-control text-center" id="pawnAmountInput"
-                                        value="100" min="100" step="100">
+                                        value="100" min="100" step="100" readonly>
                                     <button class="btn btn-outline-secondary" type="button" id="increaseAmount"><i
                                             class="bi bi-plus-lg"></i></button>
                                 </div>
@@ -49,7 +49,7 @@
                                     </select>
                                 </div>
                                 <p class="mt-3">
-                                    <strong>New Amount:</strong> ₱<span id="pawnNewAmount"></span>
+                                   New Amount: <strong> ₱<span id="pawnNewAmount"></span></strong>
                                 </p>
                             </div>
                         </div>
