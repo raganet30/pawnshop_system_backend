@@ -44,6 +44,7 @@ $(function () {
                 <td>${i + 1}</td>
                 <td>${t.date_paid}</td>
                 <td>${t.period_start} to ${t.period_end}</td>
+                <td>${t.months_covered} month(s)</td>
                 <td>${parseFloat(t.interest_rate).toFixed(2)}</td>
                 <td>${parseFloat(t.interest_amount).toFixed(2)}</td>
             </tr>`;
@@ -59,8 +60,6 @@ $(function () {
                 <td>${i + 1}</td>
                 <td>${p.date_paid}</td>
                 <td>${parseFloat(p.amount_paid).toFixed(2)}</td>
-                <td>${parseFloat(p.interest_paid).toFixed(2)}</td>
-                <td>${parseFloat(p.principal_paid).toFixed(2)}</td>
                 <td>${parseFloat(p.remaining_principal).toFixed(2)}</td>
                 <td>${p.status}</td>
             </tr>`;
@@ -69,196 +68,147 @@ $(function () {
                     $("#partialPaymentsTable tbody").html(partialRows);
 
                     // ---------------- Interest Computation ----------------
-                    function computeClaimInterest() {
-                        function parseYMD(ymd) {
-                            if (!ymd) return null;
-                            const parts = String(ymd).split("-").map(Number);
-                            return new Date(parts[0], parts[1] - 1, parts[2]); // local midnight
-                        }
-                        function formatDateLocal(date) {
-                            return date ? date.toLocaleDateString("en-CA") : null;
-                        }
+                   // --- 1. Compute Claim Interest (global function) ---
+function computeClaimInterest() {
+    function parseYMD(ymd) {
+        if (!ymd) return null;
+        const parts = String(ymd).split("-").map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    function formatDateLocal(date) {
+        return date ? date.toLocaleDateString("en-CA") : null;
+    }
 
-                        // detect presence of partial/tubo either by flags on pawn or by history arrays
-                        const hasPartial = (pawn.has_partial_payments == 1) ||
-                            (Array.isArray(data.partial_history) && data.partial_history.length > 0);
-                        const hasTubo = (pawn.has_tubo_payments == 1) ||
-                            (Array.isArray(data.tubo_history) && data.tubo_history.length > 0);
+    const hasPartial = (pawn.has_partial_payments == 1) ||
+        (Array.isArray(data.partial_history) && data.partial_history.length > 0);
+    const hasTubo = (pawn.has_tubo_payments == 1) ||
+        (Array.isArray(data.tubo_history) && data.tubo_history.length > 0);
 
-                        // claim date (from input) or today
-                        let claimDateStr = $("#claimDate").val();
-                        let todayLocal = claimDateStr ? parseYMD(claimDateStr) : new Date();
-                        if (!todayLocal || isNaN(todayLocal.getTime())) todayLocal = new Date();
+    let claimDateStr = $("#claimDate").val();
+    let todayLocal = claimDateStr ? parseYMD(claimDateStr) : new Date();
+    if (!todayLocal || isNaN(todayLocal.getTime())) todayLocal = new Date();
 
-                        // parse pawned date (start point)
-                        let startDate = parseYMD(pawn.date_pawned) || new Date(pawn.date_pawned);
-                        if (!startDate || isNaN(startDate.getTime())) startDate = new Date();
+    let startDate = parseYMD(pawn.date_pawned) || new Date();
+    if (!startDate || isNaN(startDate.getTime())) startDate = new Date();
 
-                        // default values
-                        let claimdiffMonths = 0;
-                        let totalInterest = 0;
-                        let waiveInterest = false;
+    let claimdiffMonths = 0;
+    let totalInterest = 0;
+    let waiveInterest = false;
 
-                        // -------- Step 1: if NO partials, NO tubo, and not yet claimed => compute normal interest --------
-                        if (!hasPartial && !hasTubo && pawn.status == 'pawned') {
-                            claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                                (todayLocal.getMonth() - startDate.getMonth());
+    const interestOption = $("#interestOption").val(); // auto, waive, custom
+    const principal = parseFloat(pawn.amount_pawned) || 0;
+    const interestRate = parseFloat(pawn.interest_rate) || 0.06;
 
-                            if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-                            if (claimdiffMonths < 1) claimdiffMonths = 1;
+    if (interestOption === "waive") {
+        waiveInterest = true;
+        totalInterest = 0;
+        claimdiffMonths = 0;
+    } else if (interestOption === "custom") {
+        totalInterest = parseFloat($("#customInterest").val()) || 0;
+        claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+            (todayLocal.getMonth() - startDate.getMonth());
+        if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
+        if (claimdiffMonths < 1) claimdiffMonths = 1;
+        waiveInterest = false;
+    } else {
+        // --- Auto Compute ---
+        if (!hasPartial && !hasTubo && pawn.status === 'pawned') {
+            claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                (todayLocal.getMonth() - startDate.getMonth());
+            if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
+            if (claimdiffMonths < 1) claimdiffMonths = 1;
+            totalInterest = principal * interestRate * claimdiffMonths;
+        } else if (hasTubo && pawn.status === 'pawned') {
+            let lastTuboEnd = null;
+            if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
+                const lastTubo = data.tubo_history.reduce((a, b) => {
+                    return parseYMD(a.period_end) > parseYMD(b.period_end) ? a : b;
+                });
+                lastTuboEnd = parseYMD(lastTubo.period_end);
+                lastTuboEnd.setHours(23, 59, 59, 999);
+            }
 
-                            totalInterest = principal * interestRate * claimdiffMonths;
+            todayLocal.setHours(0, 0, 0, 0);
 
-                            console.debug("STEP 1 (no partial/no tubo):", {
-                                startDate: formatDateLocal(startDate),
-                                claimDate: formatDateLocal(todayLocal),
-                                claimdiffMonths,
-                                totalInterest
-                            });
-                        }
+            if (lastTuboEnd) {
+                if (todayLocal <= lastTuboEnd) {
+                    waiveInterest = true;
+                    claimdiffMonths = 0;
+                    totalInterest = 0;
+                } else {
+                    startDate = new Date(lastTuboEnd);
+                    startDate.setHours(0, 0, 0, 0);
+                    claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                        (todayLocal.getMonth() - startDate.getMonth());
+                    if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
+                    if (claimdiffMonths < 1) claimdiffMonths = 1;
+                    totalInterest = principal * interestRate * claimdiffMonths;
+                }
+            }
+        }
+    }
 
-                        // -------- Step 2: if HAS tubo payments --------
-                        else if (hasTubo && pawn.status == 'pawned') {
-                            let lastTuboEnd = null;
-                            if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
-                                let lastTuboIndex = data.tubo_history.length - 1;
-                                lastTuboEnd = parseYMD(data.tubo_history[lastTuboIndex].period_end);
-                            }
+    // --- Update UI ---
+    if (waiveInterest) {
+        $("#claimMonths").val("Interest Waived");
+        $("#claimInterest").val("₱0.00");
+        $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+        $("#claimMonthsValue").val(0);
+    } else {
+        $("#claimMonths").val(claimdiffMonths + " month(s)");
+        $("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+        $("#claimTotal").val("₱" + (principal + totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+        $("#claimMonthsValue").val(claimdiffMonths);
+    }
 
-                            if (lastTuboEnd) {
-                                if (todayLocal <= lastTuboEnd) {
-                                    //  within tubo coverage → waive interest
-                                    waiveInterest = true;
-                                    claimdiffMonths = 0;
-                                    totalInterest = 0;
+    // Hidden fields
+    $("#claimPrincipalValue").val(principal.toFixed(2));
+    $("#claimInterestValue").val(totalInterest.toFixed(2));
+    $("#claimTotalValue").val((principal + totalInterest).toFixed(2));
+    $("#claimPenalty").val('0.00');
+}
 
-                                    console.debug("STEP 2 (tubo, waived):", {
-                                        claimDate: formatDateLocal(todayLocal),
-                                        lastTuboEnd: formatDateLocal(lastTuboEnd),
-                                        totalInterest
-                                    });
-                                } else {
-                                    //  tubo coverage expired → compute from tubo due date forward
-                                    startDate = new Date(lastTuboEnd);
-                                    startDate.setMonth(startDate.getMonth());
+// --- 2. Interest Option Change ---
+$("#interestOption").on("change", function() {
+    const option = $(this).val();
 
-                                    claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                                        (todayLocal.getMonth() - startDate.getMonth());
+    if (option === "waive") {
+    $("#customInterestWrapper").hide();
+    $("#customInterest").val("");
 
-                                    if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-                                    if (claimdiffMonths < 1) claimdiffMonths = 1;
+    const principal = parseFloat($("#claimPrincipalValue").val()) || 0;
 
-                                    totalInterest = principal * interestRate * claimdiffMonths;
+    $("#claimInterest").val("₱0.00");
+    $("#claimMonths").val("Interest Waived");
 
-                                    console.debug("STEP 2 (tubo, compute):", {
-                                        startDate: formatDateLocal(startDate),
-                                        claimDate: formatDateLocal(todayLocal),
-                                        claimdiffMonths,
-                                        totalInterest
-                                    });
-                                }
-                            }
-                        }
+    $("#claimInterestValue").val("0.00");
+    $("#claimMonthsValue").val(0);
+    $("#claimTotalValue").val(principal.toFixed(2));
+    $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+}
+ else if (option === "custom") {
+        $("#customInterestWrapper").show();
+        $("#customInterest").val("");
+    } else { // auto
+        $("#customInterestWrapper").hide();
+        $("#customInterest").val("");
+        computeClaimInterest();
+    }
+});
 
+// --- 3. Custom Interest Input ---
+$("#customInterest").on("input", function() {
+    const customValue = parseFloat($(this).val()) || 0;
+    const principal = parseFloat($("#claimPrincipalValue").val()) || 0;
 
-                        // -------- STEP 3: Partial payments --------
-                        else if (hasPartial) {
-                            let currentDueDate = parseYMD(pawn.current_due_date);
-
-                            if (currentDueDate && todayLocal <= currentDueDate) {
-                                // still within coverage → waive
-                                waiveInterest = true;
-                                console.debug("STEP 3 (partial, waived):", {
-                                    currentDueDate: formatDateLocal(currentDueDate),
-                                    claimDate: formatDateLocal(todayLocal)
-                                });
-                            } else if (currentDueDate) {
-                                // start counting from current due date
-                                startDate = new Date(currentDueDate);
-
-                                claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                                    (todayLocal.getMonth() - startDate.getMonth());
-
-                                if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-                                if (claimdiffMonths < 1) claimdiffMonths = 1;
-
-                                totalInterest = principal * interestRate * claimdiffMonths;
-
-                                console.debug("STEP 3 (partial, compute):", {
-                                    startDate: formatDateLocal(startDate),
-                                    claimDate: formatDateLocal(todayLocal),
-                                    claimdiffMonths,
-                                    totalInterest
-                                });
-                            }
-                        }
-
-
-                        // -------- STEP 4: Both tubo + partial payments --------
-                        else if (hasPartial && hasTubo) {
-                            let currentDueDate = parseYMD(pawn.current_due_date);
-                            let tuboDueDate = parseYMD(data.tubo_history[data.tubo_history.length - 1].new_due_date);
-
-                            // pick whichever is later
-                            let latestDueDate = null;
-                            if (currentDueDate && tuboDueDate) {
-                                latestDueDate = (tuboDueDate > currentDueDate) ? tuboDueDate : currentDueDate;
-                            } else {
-                                latestDueDate = currentDueDate || tuboDueDate; // whichever exists
-                            }
-
-                            if (latestDueDate && todayLocal <= latestDueDate) {
-                                // still covered → waive
-                                waiveInterest = true;
-                                console.debug("STEP 4 (partial+tubo, waived):", {
-                                    latestDueDate: formatDateLocal(latestDueDate),
-                                    claimDate: formatDateLocal(todayLocal)
-                                });
-                            } else if (latestDueDate) {
-                                // compute from latest due date forward
-                                startDate = new Date(latestDueDate);
-
-                                claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                                    (todayLocal.getMonth() - startDate.getMonth());
-
-                                if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-                                if (claimdiffMonths < 1) claimdiffMonths = 1;
-
-                                totalInterest = principal * interestRate * claimdiffMonths;
-
-                                console.debug("STEP 4 (partial+tubo, compute):", {
-                                    startDate: formatDateLocal(startDate),
-                                    claimDate: formatDateLocal(todayLocal),
-                                    claimdiffMonths,
-                                    totalInterest
-                                });
-                            }
-                        }
+    $("#claimInterest").val("₱" + customValue.toFixed(2));
+    $("#claimTotalValue").val((principal + customValue).toFixed(2));
+    $("#claimTotal").val("₱" + (principal + customValue).toLocaleString(undefined, {minimumFractionDigits:2}));
+});
 
 
 
 
-
-
-                        // --- Update UI (shared) ---
-                        if (waiveInterest) {
-                            $("#claimMonths").val("Interest waived");
-                            $("#claimInterest").val("₱0.00");
-                            $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                            $("#claimMonthsValue").val(0);
-                        } else {
-                            $("#claimMonths").val(claimdiffMonths + " month(s)");
-                            $("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                            $("#claimTotal").val("₱" + (principal + totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                            $("#claimMonthsValue").val(claimdiffMonths);
-                        }
-
-                        // Hidden fields
-                        $("#claimPrincipalValue").val(principal.toFixed(2));
-                        $("#claimInterestValue").val(totalInterest.toFixed(2));
-                        $("#claimTotalValue").val((principal + totalInterest).toFixed(2));
-                        $("#claimPenalty").val('0.00'); // reset penalty
-                    }
 
 
                     // --- Set Date Claimed default to today BEFORE computing ---
@@ -391,10 +341,10 @@ $(function () {
 
                             //  Auto-print receipt after successful claim
                             if (response.pawn_id) {
-                                            //  Directly open the print receipt page
-                                            let printUrl = "../processes/receipt_print.php?pawn_id=" + response.pawn_id;
-                                            window.open(printUrl, "_blank"); // open in new tab for printing
-                                        }
+                                //  Directly open the print receipt page
+                                let printUrl = "../processes/receipt_print.php?pawn_id=" + response.pawn_id;
+                                window.open(printUrl, "_blank"); // open in new tab for printing
+                            }
 
                         });
                     } else {
@@ -404,5 +354,10 @@ $(function () {
             }
         });
     });
+
+
+
+
+    
 
 });

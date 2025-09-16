@@ -89,6 +89,7 @@
                                     <thead>
                                         <tr>
                                             <th>Date Paid</th>
+                                            <th>Months Period</th>
                                             <th>Months Covered</th>
                                             <th>Amount</th>
                                         </tr>

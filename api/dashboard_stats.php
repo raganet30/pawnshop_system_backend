@@ -12,7 +12,7 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
-$branch_id = $_SESSION['user']['branch_id']; // fallback to branch 1
+$branch_id = $_SESSION['user']['branch_id']; // branch id
 
 // ============================
 // PAWNED UNITS & VALUE

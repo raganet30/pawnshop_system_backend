@@ -81,6 +81,7 @@
                                                 <th>#</th>
                                                 <th>Date Paid</th>
                                                 <th>Covered Period</th>
+                                                <th>Months Covered</th>
                                                 <th>Interest Rate</th>
                                                 <th>Interest Amount</th>
                                             </tr>
@@ -100,8 +101,8 @@
                                                 <th>#</th>
                                                 <th>Date Paid</th>
                                                 <th>Amount Paid</th>
-                                                <th>Interest Paid</th>
-                                                <th>Principal Paid</th>
+                                                <!-- <th>Interest Paid</th>
+                                                <th>Principal Paid</th> -->
                                                 <th>Remaining Principal</th>
                                                 <th>Status</th>
                                             </tr>

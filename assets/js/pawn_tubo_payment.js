@@ -71,6 +71,7 @@ function populateTuboHistory(history) {
             <tr>
                 <td>${formatDate(row.date_paid)}</td>
                 <td>${row.period_start} to ${row.period_end}</td>
+                <td>${row.months_covered} month(s)</td>
                 <td>₱${parseFloat(row.interest_amount).toFixed(2)}</td>
             </tr>
         `);

@@ -43,6 +43,7 @@ $(document).on("click", ".viewPawnBtn", function (e) {
                             <td>${index + 1}</td>
                             <td>${tubo.date_paid}</td>
                             <td>${tubo.period_start} to ${tubo.period_end}</td>
+                            <td>${tubo.months_covered} month(s)</td>
                             <td>${tubo.interest_rate ? tubo.interest_rate : '-'}</td>
                             <td>₱${parseFloat(tubo.interest_amount || 0).toFixed(2)}</td>
                         </tr>
@@ -62,8 +63,7 @@ $(document).on("click", ".viewPawnBtn", function (e) {
                             <td>${index + 1}</td>
                             <td>${partial.date_paid}</td>
                             <td>₱${parseFloat(partial.amount_paid || 0).toFixed(2)}</td>
-                            <td>₱${parseFloat(partial.interest_paid || 0).toFixed(2)}</td>
-                            <td>₱${parseFloat(partial.principal_paid || 0).toFixed(2)}</td>
+                           
                             <td>₱${parseFloat(partial.remaining_principal || 0).toFixed(2)}</td>
                             <td>${partial.status || '-'}</td>
                         </tr>
