@@ -48,6 +48,17 @@ checkSessionTimeout($pdo);
                         <button class="nav-link" id="forfeited-tab" data-bs-toggle="tab" data-bs-target="#forfeited"
                             type="button" role="tab" aria-controls="forfeited" aria-selected="false">Forfeited</button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tubo-tab" data-bs-toggle="tab" data-bs-target="#tubo" type="button"
+                            role="tab" aria-controls="tubo" aria-selected="false">Tubo Payments</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="partial-tab" data-bs-toggle="tab" data-bs-target="#partial"
+                            type="button" role="tab" aria-controls="partial" aria-selected="false">Partial
+                            Payments</button>
+                    </li>
+
+
                 </ul>
 
                 <div class="tab-content" id="reportsTabContent">
@@ -257,7 +268,8 @@ checkSessionTimeout($pdo);
                                 </div>
 
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-bordered" id="forfeitedTable" style="width: 100%;">
+                                    <table class="table table-striped table-bordered" id="forfeitedTable"
+                                        style="width: 100%;">
                                         <thead>
                                             <tr>
                                                 <th>#</th>
@@ -288,6 +300,155 @@ checkSessionTimeout($pdo);
                     </div>
 
 
+                    <!-- Tubo Payments Tab -->
+                    <div class="tab-pane fade" id="tubo" role="tabpanel" aria-labelledby="tubo-tab">
+                        <div class="row mb-3">
+                            <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                                <div class="col-md-3">
+                                    <label for="tubo_branchFilter" class="form-label">Branch:</label>
+                                    <select id="tubo_branchFilter" class="form-select">
+                                        <option value="">All Branches</option>
+                                        <?php
+                                        $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                                        while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+                            <div class="col-md-2">
+                                <label for="tubo_fromDate" class="form-label">From:</label>
+                                <input type="date" id="tubo_fromDate" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="tubo_toDate" class="form-label">To:</label>
+                                <input type="date" id="tubo_toDate" class="form-control">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end gap-2">
+                                <button id="tubo_filterBtn" class="btn btn-primary">Filter</button>
+                                <button id="tubo_resetBtn" class="btn btn-secondary">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3 d-flex justify-content-end gap-2">
+                                    <button class="btn btn-success" id="tubo_export_excel"><i
+                                            class="bi bi-file-earmark-excel"></i> Excel</button>
+                                    <button class="btn btn-danger" id="tubo_export_pdf"><i
+                                            class="bi bi-file-earmark-pdf"></i> PDF</button>
+                                    <button class="btn btn-secondary" id="tubo_print"><i class="bi bi-printer"></i>
+                                        Print</button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered" id="tuboTable"
+                                        style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Item</th>
+                                                <th>Owner</th>
+                                                <th>Payment Date</th>
+                                                <th>Covered Period</th>
+                                                <th>Months Covered</th>
+                                                <th>Interest Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="6" class="text-end">Total Interest</th>
+                                                <th id="tubo_total_interest">0.00</th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            <!-- Populated via AJAX -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Partial Payments Tab -->
+                    <div class="tab-pane fade" id="partial" role="tabpanel" aria-labelledby="partial-tab">
+                        <div class="row mb-3">
+                            <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                                <div class="col-md-3">
+                                    <label for="partial_branchFilter" class="form-label">Branch:</label>
+                                    <select id="partial_branchFilter" class="form-select">
+                                        <option value="">All Branches</option>
+                                        <?php
+                                        $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                                        while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                            echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
+                            <div class="col-md-2">
+                                <label for="partial_fromDate" class="form-label">From:</label>
+                                <input type="date" id="partial_fromDate" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="partial_toDate" class="form-label">To:</label>
+                                <input type="date" id="partial_toDate" class="form-control">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end gap-2">
+                                <button id="partial_filterBtn" class="btn btn-primary">Filter</button>
+                                <button id="partial_resetBtn" class="btn btn-secondary">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3 d-flex justify-content-end gap-2">
+                                    <button class="btn btn-success" id="partial_export_excel"><i
+                                            class="bi bi-file-earmark-excel"></i> Excel</button>
+                                    <button class="btn btn-danger" id="partial_export_pdf"><i
+                                            class="bi bi-file-earmark-pdf"></i> PDF</button>
+                                    <button class="btn btn-secondary" id="partial_print"><i class="bi bi-printer"></i>
+                                        Print</button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered" id="partialPaymentsTable"
+                                        style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date</th>
+                                                <th>Customer</th>
+                                                <th>Item</th>
+                                                <th>Payment</th>
+                                                <th>Interest</th>
+                                                <th>Principal</th>
+                                                <th>Remaining Balance</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="3" class="text-end">Totals:</th>
+                                                <th></th> <!-- Payment total -->
+                                                <th></th> <!-- Interest total -->
+                                                <th></th> <!-- Principal total -->
+                                                <th colspan="2"></th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
                 </div>
             </div>
 
@@ -306,3 +467,5 @@ checkSessionTimeout($pdo);
 <script src="../assets/js/pawned_items_report.js"></script>
 <script src="../assets/js/claimed_items_report.js"> </script>
 <script src="../assets/js/forfeited_items_report.js"></script>
+<script src="../assets/js/tubo_payments_report.js"></script>
+<script src="../assets/js/partial_payments_report.js"></script>

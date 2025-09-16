@@ -34,17 +34,19 @@ try {
 
     $params = [];
 
+
     // Branch filter
-    if (!empty($branch_id)) {
+    if ($branch_id !== '') { // instead of !empty()
         $query .= " AND pi.branch_id = :branch_id";
         $params['branch_id'] = $branch_id;
     } else {
-        // If user is not super_admin, force branch filter to their branch
+        // Non-super_admin users are restricted to their branch
         if ($_SESSION['user']['role'] !== 'super_admin') {
             $query .= " AND pi.branch_id = :user_branch_id";
             $params['user_branch_id'] = $_SESSION['user']['branch_id'];
         }
     }
+
 
     // Date filters
     if (!empty($from_date)) {
