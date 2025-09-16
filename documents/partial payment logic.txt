@@ -1,0 +1,39 @@
+now we will go back to our save partial_payment js, we will modify it to save both tubo & partial payment, 
+Example: Date Pawned: Aug 10, 2025, Amount Pawned: 5,000.00 Interest Rate: 0.06
+Add partial payment on Sept. 15, 2025, assuming without payment history (fresh pawn). 
+Partial Amount – 1,000.00
+Interest Amount – 600.00 (pawned_amount * interest_rate * mos.)
+It will save in partial_payment the partial amount only
+Sample data:
+	pp_id
+pawn_id
+branch_id
+amount_paid – 1,000.00
+interest_paid - 0
+principal_paid – 1,000
+remaining_principal – 4,000.00
+status - active
+user_id
+notes
+created_at	
+
+in tubo payment, it will save:
+tubo_id -
+pawn_id -
+payment_type - renewal
+branch_id -
+date_paid -
+period_start - 08-10-2025,
+period_end -10-10-2025
+months_covered - 2
+new_due_date - 11-10-2025
+interest_rate - 0.06
+interest_amount – 600.00
+cashier_id
+txn_cod
+notes
+created_at
+
+
+
+

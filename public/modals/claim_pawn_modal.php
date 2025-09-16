@@ -71,7 +71,7 @@
                                     </div>
 
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label>Notes</label>
                                         <input type="text" class="form-control" id="claimNotes" name="claimNotes">
                                     </div>
