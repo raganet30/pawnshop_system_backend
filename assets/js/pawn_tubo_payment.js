@@ -251,25 +251,50 @@ $("#tuboPaymentForm").on("submit", function (e) {
                 data: formData,
                 dataType: "json",
                 success: function (res) {
-                    if (res.status === "success") {
-                        Swal.fire(
-                            'Saved!',
-                            res.message,
-                            'success'
-                        );
-                        $("#tuboPaymentModal").modal("hide");
+    if (res.status === "success") {
+        Swal.fire("Saved!", res.message, "success");
+        $("#tuboPaymentModal").modal("hide");
 
-                        // Refresh histories
-                        // refreshTuboHistory();
-                        // refreshPartialHistory();
-                    } else {
-                        Swal.fire(
-                            'Error!',
-                            res.message,
-                            'error'
-                        );
-                    }
-                },
+        //  Generate AR No. from pawn_id + datePaid
+        let pawnId   = $("#tpPawnId").val();
+        let datePaid = $("#tpDatePaid").val() || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+        let d  = new Date(datePaid);
+        let mm = String(d.getMonth() + 1).padStart(2, "0");
+        let dd = String(d.getDate()).padStart(2, "0");
+        let yy = String(d.getFullYear()).slice(-2);
+
+        let receiptNo = pawnId.toString().padStart(3, "0") + "-" + mm + dd + yy;
+
+        //  Build print query
+        let queryParams = {
+            receipt_no: receiptNo,
+            customer_name: $("#tpPawnerName").val(),
+            item: $("#tpUnit").val(),
+            date_paid: datePaid,
+            months_covered: $("#tpMonthsSelector").val(),
+            period_start: $("#tpMonthsSelector option:selected").data("start"),
+            period_end: $("#tpMonthsSelector option:selected").data("end"),
+            interest_amount: parseFloat($("#tpInterestAmount").val().replace("₱", "")).toFixed(2),
+            new_due_date: $("#tpNewDueDate").val(),
+            notes: $("#tpNotes").val(),
+            amount_pawned: parseFloat($("#tpAmountPawned").val().replace("₱", "")).toFixed(2) // New field
+
+        };
+
+        let printUrl = "../processes/print_tubo_payment_ar.php?" + $.param(queryParams);
+
+        //  Auto-open print window
+        window.open(printUrl, "_blank", "width=800,height=600");
+
+        // (Optional) refresh histories
+        // refreshTuboHistory();
+        // refreshPartialHistory();
+    } else {
+        Swal.fire("Error!", res.message, "error");
+    }
+}
+,
                 error: function (xhr, status, error) {
                     Swal.fire(
                         'Error!',

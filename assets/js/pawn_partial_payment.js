@@ -252,12 +252,13 @@ $(document).ready(function () {
         $("#ppAmount").trigger("input");
     });
 
-    $("#partialPaymentForm").on("submit", function (e) {
+   $("#partialPaymentForm").on("submit", function (e) {
     e.preventDefault();
-    let pawnId = $("#ppPawnId").val();
+    let pawnId        = $("#ppPawnId").val();
     let partialAmount = parseFloat($("#ppAmount").val()) || 0;
-    let principal = parseFloat($("#ppPrincipal").val()) || 0;
-    let interestDue = parseFloat($("#ppInterestDue").val()) || 0; // get computed interest
+    let principal     = parseFloat($("#ppPrincipal").val()) || 0;
+    let interestDue   = parseFloat($("#ppInterestDue").val()) || 0; // computed tubo
+    let datePaid      = $("#ppDatePaid").val();
 
     if (!pawnId || partialAmount <= 0) {
         Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
@@ -270,8 +271,8 @@ $(document).ready(function () {
     }
 
     Swal.fire({
-        title: "Confirm Partial Payment",
-        html: `Save partial payment of ₱${partialAmount.toLocaleString()}?`,
+        title: "Confirm Payment",
+        html: `Save partial payment of ₱${partialAmount.toLocaleString()}${interestDue > 0 ? " + tubo ₱" + interestDue.toLocaleString() : ""}?`,
         icon: "question",
         showCancelButton: true,
         confirmButtonText: "Save",
@@ -280,7 +281,7 @@ $(document).ready(function () {
         if (result.isConfirmed) {
             let formData = $("#partialPaymentForm").serialize();
 
-            // Decide backend based on interest
+            // Decide backend
             let backendUrl = interestDue > 0 
                 ? "../processes/save_partial_with_tubo.php"
                 : "../processes/save_partial_only.php";
@@ -302,25 +303,49 @@ $(document).ready(function () {
         // Reload table
         $("#pawnTable").DataTable().ajax.reload();
 
-        // 🔑 Print receipt after save
-        // We'll pass needed values to PHP receipt generator
-        let printUrl = "../processes/print_tubo_partial_ar.php?" + $.param({
-            type: "partial", // for tubo you’ll set this to tubo
-            receipt_no: response.receipt_no, // backend must return this
+        //  Generate receipt no. in JS
+        let pawnId   = $("#ppPawnId").val();
+        let datePaid = $("#ppDatePaid").val() || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+        let d  = new Date(datePaid);
+        let mm = String(d.getMonth() + 1).padStart(2, "0");
+        let dd = String(d.getDate()).padStart(2, "0");
+        let yy = String(d.getFullYear()).slice(-2);
+
+        let receiptNo = pawnId.toString().padStart(3, "0") + "-" + mm + dd + yy;
+
+        //  Build print URL
+        let queryParams = {
+            receipt_no: receiptNo, // now using JS-generated value
             customer_name: $("#ppPawnerName").val(),
             item: $("#ppUnit").val(),
-            amount_paid: partialAmount.toFixed(2),
+            date_paid: datePaid,
+            partial_amount: partialAmount.toFixed(2),
             remaining_balance: (principal - partialAmount).toFixed(2),
-            date_paid: $("#ppDatePaid").val()
-        });
+            amount_pawned: parseFloat($("#ppAmountPawned").val().replace("₱", "").replace(/,/g, "")) || 0
+        };
 
-        // Open new window for printing
+        // Include tubo if paid
+       // Include tubo if paid
+if (interestDue > 0) {
+    queryParams.tubo_amount  = interestDue.toFixed(2);
+
+    // match backend variable names
+    queryParams.covered_from = $("#ppPeriodStart").val() || "";
+    queryParams.covered_to   = $("#ppPeriodEnd").val()   || "";
+}
+
+
+
+
+        let printUrl = "../processes/print_tubo_partial_ar.php?" + $.param(queryParams);
+
+        //  Open new window for printing
         window.open(printUrl, "_blank", "width=800,height=600");
     } else {
         Swal.fire("Error", response.message, "error");
     }
 },
-
                 error: function () {
                     Swal.fire("Error", "Failed to save partial payment.", "error");
                 }
@@ -328,5 +353,9 @@ $(document).ready(function () {
         }
     });
 });
+
+
+
+
 
 });
