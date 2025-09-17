@@ -291,18 +291,36 @@ $(document).ready(function () {
                 data: formData,
                 dataType: "json",
                 success: function (response) {
-                    if (response.status === "success") {
-                        $("#partialPaymentModal").modal("hide");
-                        Swal.fire({
-                            title: "Success!",
-                            html: response.message,
-                            icon: "success"
-                        });
-                        $("#pawnTable").DataTable().ajax.reload();
-                    } else {
-                        Swal.fire("Error", response.message, "error");
-                    }
-                },
+    if (response.status === "success") {
+        $("#partialPaymentModal").modal("hide");
+        Swal.fire({
+            title: "Success!",
+            html: response.message,
+            icon: "success"
+        });
+
+        // Reload table
+        $("#pawnTable").DataTable().ajax.reload();
+
+        // 🔑 Print receipt after save
+        // We'll pass needed values to PHP receipt generator
+        let printUrl = "../processes/print_tubo_partial_ar.php?" + $.param({
+            type: "partial", // for tubo you’ll set this to tubo
+            receipt_no: response.receipt_no, // backend must return this
+            customer_name: $("#ppPawnerName").val(),
+            item: $("#ppUnit").val(),
+            amount_paid: partialAmount.toFixed(2),
+            remaining_balance: (principal - partialAmount).toFixed(2),
+            date_paid: $("#ppDatePaid").val()
+        });
+
+        // Open new window for printing
+        window.open(printUrl, "_blank", "width=800,height=600");
+    } else {
+        Swal.fire("Error", response.message, "error");
+    }
+},
+
                 error: function () {
                     Swal.fire("Error", "Failed to save partial payment.", "error");
                 }

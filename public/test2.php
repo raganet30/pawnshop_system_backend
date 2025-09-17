@@ -64,24 +64,25 @@
   <table border="1" cellspacing="0" cellpadding="4">
     <tr>
       <td><b>Amount Paid</b></td>
-      <td class="right">₱2,000.00</td>
+      <td class="right">₱500.00</td>
     </tr>
     <tr>
       <td><b>Applied To</b></td>
-      <td class="right">Partial Payment</td>
+      <td class="right">Tubo Payment</td>
     </tr>
     <tr>
-      <td><b>Remaining Balance</b></td>
-      <td class="right">₱8,800.00</td>
+      <td><b>Covered Months</b></td>
+      <td class="right">10/10/2025 to 11/10/2025</td>
     </tr>
+    
   </table>
 
   <div class="ack-text">
     This acknowledges receipt of the above payment from  
-    <b>Juan Dela Cruz</b> as partial payment for the pawned item <b>Test Item</b>.
+    <b>Juan Dela Cruz</b> as tubo payment for the pawned item <b>Test Item</b>.
   </div>
 
-  <br><br>
+
   <table width="100%">
     <tr>
       <td>_____________________________<br>Customer Signature</td>
@@ -92,7 +93,7 @@
   <br>
   <small>Printed on: 09/17/2025  2:30 PM</small>
 
-  <br><br>
+  <br>
   <div class="center">***** THANK YOU *****</div>
 
 </body>
