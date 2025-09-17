@@ -68,11 +68,7 @@
                         </div>
 
 
-                        <div class="col-md-3">
-                            <label>Notes</label>
-                            <input type="text" class="form-control" id="claimNotes" name="claimNotes">
-                        </div>
-
+                
                         <!-- Interest Options -->
                         <div class="col-md-3">
                             <label for="interestOption">Interest Computation</label>
@@ -83,12 +79,21 @@
                             </select>
                         </div>
 
+                        <div class="col-md-3">
+                            <label for="claimNotes">Notes</label>
+                            <textarea class="form-control" id="claimNotes" name="claimNotes" rows="2"></textarea>
+                        </div>
+
+
                         <!-- Custom Interest Input (hidden by default) -->
                         <div class="col-md-3" id="customInterestWrapper" style="display:none;">
                             <label for="customInterest">Custom Interest Amount</label>
                             <input type="number" id="customInterest" name="customInterest" class="form-control" min="0"
                                 step="0.01" placeholder="Enter interest">
                         </div>
+
+
+                        
 
                     </div>
                     <p id="waiveInfo" class="small d-none mt-2"></p>

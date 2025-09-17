@@ -154,6 +154,8 @@ function computeClaimInterest() {
         $("#claimInterest").val("₱0.00");
         $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
         $("#claimMonthsValue").val(0);
+
+       
     } else {
         $("#claimMonths").val(claimdiffMonths + " month(s)");
         $("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
@@ -171,40 +173,85 @@ function computeClaimInterest() {
 // --- 2. Interest Option Change ---
 $("#interestOption").on("change", function() {
     const option = $(this).val();
+    const principal = parseFloat(pawn.amount_pawned) || 0; // use actual principal from pawn object
 
     if (option === "waive") {
-    $("#customInterestWrapper").hide();
-    $("#customInterest").val("");
-
-    const principal = parseFloat($("#claimPrincipalValue").val()) || 0;
-
-    $("#claimInterest").val("₱0.00");
-    $("#claimMonths").val("Interest Waived");
-
-    $("#claimInterestValue").val("0.00");
-    $("#claimMonthsValue").val(0);
-    $("#claimTotalValue").val(principal.toFixed(2));
-    $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-}
- else if (option === "custom") {
-        $("#customInterestWrapper").show();
-        $("#customInterest").val("");
-    } else { // auto
         $("#customInterestWrapper").hide();
         $("#customInterest").val("");
+
+        $("#claimInterest").val("₱0.00");
+        $("#claimMonths").val("Interest Waived");
+
+        $("#claimInterestValue").val("0.00");
+        $("#claimMonthsValue").val(0);
+        $("#claimTotalValue").val(principal.toFixed(2));
+        $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+    }
+    else if (option === "custom") {
+        $("#customInterestWrapper").show();
+        // Keep computeClaimInterest() or custom input logic here
+    }
+    else {
+        $("#customInterestWrapper").hide();
+        $("#customInterest").val("");
+        // Recompute automatically
         computeClaimInterest();
     }
 });
 
 // --- 3. Custom Interest Input ---
-$("#customInterest").on("input", function() {
-    const customValue = parseFloat($(this).val()) || 0;
-    const principal = parseFloat($("#claimPrincipalValue").val()) || 0;
+$("#customInterest").on("input", function () {
+    function parseYMD(ymd) {
+        if (!ymd) return null;
+        const parts = String(ymd).split("-").map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
 
+    // --- Principal (safe fallback) ---
+    let principal = parseFloat($("#claimPrincipalValue").val());
+    if (isNaN(principal) || principal <= 0) {
+        principal = parseFloat(pawn.amount_pawned) || 0;
+    }
+
+    // --- Interest rate (safe fallback) ---
+    let rawRate = parseFloat(pawn.interest_rate);
+    const interestRate = (isNaN(rawRate) || rawRate <= 0) ? 0.06 : rawRate;
+
+    // --- Covered months from pawn → claim ---
+    const pawnDate = parseYMD(pawn.date_pawned);
+    const claimDateStr = $("#claimDate").val();
+    const claimDate = claimDateStr ? parseYMD(claimDateStr) : new Date();
+
+    let coveredMonths = (claimDate.getFullYear() - pawnDate.getFullYear()) * 12 +
+                        (claimDate.getMonth() - pawnDate.getMonth());
+    if (claimDate.getDate() > pawnDate.getDate()) coveredMonths++;
+    if (coveredMonths < 1) coveredMonths = 1;
+
+    // --- Pre-calculated max interest ---
+    const maxInterest = principal * interestRate * coveredMonths;
+
+    // --- Input value ---
+    let customValue = parseFloat($(this).val()) || 0;
+
+    // --- Validation ---
+    if (customValue < 0) customValue = 0;
+    if (customValue > maxInterest) {
+        customValue = maxInterest;
+        $(this).val(maxInterest.toFixed(2)); // reset input to max
+        Swal.fire("Invalid", `Custom interest cannot exceed ₱${maxInterest.toFixed(2)}`, "warning");
+    }
+
+    // --- Update modal ---
     $("#claimInterest").val("₱" + customValue.toFixed(2));
+    $("#claimMonths").val(coveredMonths + " month(s)");
+    $("#claimMonthsValue").val(coveredMonths);
+    $("#claimInterestValue").val(customValue.toFixed(2));
     $("#claimTotalValue").val((principal + customValue).toFixed(2));
-    $("#claimTotal").val("₱" + (principal + customValue).toLocaleString(undefined, {minimumFractionDigits:2}));
+    $("#claimTotal").val("₱" + (principal + customValue).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+
+    console.log("principal:", principal, "rate:", interestRate, "months:", coveredMonths, "maxInterest:", maxInterest, "customValue:", customValue);
 });
+
 
 
 
