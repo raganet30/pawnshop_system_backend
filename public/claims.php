@@ -34,7 +34,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
             <!-- View Claim Modal -->
             <div class="modal fade" id="viewClaimModal" tabindex="-1" aria-labelledby="viewClaimModalLabel"
                 aria-hidden="true">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">View Claimed Item</h5>
@@ -44,51 +44,93 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                             <input type="hidden" id="viewPawnId">
 
                             <div class="row g-3">
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Owner Name</label>
                                     <input type="text" class="form-control" id="viewOwnerName" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Unit Description</label>
                                     <input type="text" class="form-control" id="viewUnitDescription" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Date Pawned</label>
                                     <input type="text" class="form-control" id="viewDatePawned" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Date Claimed</label>
                                     <input type="text" class="form-control" id="viewDateClaimed" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Amount Pawned</label>
                                     <input type="text" class="form-control" id="viewAmountPawned" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Interest</label>
                                     <input type="text" class="form-control" id="viewInterest" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Penalty (if any)</label>
                                     <input type="text" class="form-control" id="viewPenalty" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Total Paid</label>
                                     <input type="text" class="form-control" id="viewTotalPaid" readonly>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <label>Contact No.</label>
                                     <input type="text" class="form-control" id="viewContact" readonly>
                                 </div>
-                                <div class="col-md-6">
+                               
+
+                                <!--  Tubo Payments History -->
+                                <h6 class="mt-2">Tubo Payments History</h6>
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-bordered table-sm" id="tuboPaymentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date Paid</th>
+                                                <th>Covered Period</th>
+                                                <th>Months Covered</th>
+                                                <th>Interest Rate</th>
+                                                <th>Interest Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!--  Partial Payments History -->
+                                <h6 class="mt-2">Partial Payments History</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm" id="partialPaymentsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date Paid</th>
+                                                <th>Amount Paid</th>
+                                                <!-- <th>Interest Paid</th>
+                                                <th>Principal Paid</th> -->
+                                                <th>Remaining Principal</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- JS will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                 <div class="col-md-3">
                                     <label>Claimant Photo</label>
                                     <img id="viewClaimPhoto" src="" class="img-fluid border rounded"
                                         alt="Claimant Photo">
                                 </div>
+
+
                             </div>
-
-
-
 
                         </div>
                     </div>
@@ -237,46 +279,87 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
     });
 
 
-    // Handle View button
-    $(document).on("click", ".viewClaimBtn", function (e) {
-        e.preventDefault();
-        const pawnId = $(this).data("id");
+   // Handle View button
+$(document).on("click", ".viewClaimBtn", function (e) {
+    e.preventDefault();
+    const pawnId = $(this).data("id");
 
-        $.ajax({
-            url: "../api/claim_view.php",
-            type: "GET",
-            data: { pawn_id: pawnId },
-            dataType: "json",
-            success: function (response) {
-                if (response.status === "success") {
-                    const d = response.data;
+    $.ajax({
+        url: "../api/claim_view.php",
+        type: "GET",
+        data: { pawn_id: pawnId },
+        dataType: "json",
+        success: function (response) {
+            if (response.status === "success") {
+                const d = response.data;
 
-                    $("#viewPawnId").val(d.pawn_id);
-                    $("#viewOwnerName").val(d.full_name);
-                    $("#viewUnitDescription").val(d.unit_description);
-                    $("#viewDatePawned").val(d.date_pawned);
-                    $("#viewDateClaimed").val(d.date_claimed);
-                    $("#viewAmountPawned").val("₱" + parseFloat(d.amount_pawned).toFixed(2));
-                    $("#viewInterest").val("₱" + parseFloat(d.interest_amount).toFixed(2));
-                    $("#viewTotalPaid").val("₱" + parseFloat(d.total_paid).toFixed(2));
-                    $("#viewPenalty").val("₱" + parseFloat(d.penalty_amount).toFixed(2));
-                    $("#viewContact").val(d.contact_no);
+                // Fill in claim details
+                $("#viewPawnId").val(d.pawn_id);
+                $("#viewOwnerName").val(d.full_name);
+                $("#viewUnitDescription").val(d.unit_description);
+                $("#viewDatePawned").val(d.date_pawned);
+                $("#viewDateClaimed").val(d.date_claimed);
+                $("#viewAmountPawned").val("₱" + parseFloat(d.amount_pawned).toFixed(2));
+                $("#viewInterest").val("₱" + parseFloat(d.interest_amount).toFixed(2));
+                $("#viewTotalPaid").val("₱" + parseFloat(d.total_paid).toFixed(2));
+                $("#viewPenalty").val("₱" + parseFloat(d.penalty_amount).toFixed(2));
+                $("#viewContact").val(d.contact_no);
 
-
-                    // Show claimant photo if exists
-                    if (d.photo_path && d.photo_path !== "") {
-                        $("#viewClaimPhoto").attr("src", "../" + d.photo_path);
-                    } else {
-                        $("#viewClaimPhoto").attr("src", "assets/img/no-photo.png");
-                    }
-
-                    $("#viewClaimModal").modal("show");
+                // Show claimant photo
+                if (d.photo_path && d.photo_path !== "") {
+                    $("#viewClaimPhoto").attr("src", "../" + d.photo_path);
                 } else {
-                    alert(response.message);
+                    $("#viewClaimPhoto").attr("src", "assets/img/no-photo.png");
                 }
-            }
-        });
+
+                // --- Populate Partial Payments ---
+                let ppHtml = "";
+if (d.partial_payments && d.partial_payments.length > 0) {
+    d.partial_payments.forEach((p, i) => {
+        ppHtml += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${p.date_paid}</td>
+                <td>₱${parseFloat(p.amount_paid).toFixed(2)}</td>
+                <td>₱${parseFloat(p.remaining_balance).toFixed(2)}</td>
+                <td>${p.remarks}</td>
+            </tr>
+        `;
     });
+} else {
+                    ppHtml = `<tr><td colspan="7" class="text-center">No partial payments</td></tr>`;
+                }
+                $("#partialPaymentsTable tbody").html(ppHtml);
+
+                // --- Populate Tubo Payments ---
+                let tuboHtml = "";
+                if (d.tubo_payments && d.tubo_payments.length > 0) {
+                    d.tubo_payments.forEach((t,i) => {
+                        tuboHtml += `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td>${t.date_paid}</td>
+                                <td>${t.period_start} to ${t.period_end}</td>
+                                <td>${t.months_covered} mo(s)</td>
+                                <td>₱${parseFloat(t.interest_amount).toFixed(2)}</td>
+                                <td>${t.remarks}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tuboHtml = `<tr><td colspan="5" class="text-center">No tubo payments</td></tr>`;
+                }
+                $("#tuboPaymentsTable tbody").html(tuboHtml);
+
+                // Show modal
+                $("#viewClaimModal").modal("show");
+            } else {
+                alert(response.message);
+            }
+        }
+    });
+});
+
 
 
 

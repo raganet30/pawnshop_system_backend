@@ -77,8 +77,26 @@ if ($data) {
     ];
     $partialPayments[] = $finalRow;
 
-    // Attach to response
+    // --- Fetch tubo payments history ---
+    $stmt3 = $pdo->prepare("
+        SELECT 
+            date_paid,
+            months_covered,
+            period_start,
+            period_end,
+            interest_rate,
+            interest_amount,
+            'Tubo payment' AS remarks
+        FROM tubo_payments
+        WHERE pawn_id = ?
+        ORDER BY date_paid ASC
+    ");
+    $stmt3->execute([$pawn_id]);
+    $tuboPayments = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
+    // Attach histories to response
     $data['partial_payments'] = $partialPayments;
+    $data['tubo_payments']    = $tuboPayments;
 
     // Extra print info
     $data['cashier']    = $cashierName;
