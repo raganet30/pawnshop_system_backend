@@ -66,21 +66,21 @@ checkSessionTimeout($pdo);
                         <th>Date</th>
                         <th>Customer</th>
                         <th>Item</th>
-                        <th>Payment</th>
-                        <th>Interest</th>
-                        <th>Principal</th>
+                        <th>Payment Amount</th>
+                        <!-- <th>Interest</th>
+                        <th>Principal</th> -->
                         <th>Remaining Balance</th>
                         <th>Status</th>
                         <th>Cashier</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tfoot>
                     <tr>
                         <th colspan="4" style="text-align:right">Totals:</th>
                         <th></th> <!-- Payment total -->
-                        <th></th> <!-- Interest total -->
-                        <th></th> <!-- Principal total -->
-                        <th colspan="3"></th>
+
+                        <th colspan="4"></th>
                     </tr>
                 </tfoot>
                 <tbody></tbody>
@@ -122,8 +122,7 @@ checkSessionTimeout($pdo);
                 { data: 'customer', title: 'Customer' },
                 { data: 'item', title: 'Item' },
                 { data: 'amount_paid', title: 'Payment', render: d => '₱' + parseFloat(d).toFixed(2) },
-                { data: 'interest_paid', title: 'Interest', render: d => '₱' + parseFloat(d).toFixed(2) },
-                { data: 'principal_paid', title: 'Principal', render: d => '₱' + parseFloat(d).toFixed(2) },
+
                 { data: 'remaining_balance', title: 'Remaining Balance', render: d => '₱' + parseFloat(d).toFixed(2) },
                 {
                     data: 'status',
@@ -135,6 +134,20 @@ checkSessionTimeout($pdo);
                             return '<span class="badge bg-info">Settled</span>';
                         }
                         return '<span class="badge bg-dark">Unknown</span>';
+                    }
+                },
+                {
+                    data: null,
+                    title: 'Action',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return `
+                        <button class="btn btn-sm btn-secondary print-receipt" 
+                                data-id="${row.id}" 
+                                data-type="partial">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                    `;
                     }
                 },
                 { data: 'cashier', title: 'Cashier' }
@@ -159,10 +172,40 @@ checkSessionTimeout($pdo);
 
                 // Update footer cells
                 $(api.column(4).footer()).html('₱' + totalPayment.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                $(api.column(5).footer()).html('₱' + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-                $(api.column(6).footer()).html('₱' + totalPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                // $(api.column(5).footer()).html('₱' + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                // $(api.column(6).footer()).html('₱' + totalPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
             }
+
+
+
+
         });
+
+
+
+        //  Handle Print button click
+        $('#partialPaymentsTable').on('click', '.print-receipt', function () {
+            let rowData = table.row($(this).closest('tr')).data();
+
+            // Build query params for receipt
+            let queryParams = {
+                receipt_no: rowData.receipt_no, // backend should return this
+                customer_name: rowData.customer,
+                item: rowData.item,
+                date_paid: rowData.date_paid,
+                partial_amount: parseFloat(rowData.amount_paid).toFixed(2),
+                interest_paid: parseFloat(rowData.interest_paid).toFixed(2),
+                principal_paid: parseFloat(rowData.principal_paid).toFixed(2),
+                remaining_balance: parseFloat(rowData.remaining_balance).toFixed(2),
+                original_amount_pawned: parseFloat(rowData.original_amount_pawned ?? 0).toFixed(2)
+
+            };
+
+            // Open receipt in new tab
+            let printUrl = "../processes/print_tubo_partial_ar.php?" + $.param(queryParams);
+            window.open(printUrl, "_blank", "width=800,height=600");
+        });
+
 
 
         // Filter button

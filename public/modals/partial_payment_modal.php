@@ -125,6 +125,8 @@
                     <input type="hidden" name="months_covered" id="ppMonthsCovered">
                     <input type="hidden" name="new_due_date" id="ppNewDueDate">
                     <input type="hidden" name="interest_amount" id="ppInterestAmount">
+                    
+                    <input type="hidden" name="original_amount_pawned" id="ppOriginalAmountPawned">
 
 
 

@@ -16,9 +16,11 @@ try {
     $query = "
         SELECT 
             pp.pp_id,
+            pp.pawn_id,
             pp.created_at AS date_paid,
             c.full_name AS customer,
             pi.unit_description AS item,
+            pi.original_amount_pawned AS original_amount_pawned,
             pp.amount_paid,
             pp.interest_paid,
             pp.principal_paid,
@@ -64,13 +66,33 @@ try {
     $stmt->execute($params);
     $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Add serial numbers
+
+    // Add serial + computed receipt_no
     $data = [];
     $counter = 1;
     foreach ($payments as $row) {
         $row['serial'] = $counter++;
+
+        //  Auto-generate receipt_no here (pawnId-mmddyy)
+        $d = new DateTime($row['date_paid']);
+        $mm = $d->format('m');
+        $dd = $d->format('d');
+        $yy = $d->format('y');
+        $receipt_no = str_pad($row['pawn_id'], 3, '0', STR_PAD_LEFT) . '-' . $mm . $dd . $yy;
+        $row['receipt_no'] = $receipt_no;
+
         $data[] = $row;
     }
+
+
+
+    // // Add serial numbers
+    // $data = [];
+    // $counter = 1;
+    // foreach ($payments as $row) {
+    //     $row['serial'] = $counter++;
+    //     $data[] = $row;
+    // }
 
     echo json_encode(["data" => $data]);
 

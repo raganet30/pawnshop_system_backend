@@ -116,6 +116,8 @@
                                 <!-- Hidden Fields -->
                                 <input type="hidden" id="tpPawnId" name="tpPawnId">
                                 <input type="hidden" id="tpBranchId" name="tpBranchId">
+                                <!-- hiddedn field for original amount pawned -->
+                                <input type="hidden" name="original_amount_pawned" id="tpOriginalAmountPawned">
                             </div>
 
                             <div class="modal-footer">

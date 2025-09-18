@@ -68,6 +68,10 @@ $(document).ready(function () {
                     $("#ppPawnId").val(pawn.pawn_id);
                     $("#ppInterestRate").val(interestRate);
                     $("#ppPrincipal").val(pawn.amount_pawned);
+                    $("#ppOriginalAmountPawned").val(pawn.original_amount_pawned);
+
+
+
 
                     $("#ppAmount").val("");
                     $("#ppSummary").html("");
@@ -131,82 +135,82 @@ $(document).ready(function () {
 
     // --- Core compute function ---
     function computePartialSummary() {
-    const entered = parseFloat($("#ppAmount").val()) || 0;
-    const principal = parseFloat($("#ppPrincipal").val()) || 0;
-    const interestRate = parseFloat($("#ppInterestRate").val()) || 0.06;
+        const entered = parseFloat($("#ppAmount").val()) || 0;
+        const principal = parseFloat($("#ppPrincipal").val()) || 0;
+        const interestRate = parseFloat($("#ppInterestRate").val()) || 0.06;
 
-    const tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
-    const partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
+        const tuboHistory = $("#partialPaymentModal").data("tuboHistory") || [];
+        const partialHistory = $("#partialPaymentModal").data("partialHistory") || [];
 
-    const currentDueDateRaw = $("#partialPaymentModal").data("currentDueDate");
-    const pawnDateRaw = $("#partialPaymentModal").data("pawnDate");
-    const todayRaw = $("#ppDatePaid").val();
+        const currentDueDateRaw = $("#partialPaymentModal").data("currentDueDate");
+        const pawnDateRaw = $("#partialPaymentModal").data("pawnDate");
+        const todayRaw = $("#ppDatePaid").val();
 
-    const currentDueDate = parseYMD(currentDueDateRaw);
-    const pawnDate = parseYMD(pawnDateRaw) || null;
-    const todayLocal = parseYMD(todayRaw) || new Date();
+        const currentDueDate = parseYMD(currentDueDateRaw);
+        const pawnDate = parseYMD(pawnDateRaw) || null;
+        const todayLocal = parseYMD(todayRaw) || new Date();
 
-    if (entered <= 0) {
-        $("#ppSummary").html(`<span class="text-danger">Enter a valid partial amount!</span>`);
-        $("#ppInterestDue").val("0.00");
-        $("#ppTotalPayable").val("0.00");
-        $("#ppBackendType").val(""); // indicate no backend
-        return;
-    }
-    if (entered >= principal) {
-        $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to remaining principal!</span>`);
-        $("#ppInterestDue").val("0.00");
-        $("#ppTotalPayable").val("0.00");
-        $("#ppBackendType").val(""); 
-        return;
-    }
-
-    let interest = 0;
-    let waiveInterest = false;
-    let startDate = null;
-
-    let lastTuboEnd = findLatestDate(tuboHistory, 'period_end') || findLatestDate(tuboHistory, 'new_due_date');
-    const hasTubo = !!lastTuboEnd;
-    const hasPartial = (partialHistory && partialHistory.length > 0);
-
-    if (hasTubo) {
-        if (todayLocal <= lastTuboEnd) {
-            waiveInterest = true;
-            interest = 0;
-        } else {
-            startDate = new Date(lastTuboEnd);
+        if (entered <= 0) {
+            $("#ppSummary").html(`<span class="text-danger">Enter a valid partial amount!</span>`);
+            $("#ppInterestDue").val("0.00");
+            $("#ppTotalPayable").val("0.00");
+            $("#ppBackendType").val(""); // indicate no backend
+            return;
         }
-    } else if (hasPartial) {
-        if (currentDueDate && todayLocal <= currentDueDate) {
-            waiveInterest = true;
-            interest = 0;
-        } else if (currentDueDate) {
-            startDate = new Date(currentDueDate);
-        } else {
-            startDate = pawnDate || new Date();
+        if (entered >= principal) {
+            $("#ppSummary").html(`<span class="text-danger">Partial payment cannot exceed or equal to remaining principal!</span>`);
+            $("#ppInterestDue").val("0.00");
+            $("#ppTotalPayable").val("0.00");
+            $("#ppBackendType").val("");
+            return;
         }
-    } else {
-        startDate = pawnDate || currentDueDate || new Date();
-    }
 
-    if (!waiveInterest && startDate) {
-        const diffMonths = monthsBetween(startDate, todayLocal);
-        interest = principal * interestRate * diffMonths;
-    } else {
-        interest = 0;
-    }
+        let interest = 0;
+        let waiveInterest = false;
+        let startDate = null;
 
-    const remaining = principal - entered;
-    const totalPay = entered + interest;
+        let lastTuboEnd = findLatestDate(tuboHistory, 'period_end') || findLatestDate(tuboHistory, 'new_due_date');
+        const hasTubo = !!lastTuboEnd;
+        const hasPartial = (partialHistory && partialHistory.length > 0);
 
-    $("#ppInterestDue").val(interest.toFixed(2));
-    $("#ppTotalPayable").val(totalPay.toFixed(2));
+        if (hasTubo) {
+            if (todayLocal <= lastTuboEnd) {
+                waiveInterest = true;
+                interest = 0;
+            } else {
+                startDate = new Date(lastTuboEnd);
+            }
+        } else if (hasPartial) {
+            if (currentDueDate && todayLocal <= currentDueDate) {
+                waiveInterest = true;
+                interest = 0;
+            } else if (currentDueDate) {
+                startDate = new Date(currentDueDate);
+            } else {
+                startDate = pawnDate || new Date();
+            }
+        } else {
+            startDate = pawnDate || currentDueDate || new Date();
+        }
 
-    // Determine which backend to use
-    $("#ppBackendType").val(interest > 0 ? "with_tubo" : "partial_only");
+        if (!waiveInterest && startDate) {
+            const diffMonths = monthsBetween(startDate, todayLocal);
+            interest = principal * interestRate * diffMonths;
+        } else {
+            interest = 0;
+        }
 
-    $("#ppSummary").html(`
-        <div>Original Principal: ₱${principal.toLocaleString()}</div>
+        const remaining = principal - entered;
+        const totalPay = entered + interest;
+
+        $("#ppInterestDue").val(interest.toFixed(2));
+        $("#ppTotalPayable").val(totalPay.toFixed(2));
+
+        // Determine which backend to use
+        $("#ppBackendType").val(interest > 0 ? "with_tubo" : "partial_only");
+
+        $("#ppSummary").html(`
+        <div>Principal: ₱${principal.toLocaleString()}</div>
         <div>Partial Payment: ₱${entered.toLocaleString()}</div>
         <div>Remaining Principal: ₱${remaining.toLocaleString()}</div>
         <div>Interest: ₱${interest.toLocaleString(undefined, { minimumFractionDigits: 2 })} 
@@ -216,29 +220,29 @@ $(document).ready(function () {
         <strong>Total Payable: ₱${totalPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
     `);
 
-    const monthsCovered = monthsBetween(startDate, todayLocal);
-    let periodStart = startDate ? new Date(startDate) : new Date(todayLocal);
-    let periodEnd = new Date(periodStart);
-    periodEnd.setMonth(periodEnd.getMonth() + monthsCovered);
-    let newDueDate = new Date(periodEnd);
-    newDueDate.setMonth(newDueDate.getMonth() + 1);
+        const monthsCovered = monthsBetween(startDate, todayLocal);
+        let periodStart = startDate ? new Date(startDate) : new Date(todayLocal);
+        let periodEnd = new Date(periodStart);
+        periodEnd.setMonth(periodEnd.getMonth() + monthsCovered);
+        let newDueDate = new Date(periodEnd);
+        newDueDate.setMonth(newDueDate.getMonth() + 1);
 
-    $("#ppPeriodStart").val(periodStart.toISOString().split("T")[0]);
-    $("#ppPeriodEnd").val(periodEnd.toISOString().split("T")[0]);
-    $("#ppMonthsCovered").val(monthsCovered);
-    $("#ppNewDueDate").val(newDueDate.toISOString().split("T")[0]);
-    $("#ppInterestAmount").val(interest.toFixed(2));
+        $("#ppPeriodStart").val(periodStart.toISOString().split("T")[0]);
+        $("#ppPeriodEnd").val(periodEnd.toISOString().split("T")[0]);
+        $("#ppMonthsCovered").val(monthsCovered);
+        $("#ppNewDueDate").val(newDueDate.toISOString().split("T")[0]);
+        $("#ppInterestAmount").val(interest.toFixed(2));
 
-    console.debug("computePartialSummary debug:", {
-        today: todayLocal && todayLocal.toISOString().split("T")[0],
-        currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
-        lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
-        startDate: startDate && startDate.toISOString().split("T")[0],
-        hasTubo, hasPartial, waiveInterest,
-        principal, interestRate, interest,
-        monthsDiff: monthsBetween(startDate, todayLocal)
-    });
-}
+        console.debug("computePartialSummary debug:", {
+            today: todayLocal && todayLocal.toISOString().split("T")[0],
+            currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
+            lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
+            startDate: startDate && startDate.toISOString().split("T")[0],
+            hasTubo, hasPartial, waiveInterest,
+            principal, interestRate, interest,
+            monthsDiff: monthsBetween(startDate, todayLocal)
+        });
+    }
 
 
     $(document).off("input", "#ppAmount").on("input", "#ppAmount", computePartialSummary);
@@ -252,107 +256,108 @@ $(document).ready(function () {
         $("#ppAmount").trigger("input");
     });
 
-   $("#partialPaymentForm").on("submit", function (e) {
-    e.preventDefault();
-    let pawnId        = $("#ppPawnId").val();
-    let partialAmount = parseFloat($("#ppAmount").val()) || 0;
-    let principal     = parseFloat($("#ppPrincipal").val()) || 0;
-    let interestDue   = parseFloat($("#ppInterestDue").val()) || 0; // computed tubo
-    let datePaid      = $("#ppDatePaid").val();
+    $("#partialPaymentForm").on("submit", function (e) {
+        e.preventDefault();
+        let pawnId = $("#ppPawnId").val();
+        let partialAmount = parseFloat($("#ppAmount").val()) || 0;
+        let principal = parseFloat($("#ppPrincipal").val()) || 0;
+        let interestDue = parseFloat($("#ppInterestDue").val()) || 0; // computed tubo
+        let datePaid = $("#ppDatePaid").val();
 
-    if (!pawnId || partialAmount <= 0) {
-        Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
-        return;
-    }
-
-    if (partialAmount > principal) {
-        Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
-        return;
-    }
-
-    Swal.fire({
-        title: "Confirm Payment",
-        html: `Save partial payment of ₱${partialAmount.toLocaleString()}${interestDue > 0 ? " + tubo ₱" + interestDue.toLocaleString() : ""}?`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            let formData = $("#partialPaymentForm").serialize();
-
-            // Decide backend
-            let backendUrl = interestDue > 0 
-                ? "../processes/save_partial_with_tubo.php"
-                : "../processes/save_partial_only.php";
-
-            $.ajax({
-                url: backendUrl,
-                method: "POST",
-                data: formData,
-                dataType: "json",
-                success: function (response) {
-    if (response.status === "success") {
-        $("#partialPaymentModal").modal("hide");
-        Swal.fire({
-            title: "Success!",
-            html: response.message,
-            icon: "success"
-        });
-
-        // Reload table
-        $("#pawnTable").DataTable().ajax.reload();
-
-        //  Generate receipt no. in JS
-        let pawnId   = $("#ppPawnId").val();
-        let datePaid = $("#ppDatePaid").val() || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
-        let d  = new Date(datePaid);
-        let mm = String(d.getMonth() + 1).padStart(2, "0");
-        let dd = String(d.getDate()).padStart(2, "0");
-        let yy = String(d.getFullYear()).slice(-2);
-
-        let receiptNo = pawnId.toString().padStart(3, "0") + "-" + mm + dd + yy;
-
-        //  Build print URL
-        let queryParams = {
-            receipt_no: receiptNo, // now using JS-generated value
-            customer_name: $("#ppPawnerName").val(),
-            item: $("#ppUnit").val(),
-            date_paid: datePaid,
-            partial_amount: partialAmount.toFixed(2),
-            remaining_balance: (principal - partialAmount).toFixed(2),
-            amount_pawned: parseFloat($("#ppAmountPawned").val().replace("₱", "").replace(/,/g, "")) || 0
-        };
-
-        // Include tubo if paid
-       // Include tubo if paid
-if (interestDue > 0) {
-    queryParams.tubo_amount  = interestDue.toFixed(2);
-
-    // match backend variable names
-    queryParams.covered_from = $("#ppPeriodStart").val() || "";
-    queryParams.covered_to   = $("#ppPeriodEnd").val()   || "";
-}
-
-
-
-
-        let printUrl = "../processes/print_tubo_partial_ar.php?" + $.param(queryParams);
-
-        //  Open new window for printing
-        window.open(printUrl, "_blank", "width=800,height=600");
-    } else {
-        Swal.fire("Error", response.message, "error");
-    }
-},
-                error: function () {
-                    Swal.fire("Error", "Failed to save partial payment.", "error");
-                }
-            });
+        if (!pawnId || partialAmount <= 0) {
+            Swal.fire("Invalid", "Please enter a valid partial payment amount.", "warning");
+            return;
         }
+
+        if (partialAmount > principal) {
+            Swal.fire("Error", "Partial payment cannot exceed the current principal.", "error");
+            return;
+        }
+
+        Swal.fire({
+            title: "Confirm Payment",
+            html: `Save partial payment of ₱${partialAmount.toLocaleString()}${interestDue > 0 ? " + tubo ₱" + interestDue.toLocaleString() : ""}?`,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Save",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let formData = $("#partialPaymentForm").serialize();
+
+                // Decide backend
+                let backendUrl = interestDue > 0
+                    ? "../processes/save_partial_with_tubo.php"
+                    : "../processes/save_partial_only.php";
+
+                $.ajax({
+                    url: backendUrl,
+                    method: "POST",
+                    data: formData,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            $("#partialPaymentModal").modal("hide");
+                            Swal.fire({
+                                title: "Success!",
+                                html: response.message,
+                                icon: "success"
+                            });
+
+                            // Reload table
+                            $("#pawnTable").DataTable().ajax.reload();
+
+                            //  Generate receipt no. in JS
+                            let pawnId = $("#ppPawnId").val();
+                            let datePaid = $("#ppDatePaid").val() || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+                            let d = new Date(datePaid);
+                            let mm = String(d.getMonth() + 1).padStart(2, "0");
+                            let dd = String(d.getDate()).padStart(2, "0");
+                            let yy = String(d.getFullYear()).slice(-2);
+
+                            let receiptNo = pawnId.toString().padStart(3, "0") + "-" + mm + dd + yy;
+
+                            //  Build print URL
+                            let queryParams = {
+                                receipt_no: receiptNo, // now using JS-generated value
+                                customer_name: $("#ppPawnerName").val(),
+                                item: $("#ppUnit").val(),
+                                date_paid: datePaid,
+                                partial_amount: partialAmount.toFixed(2),
+                                remaining_balance: (principal - partialAmount).toFixed(2),
+                                original_amount_pawned: parseFloat($("#ppOriginalAmountPawned").val().replace("₱", "").replace(/,/g, "")) || 0
+
+                            };
+
+                            // Include tubo if paid
+                            // Include tubo if paid
+                            if (interestDue > 0) {
+                                queryParams.tubo_amount = interestDue.toFixed(2);
+
+                                // match backend variable names
+                                queryParams.covered_from = $("#ppPeriodStart").val() || "";
+                                queryParams.covered_to = $("#ppPeriodEnd").val() || "";
+                            }
+
+
+
+
+                            let printUrl = "../processes/print_tubo_partial_ar.php?" + $.param(queryParams);
+
+                            //  Open new window for printing
+                            window.open(printUrl, "_blank", "width=800,height=600");
+                        } else {
+                            Swal.fire("Error", response.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Error", "Failed to save partial payment.", "error");
+                    }
+                });
+            }
+        });
     });
-});
 
 
 

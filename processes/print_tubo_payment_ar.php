@@ -6,8 +6,8 @@ $receipt_no = $_GET['receipt_no'] ?? 'N/A';
 $customer_name = $_GET['customer_name'] ?? '';
 $item = $_GET['item'] ?? '';
 $date_paid = $_GET['date_paid'] ?? date("Y-m-d");
-$amount_pawned = floatval($_GET['amount_pawned'] ?? 0);
-
+// $amount_pawned = floatval($_GET['amount_pawned'] ?? 0);
+$original_amount_pawned = floatval($_GET['original_amount_pawned'] ?? 0); // new field
 
 // Tubo fields
 $tubo_amount = floatval($_GET['interest_amount'] ?? 0);  // match JS
@@ -88,7 +88,7 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
         </tr>
 
         <tr>
-  <td><b>Amount Pawned:</b>₱<?= number_format($amount_pawned, 2) ?></td>
+  <td><b>Amount Pawned:</b>₱<?= number_format($original_amount_pawned, 2) ?></td>
 
 </tr>
 

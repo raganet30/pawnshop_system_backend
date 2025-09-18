@@ -122,6 +122,9 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
             $("#tpCategory").val(pawn.category);
             $("#tpUnit").val(pawn.unit_description);
             $("#tpDueDate").val(pawn.current_due_date);
+            // original ampount pawned
+            $("#tpOriginalAmountPawned").val("₱" + parseFloat(pawn.original_amount_pawned).toFixed(2));
+
 
 
             // Build selector based on current_due_date
@@ -242,6 +245,7 @@ $("#tuboPaymentForm").on("submit", function (e) {
                 interest_amount: parseFloat($("#tpInterestAmount").val().replace("₱", "")),
                 new_due_date: $("#tpNewDueDate").val(),
                 notes: $("#tpNotes").val()
+              
             };
 
 
@@ -278,7 +282,7 @@ $("#tuboPaymentForm").on("submit", function (e) {
             interest_amount: parseFloat($("#tpInterestAmount").val().replace("₱", "")).toFixed(2),
             new_due_date: $("#tpNewDueDate").val(),
             notes: $("#tpNotes").val(),
-            amount_pawned: parseFloat($("#tpAmountPawned").val().replace("₱", "")).toFixed(2) // New field
+            original_amount_pawned: parseFloat($("#tpOriginalAmountPawned").val().replace("₱", "").replace(/,/g, "")).toFixed(2)
 
         };
 
