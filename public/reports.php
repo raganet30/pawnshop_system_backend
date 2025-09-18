@@ -423,19 +423,18 @@ checkSessionTimeout($pdo);
                                                 <th>Date</th>
                                                 <th>Customer</th>
                                                 <th>Item</th>
-                                                <th>Payment</th>
-                                                <th>Interest</th>
-                                                <th>Principal</th>
+                                                <th>Payment Amount</th>
+                                                <!-- <th>Interest</th>
+                                                <th>Principal</th> -->
                                                 <th>Remaining Balance</th>
                                                 <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="3" class="text-end">Totals:</th>
+                                                <th colspan="4" class="text-end">Totals:</th>
                                                 <th></th> <!-- Payment total -->
-                                                <th></th> <!-- Interest total -->
-                                                <th></th> <!-- Principal total -->
+                                              
                                                 <th colspan="2"></th>
                                             </tr>
                                         </tfoot>

@@ -22,8 +22,8 @@ $(document).ready(function() {
             { data: 'customer' },
             { data: 'item' },
             { data: 'amount_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
-            { data: 'interest_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
-            { data: 'principal_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
+            // { data: 'interest_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
+            // { data: 'principal_paid', render: d => '₱' + parseFloat(d).toFixed(2) },
             { data: 'remaining_balance', render: d => '₱' + parseFloat(d).toFixed(2) },
             { 
                 data: 'status',
@@ -44,8 +44,8 @@ $(document).ready(function() {
             let totalPrincipal = api.column(6).data().reduce((a,b)=>intVal(a)+intVal(b),0);
 
             $(api.column(4).footer()).html('₱'+totalPayment.toLocaleString(undefined,{minimumFractionDigits:2}));
-            $(api.column(5).footer()).html('₱'+totalInterest.toLocaleString(undefined,{minimumFractionDigits:2}));
-            $(api.column(6).footer()).html('₱'+totalPrincipal.toLocaleString(undefined,{minimumFractionDigits:2}));
+            // $(api.column(5).footer()).html('₱'+totalInterest.toLocaleString(undefined,{minimumFractionDigits:2}));
+            // $(api.column(6).footer()).html('₱'+totalPrincipal.toLocaleString(undefined,{minimumFractionDigits:2}));
         }
     });
 

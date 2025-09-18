@@ -27,7 +27,7 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
 <html>
 
 <head>
-    <title>Acknowledgment Receipt</title>
+    <title>Acknowledgement Receipt</title>
     <style>
         body {
             font-family: "Courier New", monospace;
@@ -74,7 +74,7 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
     </div>
 
     <hr>
-    <div class="center"><b>ACKNOWLEDGMENT RECEIPT</b></div>
+    <div class="center"><b>ACKNOWLEDGEMENT RECEIPT</b></div>
     <br>
 
     <table>
@@ -125,7 +125,8 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
     <hr>
     <div class="center">
         <p style="margin:4px 0;">
-            This acknowledges receipt of the above payment from <b><?= htmlspecialchars($customer_name) ?></b>
+            This acknowledges receipt of the above payment 
+            <br>from <b><?= htmlspecialchars($customer_name) ?></b>
             for the pawned item <b><?= htmlspecialchars($item) ?></b>.
         </p>
         <p style="margin:4px 0;">Not valid as Claim Receipt.</p>
