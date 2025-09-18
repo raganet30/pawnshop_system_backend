@@ -91,9 +91,8 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
     </tr>
 
     <tr>
-      <td><b>Amount Pawned: </b> </td>
-      <td>₱<?= number_format($amount_pawned, 2) ?></td>
-
+      <td><b>Amount Pawned: </b>₱<?= number_format($amount_pawned, 2) ?> </td>
+   
   </table>
 
   <hr>
