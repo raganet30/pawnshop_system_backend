@@ -37,39 +37,39 @@ $highlightPawnId = $_GET['id'] ?? '';
                 <?php endif; ?>
             </div>
 
-                    <!-- view pawn modal -->
-           <?php include '../public/modals/view_pawn_modal.php';?>
+            <!-- view pawn modal -->
+            <?php include '../public/modals/view_pawn_modal.php'; ?>
 
 
-                    <!-- add pawn modal -->
-            <?php include '../public/modals/add_pawn_modal.php';?>
+            <!-- add pawn modal -->
+            <?php include '../public/modals/add_pawn_modal.php'; ?>
 
 
-                    <!-- edit pawn modal -->
-            <?php include '../public/modals/edit_pawn_modal.php';?>
+            <!-- edit pawn modal -->
+            <?php include '../public/modals/edit_pawn_modal.php'; ?>
 
 
-                    <!-- add pawn amount modal -->
-            <?php include '../public/modals/add_pawn_amount_modal.php';?>
+            <!-- add pawn amount modal -->
+            <?php include '../public/modals/add_pawn_amount_modal.php'; ?>
 
 
-                    <!-- claim pawn modal -->
-            <?php include '../public/modals/claim_pawn_modal.php';?>
+            <!-- claim pawn modal -->
+            <?php include '../public/modals/claim_pawn_modal.php'; ?>
 
 
-                    <!-- partial payment modal -->
-            <?php include '../public/modals/partial_payment_modal.php';?>
+            <!-- partial payment modal -->
+            <?php include '../public/modals/partial_payment_modal.php'; ?>
 
 
-                    <!-- tubo payment modal -->
-            <?php include '../public/modals/tubo_payment_modal.php';?>
+            <!-- tubo payment modal -->
+            <?php include '../public/modals/tubo_payment_modal.php'; ?>
 
 
-                    <!-- forfeit pawn modal -->
-            <?php include '../public/modals/forfeit_pawn_modal.php';?>
+            <!-- forfeit pawn modal -->
+            <?php include '../public/modals/forfeit_pawn_modal.php'; ?>
 
 
-    
+
             <!-- add branch filtering when super admin is the user -->
             <!-- DataTable -->
             <!-- Branch filter for Super Admin -->
@@ -136,6 +136,22 @@ $highlightPawnId = $_GET['id'] ?? '';
     // pawns.php
     // DataTables AJAX init
     $(document).ready(function () {
+
+        // Get pawn_id from URL (if any)
+        function getPawnIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+
+            if (id) {
+                // Remove ?id=... from the URL (without reload)
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+
+            return id;
+        }
+
+
         let pawnTable = $('#pawnTable').DataTable({
             columnDefs: [
                 { className: "text-center", targets: "_all" }
@@ -148,6 +164,12 @@ $highlightPawnId = $_GET['id'] ?? '';
                     <?php endif; ?>
                     d.start_date = $('#fromDate').val();
                     d.end_date = $('#toDate').val();
+
+                    //  Add pawn_id filter only if it exists in the URL
+                    let pawnId = getPawnIdFromUrl();
+                    if (pawnId) {
+                        d.pawn_id = pawnId;
+                    }
                 },
                 dataSrc: function (json) {
                     // Populate total pawned in footer
@@ -174,10 +196,11 @@ $highlightPawnId = $_GET['id'] ?? '';
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>
-                                    { title: "Actions", orderable: false }
-            <?php endif; ?>
+                    { title: "Actions", orderable: false }
+        <?php endif; ?>
             ]
         });
+
 
         // Filter button click
         $('#filterBtn').on('click', function () {
@@ -329,92 +352,92 @@ $highlightPawnId = $_GET['id'] ?? '';
 
 
 
-// function getUnpaidMonths(pawn, data, todayLocal = new Date()) {
-//     let unpaidMonths = 0;
+    // function getUnpaidMonths(pawn, data, todayLocal = new Date()) {
+    //     let unpaidMonths = 0;
 
-//     // -------- Step 1: if NO partials, NO tubo --------
-//     if (!pawn.has_partial_payments && !pawn.has_tubo_payments && pawn.status == 'pawned') {
-//         let startDate = new Date(pawn.current_due_date);
+    //     // -------- Step 1: if NO partials, NO tubo --------
+    //     if (!pawn.has_partial_payments && !pawn.has_tubo_payments && pawn.status == 'pawned') {
+    //         let startDate = new Date(pawn.current_due_date);
 
-//         if (todayLocal > startDate) {
-//             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-//                            (todayLocal.getMonth() - startDate.getMonth());
+    //         if (todayLocal > startDate) {
+    //             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+    //                            (todayLocal.getMonth() - startDate.getMonth());
 
-//             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-//             if (unpaidMonths < 1) unpaidMonths = 1;
-//         }
-//     }
+    //             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+    //             if (unpaidMonths < 1) unpaidMonths = 1;
+    //         }
+    //     }
 
-//     // -------- Step 2: if HAS tubo payments --------
-//     else if (pawn.has_tubo_payments && pawn.status == 'pawned') {
-//         let lastTuboEnd = null;
-//         if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
-//             let lastTuboIndex = data.tubo_history.length - 1;
-//             lastTuboEnd = new Date(data.tubo_history[lastTuboIndex].new_due_date);
-//         }
+    //     // -------- Step 2: if HAS tubo payments --------
+    //     else if (pawn.has_tubo_payments && pawn.status == 'pawned') {
+    //         let lastTuboEnd = null;
+    //         if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
+    //             let lastTuboIndex = data.tubo_history.length - 1;
+    //             lastTuboEnd = new Date(data.tubo_history[lastTuboIndex].new_due_date);
+    //         }
 
-//         if (lastTuboEnd) {
-//             if (todayLocal <= lastTuboEnd) {
-//                 unpaidMonths = 0; // still covered
-//             } else {
-//                 let startDate = new Date(lastTuboEnd);
+    //         if (lastTuboEnd) {
+    //             if (todayLocal <= lastTuboEnd) {
+    //                 unpaidMonths = 0; // still covered
+    //             } else {
+    //                 let startDate = new Date(lastTuboEnd);
 
-//                 unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-//                                (todayLocal.getMonth() - startDate.getMonth());
+    //                 unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+    //                                (todayLocal.getMonth() - startDate.getMonth());
 
-//                 if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-//                 if (unpaidMonths < 1) unpaidMonths = 1;
-//             }
-//         }
-//     }
+    //                 if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+    //                 if (unpaidMonths < 1) unpaidMonths = 1;
+    //             }
+    //         }
+    //     }
 
-//     // -------- Step 3: Partial payments --------
-//     else if (pawn.has_partial_payments) {
-//         let currentDueDate = new Date(pawn.current_due_date);
+    //     // -------- Step 3: Partial payments --------
+    //     else if (pawn.has_partial_payments) {
+    //         let currentDueDate = new Date(pawn.current_due_date);
 
-//         if (currentDueDate && todayLocal <= currentDueDate) {
-//             unpaidMonths = 0; // still covered
-//         } else if (currentDueDate) {
-//             let startDate = new Date(currentDueDate);
+    //         if (currentDueDate && todayLocal <= currentDueDate) {
+    //             unpaidMonths = 0; // still covered
+    //         } else if (currentDueDate) {
+    //             let startDate = new Date(currentDueDate);
 
-//             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-//                            (todayLocal.getMonth() - startDate.getMonth());
+    //             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+    //                            (todayLocal.getMonth() - startDate.getMonth());
 
-//             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-//             if (unpaidMonths < 1) unpaidMonths = 1;
-//         }
-//     }
+    //             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+    //             if (unpaidMonths < 1) unpaidMonths = 1;
+    //         }
+    //     }
 
-//     // -------- Step 4: Both tubo + partial payments --------
-//     else if (pawn.has_partial_payments && pawn.has_tubo_payments) {
-//         let currentDueDate = pawn.current_due_date ? new Date(pawn.current_due_date) : null;
-//         let tuboDueDate = (data.tubo_history && data.tubo_history.length > 0)
-//             ? new Date(data.tubo_history[data.tubo_history.length - 1].new_due_date)
-//             : null;
+    //     // -------- Step 4: Both tubo + partial payments --------
+    //     else if (pawn.has_partial_payments && pawn.has_tubo_payments) {
+    //         let currentDueDate = pawn.current_due_date ? new Date(pawn.current_due_date) : null;
+    //         let tuboDueDate = (data.tubo_history && data.tubo_history.length > 0)
+    //             ? new Date(data.tubo_history[data.tubo_history.length - 1].new_due_date)
+    //             : null;
 
-//         // pick whichever is later
-//         let latestDueDate = null;
-//         if (currentDueDate && tuboDueDate) {
-//             latestDueDate = (tuboDueDate > currentDueDate) ? tuboDueDate : currentDueDate;
-//         } else {
-//             latestDueDate = currentDueDate || tuboDueDate;
-//         }
+    //         // pick whichever is later
+    //         let latestDueDate = null;
+    //         if (currentDueDate && tuboDueDate) {
+    //             latestDueDate = (tuboDueDate > currentDueDate) ? tuboDueDate : currentDueDate;
+    //         } else {
+    //             latestDueDate = currentDueDate || tuboDueDate;
+    //         }
 
-//         if (latestDueDate && todayLocal <= latestDueDate) {
-//             unpaidMonths = 0;
-//         } else if (latestDueDate) {
-//             let startDate = new Date(latestDueDate);
+    //         if (latestDueDate && todayLocal <= latestDueDate) {
+    //             unpaidMonths = 0;
+    //         } else if (latestDueDate) {
+    //             let startDate = new Date(latestDueDate);
 
-//             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-//                            (todayLocal.getMonth() - startDate.getMonth());
+    //             unpaidMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+    //                            (todayLocal.getMonth() - startDate.getMonth());
 
-//             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
-//             if (unpaidMonths < 1) unpaidMonths = 1;
-//         }
-//     }
+    //             if (todayLocal.getDate() > startDate.getDate()) unpaidMonths++;
+    //             if (unpaidMonths < 1) unpaidMonths = 1;
+    //         }
+    //     }
 
-//     return unpaidMonths;
-// }
+    //     return unpaidMonths;
+    // }
 
 
 

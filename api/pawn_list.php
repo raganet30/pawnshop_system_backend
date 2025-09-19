@@ -21,6 +21,10 @@ $selected_branch_id = $_GET['branch_id'] ?? null;
 $start_date = $_GET['start_date'] ?? null;
 $end_date = $_GET['end_date'] ?? null;
 
+
+//  New: pawn_id filter from request
+$pawn_id = $_GET['pawn_id'] ?? null;
+
 // Apply branch filter
 $params = [];
 if ($user_role === 'super_admin') {
@@ -45,6 +49,14 @@ if ($end_date) {
     $where .= " AND DATE(p.date_pawned) <= ?";
     $params[] = $end_date;
 }
+
+
+// Apply pawn_id filter (highest priority)
+if (!empty($pawn_id)) {
+    $where .= " AND p.pawn_id = ?";
+    $params[] = $pawn_id;
+}
+
 
 // Fetch pawned items
 $sql = "
