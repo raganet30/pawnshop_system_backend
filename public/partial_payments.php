@@ -136,6 +136,7 @@ checkSessionTimeout($pdo);
                         return '<span class="badge bg-dark">Unknown</span>';
                     }
                 },
+                { data: 'cashier', title: 'Cashier' },
                 {
                     data: null,
                     title: 'Action',
@@ -149,8 +150,8 @@ checkSessionTimeout($pdo);
                         </button>
                     `;
                     }
-                },
-                { data: 'cashier', title: 'Cashier' }
+                }
+                
             ],
             order: [[1, 'desc']],
             footerCallback: function (row, data, start, end, display) {

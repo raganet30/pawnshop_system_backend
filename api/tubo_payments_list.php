@@ -15,18 +15,21 @@ $to_date = $_POST['to_date'] ?? '';
 try {
     $query = "
         SELECT 
-            tp.tubo_id,
-            tp.date_paid,
-            tp.period_start,
-            tp.period_end,
-            tp.months_covered,
-            tp.interest_amount,
-            pi.unit_description AS item,
-            c.full_name AS owner
-        FROM tubo_payments tp
-        INNER JOIN pawned_items pi ON tp.pawn_id = pi.pawn_id
-        INNER JOIN customers c ON pi.customer_id = c.customer_id
-        WHERE 1=1
+    tp.tubo_id,
+    tp.pawn_id,
+    tp.branch_id,
+    tp.date_paid,
+    tp.period_start,
+    tp.period_end,
+    tp.months_covered,
+    tp.interest_amount,
+    pi.unit_description AS item,
+    pi.original_amount_pawned,
+    c.full_name AS owner
+FROM tubo_payments tp
+INNER JOIN pawned_items pi ON tp.pawn_id = pi.pawn_id
+INNER JOIN customers c ON pi.customer_id = c.customer_id
+
     ";
 
     $params = [];

@@ -69,6 +69,7 @@ checkSessionTimeout($pdo);
                         <th>Covered Period</th>
                         <th>Months Covered</th>
                         <th>Interest Amount</th>
+                        <th>Action</th>
                         
                     </tr>
                 </thead>
@@ -118,7 +119,30 @@ $(document).ready(function () {
             { 
                 data: "interest_amount",
                 render: $.fn.dataTable.render.number(',', '.', 2, '₱')
-            }
+            },
+            {
+                    data: null,
+                    title: 'Action',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-secondary print-tubo"
+                                    data-id="${row.tubo_id}"
+                                    data-pawnid="${row.pawn_id}"
+                                    data-owner="${row.owner}"
+                                    data-item="${row.item}"
+                                    data-datepaid="${row.date_paid}"
+                                    data-periodstart="${row.period_start}"
+                                    data-periodend="${row.period_end}"
+                                    data-months="${row.months_covered}"
+                                    data-interest="${row.interest_amount}"
+                                    data-amountpawned="${row.original_amount_pawned}">
+                                <i class="bi bi-printer"></i> Print
+                            </button>
+                        `;
+                    }
+
+                }
         ],
         order: [[3, 'desc']], // order by date_paid
         footerCallback: function ( row, data, start, end, display ) {
@@ -155,6 +179,36 @@ $(document).ready(function () {
         tuboTable.ajax.reload();
     });
 
+
+    $(document).on("click", ".print-tubo", function() {
+    const btn = $(this);
+
+    // Build receipt no: pawnId-mmddyy
+    let d = new Date(btn.data("datepaid"));
+    let mm = String(d.getMonth() + 1).padStart(2, "0");
+    let dd = String(d.getDate()).padStart(2, "0");
+    let yy = String(d.getFullYear()).slice(-2);
+    let receipt_no = String(btn.data("pawnid")).padStart(3, "0") + "-" + mm + dd + yy;
+
+    const queryParams = $.param({
+        receipt_no: receipt_no,
+        customer_name: btn.data("owner"),              // ✅ match PHP
+        item: btn.data("item"),
+        date_paid: btn.data("datepaid"),
+        period_start: btn.data("periodstart"),
+        period_end: btn.data("periodend"),
+        months_covered: btn.data("months"),
+        interest_amount: btn.data("interest"),
+        original_amount_pawned: btn.data("amountpawned") // ✅ match PHP
+    });
+
+    window.open(`../processes/print_tubo_payment_ar.php?${queryParams}`, "_blank");
 });
+
+
+
+});
+
+
 </script>
 
