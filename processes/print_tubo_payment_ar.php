@@ -104,7 +104,7 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
             </tr>
             <tr>
                 <td><b>Months Covered:</b></td>
-                <td><?= htmlspecialchars((!empty($covered_from) && !empty($covered_to)) ? ((new DateTime($covered_from))->diff(new DateTime($covered_to))->m + 1) : '0') ?> month(s)</td>
+                <td><?= htmlspecialchars((!empty($covered_from) && !empty($covered_to)) ? ((new DateTime($covered_from))->diff(new DateTime($covered_to))->m) : '0') ?> month(s)</td>
             </tr>
             <tr>
                 <td><b>Covered Months:</b></td>
