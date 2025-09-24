@@ -250,16 +250,38 @@ $notifCount = count($nearing) + count($overdue);
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Old Password</label>
-                        <input type="password" class="form-control" name="old_password" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="old_password" id="old_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                data-target="old_password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">New Password</label>
-                        <input type="password" class="form-control" name="new_password" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="new_password" id="new_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                data-target="new_password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" name="confirm_password" required>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="confirm_password"
+                                id="confirm_new_password" required>
+                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                data-target="confirm_new_password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Update Password</button>
@@ -352,6 +374,7 @@ $notifCount = count($nearing) + count($overdue);
         const newPass = form.querySelector("input[name='new_password']").value;
         const confirmPass = form.querySelector("input[name='confirm_password']").value;
 
+
         // Strong password validation
         const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
         if (!strongPassword.test(newPass)) {
@@ -394,5 +417,30 @@ $notifCount = count($nearing) + count($overdue);
                     });
             }
         });
+
+        // Show/Hide password toggle (works for all password inputs)
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.replace("bi-eye", "bi-eye-slash");
+                } else {
+                    input.type = "password";
+                    icon.classList.replace("bi-eye-slash", "bi-eye");
+                }
+            });
+        });
+
+
+
+
     });
+
+
+
+
 </script>

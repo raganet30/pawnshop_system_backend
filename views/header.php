@@ -18,6 +18,8 @@
 <link rel="icon" href="../assets/img/pawnshop icon.png" type="image/x-icon">
 
 
+
+
 </head>
 <style>
     /* customized style for stack cards */

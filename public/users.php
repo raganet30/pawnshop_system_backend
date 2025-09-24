@@ -52,16 +52,32 @@ checkSessionTimeout($pdo);
                                         <label>Username</label>
                                         <input type="text" class="form-control" name="username" required>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Password</label>
-                                        <input type="password" class="form-control" id="add_password" name="password"
-                                            required>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="add_password"
+                                                name="password" required>
+                                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                                data-target="add_password">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Confirm Password</label>
-                                        <input type="password" class="form-control" id="add_confirm_password"
-                                            name="confirm_password" required>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="add_confirm_password"
+                                                name="confirm_password" required>
+                                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                                data-target="add_confirm_password">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
+
+
                                     <div class="col-md-6">
                                         <label>Branch</label>
                                         <select class="form-control" name="branch_id" required>
@@ -132,15 +148,29 @@ checkSessionTimeout($pdo);
                                     </div>
                                     <div class="col-md-6">
                                         <label>Password</label>
-                                        <input type="password" class="form-control" name="password" id="edit_password"
-                                            placeholder="Leave blank to keep current password">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" name="password"
+                                                id="edit_password" placeholder="Leave blank to keep current password">
+                                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                                data-target="edit_password">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Confirm Password</label>
-                                        <input type="password" class="form-control" name="confirm_password"
-                                            id="edit_confirm_password"
-                                            placeholder="Leave blank to keep current password">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" name="confirm_password"
+                                                id="edit_confirm_password"
+                                                placeholder="Leave blank to keep current password">
+                                            <button class="btn btn-outline-secondary toggle-password" type="button"
+                                                data-target="edit_confirm_password">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Branch</label>
                                         <select class="form-control" name="branch_id" id="edit_branch" required>
@@ -308,6 +338,8 @@ checkSessionTimeout($pdo);
 
             $('#editUserModal').modal('show');
         });
+
+        
     });
 
     // Live preview for newly selected photo
@@ -444,6 +476,25 @@ checkSessionTimeout($pdo);
                         Swal.fire('Error', 'Something went wrong', 'error');
                     }
                 });
+            }
+        });
+
+
+    });
+
+    // Show/Hide password toggle
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
             }
         });
     });

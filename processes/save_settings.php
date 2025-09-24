@@ -20,6 +20,9 @@ $pawn_maturity_reminder_days    = isset($_POST['pawn_maturity_reminder_days']) ?
 $export_format    = isset($_POST['export_format']) ? trim($_POST['export_format']) : 'excel';
 $report_info      = isset($_POST['report_info']) ? trim($_POST['report_info']) : '';
 $backup_frequency = isset($_POST['backup_frequency']) ? trim($_POST['backup_frequency']) : 'manual';
+$shop_name        = isset($_POST['shop_name']) ? trim($_POST['shop_name']) : 'LD Gadget Pawnshop';
+$backup_frequency = $_POST['backup_frequency'] ?? 'manual';
+$enable_sms = isset($_POST['enable_sms']) ? 1 : 0;
 
 //  Validate minimal rules
 $valid_formats = ['pdf', 'excel', 'csv'];
@@ -41,7 +44,7 @@ try {
 
     $stmt = $pdo->prepare("
     UPDATE settings 
-    SET cash_threshold=?, pawn_maturity_reminder_days=?, export_format=?, report_info=?, backup_frequency=?, session_timeout=?, updated_at=NOW() 
+    SET cash_threshold=?, pawn_maturity_reminder_days=?, export_format=?, report_info=?, backup_frequency=?, session_timeout=?,shop_name=?, backup_frequency=?, enable_sms=?,  updated_at=NOW() 
     WHERE id=1
 ");
 $ok = $stmt->execute([
@@ -50,7 +53,10 @@ $ok = $stmt->execute([
     $export_format,
     $report_info,
     $backup_frequency,
-    $session_timeout
+    $session_timeout,
+    $shop_name,
+    $backup_frequency, 
+    $enable_sms
 ]);
 
     if ($ok) {
