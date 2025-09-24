@@ -79,11 +79,11 @@ switch ($action) {
 
     case 'subtract':
         $ledgerNotes = sprintf(
-            "Subtracted ₱%s (Old COH: ₱%s → New COH: ₱%s)",
+            "Deducted ₱%s (Old COH: ₱%s → New COH: ₱%s)",
             number_format($delta, 2),
             number_format($currentCOH, 2),
             number_format($newCOH, 2)
-        );
+        );  
         break;
 
     case 'set':
