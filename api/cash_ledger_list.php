@@ -16,6 +16,10 @@ $session_branch_id = $user['branch_id'];
 // Get branch_id from AJAX request (for super_admin)
 $selected_branch_id = $_GET['branch_id'] ?? null;
 
+
+//get txn_type from AJAX request
+$txn_type_filter = $_GET['txn_type'] ?? null;
+
 $branchCondition = [];
 $params = [];
 
@@ -37,6 +41,13 @@ if (!empty($_GET['fromDate']) && !empty($_GET['toDate'])) {
     $branchCondition[] = "DATE(cl.created_at) BETWEEN ? AND ?";
     $params[] = $_GET['fromDate'];
     $params[] = $_GET['toDate'];
+}
+
+// txn_type_filter
+// Transaction type filter
+if (!empty($txn_type_filter)) {
+    $branchCondition[] = "cl.txn_type = ?";
+    $params[] = $txn_type_filter;
 }
 
 $whereSQL = "";

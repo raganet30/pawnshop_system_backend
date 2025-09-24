@@ -28,7 +28,54 @@ checkSessionTimeout($pdo);
             </div>
 
 
-            <?php include '../views/filters.php'; ?>
+            <!-- Date & Transaction Filters -->
+            <div class="row mb-3">
+                <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
+                    <div class="col-md-3">
+                        <label for="branchFilter" class="form-label">Branch:</label>
+                        <select id="branchFilter" class="form-select">
+                            <option value="">All Branches</option>
+                            <?php
+                            $stmt = $pdo->query("SELECT branch_id, branch_name FROM branches ORDER BY branch_name");
+                            while ($branch = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                echo '<option value="' . $branch['branch_id'] . '">' . htmlspecialchars($branch['branch_name']) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
+
+                <!-- TXN Type filter (from DB) -->
+                <div class="col-md-3">
+                    <label for="txnTypeFilter" class="form-label">Transaction Type:</label>
+                    <select id="txnTypeFilter" class="form-select">
+                        <option value="">All Types</option>
+                        <?php
+                        $stmt = $pdo->query("SELECT DISTINCT txn_type FROM cash_ledger ORDER BY txn_type ASC");
+                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo '<option value="' . htmlspecialchars($row['txn_type']) . '">'
+                                . htmlspecialchars(ucwords(str_replace('_', ' ', $row['txn_type'])))
+                                . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+
+
+                <div class="col-md-2">
+                    <label for="fromDate" class="form-label">From:</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="toDate" class="form-label">To:</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="filterBtn" class="btn btn-primary me-2">Filter</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                </div>
+            </div>
+
 
             <!-- DataTable -->
             <div class="card">
@@ -112,6 +159,7 @@ checkSessionTimeout($pdo);
                 data: function (d) {
                     d.fromDate = $('#fromDate').val();
                     d.toDate = $('#toDate').val();
+                    d.txn_type = $('#txnTypeFilter').val();
                     <?php if ($_SESSION['user']['role'] === 'super_admin'): ?>
                         d.branch_id = $('#branchFilter').val();
                     <?php endif; ?>
@@ -175,6 +223,7 @@ checkSessionTimeout($pdo);
         $('#resetBtn').on('click', function () {
             $('#fromDate').val('');
             $('#toDate').val('');
+            $('#txnTypeFilter').val('');
             table.ajax.reload();
         });
 

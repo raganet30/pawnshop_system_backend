@@ -17,6 +17,7 @@ $stmt = $pdo->prepare("
     cl.ledger_id,
     cl.amount,
     cl.direction,
+    cl.description,
     cl.notes,
     cl.created_at,
     u.user_id,
@@ -26,7 +27,7 @@ JOIN users u ON cl.user_id = u.user_id
 WHERE cl.branch_id = ? 
   AND cl.txn_type = 'coh_adjustment'
 ORDER BY cl.created_at DESC
-LIMIT 10;
+LIMIT 20;
 
 ");
 $stmt->execute([$user['branch_id']]);

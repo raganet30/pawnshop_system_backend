@@ -80,6 +80,14 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                     <label>Contact No.</label>
                                     <input type="text" class="form-control" id="viewContact" readonly>
                                 </div>
+
+                                <div class="col-md-4">
+                                    <label>Notes</label>
+                                    <input type="text" class="form-control" id="viewNotes" readonly>
+                                </div>
+
+                               
+
                                
 
                                 <!--  Tubo Payments History -->
@@ -304,6 +312,7 @@ $(document).on("click", ".viewClaimBtn", function (e) {
                 $("#viewTotalPaid").val("₱" + parseFloat(d.total_paid).toFixed(2));
                 $("#viewPenalty").val("₱" + parseFloat(d.penalty_amount).toFixed(2));
                 $("#viewContact").val(d.contact_no);
+                $("#viewNotes").val(d.notes || '');
 
                 // Show claimant photo
                 if (d.photo_path && d.photo_path !== "") {

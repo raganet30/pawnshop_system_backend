@@ -66,18 +66,49 @@ try {
     $stmt->execute([$newCOH, $branch_id]);
 
     // Insert into cash ledger
-    insertCashLedger(
-        $pdo,
-        $branch_id,
-        "coh_adjustment",
-        $direction,
-        $delta,
-        "branches",          // ref_table = branch
-        $branch_id,          // ref_id = branch affected
-        ucfirst($action) . " COH Adjustment",
-        $notes ?: "COH Adjustment",
-        $user_id
-    );
+    // Prepare detailed notes for ledger
+switch ($action) {
+    case 'add':
+        $ledgerNotes = sprintf(
+            "Added ₱%s (Old COH: ₱%s → New COH: ₱%s)",
+            number_format($delta, 2),
+            number_format($currentCOH, 2),
+            number_format($newCOH, 2)
+        );
+        break;
+
+    case 'subtract':
+        $ledgerNotes = sprintf(
+            "Subtracted ₱%s (Old COH: ₱%s → New COH: ₱%s)",
+            number_format($delta, 2),
+            number_format($currentCOH, 2),
+            number_format($newCOH, 2)
+        );
+        break;
+
+    case 'set':
+        $ledgerNotes = sprintf(
+            "Set COH ₱%s (from ₱%s)",
+            number_format($amount, 2),
+            number_format($currentCOH, 2)
+        );
+        break;
+}
+
+// Insert into cash ledger with detailed notes
+insertCashLedger(
+    $pdo,
+    $branch_id,
+    "coh_adjustment",
+    $direction,
+    $delta,
+    "branches",
+    $branch_id,
+    $ledgerNotes,
+    $notes,
+    $user_id
+);
+
 
     // Log Audit
     $description = sprintf(

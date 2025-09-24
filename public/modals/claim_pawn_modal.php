@@ -71,7 +71,6 @@
                 
                        <!-- DISPLAY IF ROLE IS ADMIN ONLY - prepared only  -->
                         <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin'): ?>
-                        <?php endif; ?>
                         <!-- Interest Options -->
                         <div class="col-md-3">
                             <label for="interestOption">Interest Computation</label>
@@ -81,7 +80,7 @@
                                 <option value="custom">Custom Interest Amount</option>
                             </select>
                         </div>
-                        
+                        <?php endif; ?>
 
                         <div class="col-md-3">
                             <label for="claimNotes">Notes</label>

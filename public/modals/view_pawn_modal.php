@@ -58,6 +58,12 @@
                                     <input type="text" class="form-control" id="viewInterest" readonly>
                                 </div>
 
+                                <!-- Computed Interest Amount -->
+                                 <div class="col-md-3">
+                                    <label>Intererest Amount</label>
+                                    <input type="text" class="form-control" id="viewInterestAmount" readonly>
+                                </div>
+
 
                                 <div class="col-md-3">
                                     <label>Note</label>

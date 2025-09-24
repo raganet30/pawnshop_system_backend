@@ -26,6 +26,7 @@ $query = "
         c.interest_amount,
         c.total_paid,
         c.penalty_amount,
+        c.notes,
         cu.full_name,
         cu.contact_no,
         cu.address,

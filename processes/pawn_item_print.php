@@ -101,7 +101,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     <tr>
         <td colspan="2">
             <b>AMOUNT:</b> ₱<?= number_format($pawn['amount_pawned'], 2) ?> &nbsp;&nbsp;
-            <b>INTEREST (<?=$pawn['interest_rate']*100 ?>%):</b> ₱<?= number_format($pawn['amount_pawned'] * $pawn['interest_rate'], 2) ?> &nbsp;&nbsp;
+            <b>INTEREST AMOUNT</b> ₱<?= number_format($pawn['amount_pawned'] * $pawn['interest_rate'], 2) ?> &nbsp;&nbsp;
             <b>TOTAL REPAYMENT:</b> ₱<?= number_format($totalRepayment, 2) ?>
         </td>
     </tr>

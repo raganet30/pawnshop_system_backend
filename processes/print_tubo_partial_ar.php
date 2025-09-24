@@ -118,6 +118,16 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
         <td>₱<?= number_format($tubo_amount, 2) ?></td>
       </tr>
       <tr>
+        <td>
+          <b>Total Payment:</b>
+          <?php 
+          $total_payment = 0;
+          $total_payment=$tubo_amount + $partial_amount;
+          ?>
+          <td>₱<?= number_format($total_payment, 2) ?></td>
+        </td>
+      </tr>
+      <tr>
         <td><b>Covered Months</b></td>
         <td class="left">
           <?php if (!empty($_GET['covered_from']) && !empty($_GET['covered_to'])): ?>

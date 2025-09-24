@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
 require_once "../config/db.php";
 include '../views/header.php';
 // session checker
-require_once "../processes/session_check.php"; 
+require_once "../processes/session_check.php";
 checkSessionTimeout($pdo);
 
 
@@ -55,7 +55,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="card p-3">
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <h5>Interest Rate</h5>
                     <div class="row g-3 align-items-end">
                         <div class="col-md-6">
@@ -82,7 +82,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <div class="row g-3">
                 <!-- Cash Management (Left) -->
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <h5>Cash On Hand Management</h5>
                     <div class="card p-3 mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -108,10 +108,11 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label>Notes</label>
-                                <input id="cashAdjustmentNotes" type="text" class="form-control"
-                                    placeholder="Notes for adjustment" required>
+                                <label for="cashAdjustmentNotes">Notes</label>
+                                <textarea id="cashAdjustmentNotes" class="form-control"
+                                    placeholder="Notes for adjustment" rows="2" required></textarea>
                             </div>
+
                             <div class="col-md-6">
                                 <label></label>
                                 <button id="saveCashAdjustment" class="btn btn-primary w-100">Apply Adjustment</button>
@@ -121,7 +122,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Recent Adjustments (Right) -->
-                <div class="col-md-6">
+                <div class="col-md-7">
                     <h5>Recent Adjustments</h5>
                     <div class="card p-3">
                         <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
@@ -131,6 +132,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <th>Date</th>
                                         <th>Amount</th>
                                         <th>Type</th>
+                                        <th>Description</th>
                                         <th>Notes</th>
                                         <th>User</th>
                                     </tr>
@@ -161,42 +163,42 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
 
     // script to save insterest rate
-   document.getElementById("saveInterestBtn")?.addEventListener("click", function () {
-    const rate = document.getElementById("interestRateInput").value;
-    const customRate = document.getElementById("customInterestRateInput").value;
+    document.getElementById("saveInterestBtn")?.addEventListener("click", function () {
+        const rate = document.getElementById("interestRateInput").value;
+        const customRate = document.getElementById("customInterestRateInput").value;
 
-    Swal.fire({
-        title: "Save Interest Rate?",
-        text: "This will update the monthly interest rates.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, save it"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch("../processes/save_interest.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "rate=" + encodeURIComponent(rate) +
-                      "&custom_rate=" + encodeURIComponent(customRate)
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire("Saved!", data.message, "success").then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire("Error", data.message, "error");
-                    }
+        Swal.fire({
+            title: "Save Interest Rate?",
+            text: "This will update the monthly interest rates.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, save it"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("../processes/save_interest.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: "rate=" + encodeURIComponent(rate) +
+                        "&custom_rate=" + encodeURIComponent(customRate)
                 })
-                .catch(() => {
-                    Swal.fire("Error", "Something went wrong.", "error");
-                });
-        }
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire("Saved!", data.message, "success").then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire("Error", data.message, "error");
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire("Error", "Something went wrong.", "error");
+                    });
+            }
+        });
     });
-});
 
 
     // function sa fetch recent adjustment
@@ -240,6 +242,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td>${new Date(adj.created_at).toLocaleString()}</td>
             <td>${sign}₱${displayAmount}</td>
             <td><span class="badge ${badgeClass}">${adj.direction}</span></td>
+            <td>${adj.description ?? ''}</td>
             <td>${adj.notes ?? ''}</td>
             <td>${adj.full_name ?? ''}</td>
         </tr>
@@ -254,9 +257,9 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     attachCurrencyFormatter(
-    document.getElementById('cashAdjustmentAmountVisible'),
-    document.getElementById('cashAdjustmentAmount')
-);
+        document.getElementById('cashAdjustmentAmountVisible'),
+        document.getElementById('cashAdjustmentAmount')
+    );
 
     // Load adjustments on page load
     document.addEventListener('DOMContentLoaded', loadAdjustments);
