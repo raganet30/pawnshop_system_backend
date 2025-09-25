@@ -139,11 +139,10 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
                 tuboStartDate = lastTubo.period_end; // base on latest covered end date
             }
 
-
             // Priority 2: partial history (no tubo yet)
-            else if (res.partial_history && res.partial_history.length > 0) {
-                tuboStartDate = pawn.current_due_date;
-            }
+            // else if (res.partial_history && res.partial_history.length > 0) {
+            //     tuboStartDate = pawn.current_due_date;
+            // }
             // Priority 3: fresh pawn
             else {
                 tuboStartDate = pawn.date_pawned;
