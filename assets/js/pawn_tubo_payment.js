@@ -132,9 +132,14 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
 
             // Priority 1: tubo history
             if (res.tubo_history && res.tubo_history.length > 0) {
-                const lastTubo = res.tubo_history[res.tubo_history.length - 1];
-                tuboStartDate = lastTubo.new_due_date;
+                // Find the tubo record with the latest period_end
+                const lastTubo = res.tubo_history.reduce((latest, tubo) => {
+                    return new Date(tubo.period_end) > new Date(latest.period_end) ? tubo : latest;
+                });
+                tuboStartDate = lastTubo.period_end; // base on latest covered end date
             }
+
+
             // Priority 2: partial history (no tubo yet)
             else if (res.partial_history && res.partial_history.length > 0) {
                 tuboStartDate = pawn.current_due_date;
@@ -180,9 +185,10 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
                     // For fresh pawn, base it on current_due_date
                     newDueDate = addMonths(pawn.current_due_date, months);
                 } else {
-                    // Otherwise, use selector end
-                    newDueDate = end;
+                    // Otherwise, base it on the selector end + 1 month
+                    newDueDate = addMonths(end, 1);
                 }
+
 
                 $("#tpNewDueDate").val(newDueDate);
 
@@ -245,7 +251,7 @@ $("#tuboPaymentForm").on("submit", function (e) {
                 interest_amount: parseFloat($("#tpInterestAmount").val().replace("₱", "")),
                 new_due_date: $("#tpNewDueDate").val(),
                 notes: $("#tpNotes").val()
-              
+
             };
 
 
@@ -255,50 +261,50 @@ $("#tuboPaymentForm").on("submit", function (e) {
                 data: formData,
                 dataType: "json",
                 success: function (res) {
-    if (res.status === "success") {
-        Swal.fire("Saved!", res.message, "success");
-        $("#tuboPaymentModal").modal("hide");
+                    if (res.status === "success") {
+                        Swal.fire("Saved!", res.message, "success");
+                        $("#tuboPaymentModal").modal("hide");
 
-        //  Generate AR No. from pawn_id + datePaid
-        let pawnId   = $("#tpPawnId").val();
-        let datePaid = $("#tpDatePaid").val() || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+                        //  Generate AR No. from pawn_id + datePaid
+                        let pawnId = $("#tpPawnId").val();
+                        let datePaid = $("#tpDatePaid").val() || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-        let d  = new Date(datePaid);
-        let mm = String(d.getMonth() + 1).padStart(2, "0");
-        let dd = String(d.getDate()).padStart(2, "0");
-        let yy = String(d.getFullYear()).slice(-2);
+                        let d = new Date(datePaid);
+                        let mm = String(d.getMonth() + 1).padStart(2, "0");
+                        let dd = String(d.getDate()).padStart(2, "0");
+                        let yy = String(d.getFullYear()).slice(-2);
 
-        let receiptNo = pawnId.toString().padStart(3, "0") + "-" + mm + dd + yy;
+                        let receiptNo = pawnId.toString().padStart(3, "0") + "-" + mm + dd + yy;
 
-        //  Build print query
-        let queryParams = {
-            receipt_no: receiptNo,
-            customer_name: $("#tpPawnerName").val(),
-            item: $("#tpUnit").val(),
-            date_paid: datePaid,
-            months_covered: $("#tpMonthsSelector").val(),
-            period_start: $("#tpMonthsSelector option:selected").data("start"),
-            period_end: $("#tpMonthsSelector option:selected").data("end"),
-            interest_amount: parseFloat($("#tpInterestAmount").val().replace("₱", "")).toFixed(2),
-            new_due_date: $("#tpNewDueDate").val(),
-            notes: $("#tpNotes").val(),
-            original_amount_pawned: parseFloat($("#tpOriginalAmountPawned").val().replace("₱", "").replace(/,/g, "")).toFixed(2)
+                        //  Build print query
+                        let queryParams = {
+                            receipt_no: receiptNo,
+                            customer_name: $("#tpPawnerName").val(),
+                            item: $("#tpUnit").val(),
+                            date_paid: datePaid,
+                            months_covered: $("#tpMonthsSelector").val(),
+                            period_start: $("#tpMonthsSelector option:selected").data("start"),
+                            period_end: $("#tpMonthsSelector option:selected").data("end"),
+                            interest_amount: parseFloat($("#tpInterestAmount").val().replace("₱", "")).toFixed(2),
+                            new_due_date: $("#tpNewDueDate").val(),
+                            notes: $("#tpNotes").val(),
+                            original_amount_pawned: parseFloat($("#tpOriginalAmountPawned").val().replace("₱", "").replace(/,/g, "")).toFixed(2)
 
-        };
+                        };
 
-        let printUrl = "../processes/print_tubo_payment_ar.php?" + $.param(queryParams);
+                        let printUrl = "../processes/print_tubo_payment_ar.php?" + $.param(queryParams);
 
-        //  Auto-open print window
-        window.open(printUrl, "_blank", "width=800,height=600");
+                        //  Auto-open print window
+                        window.open(printUrl, "_blank", "width=800,height=600");
 
-        // (Optional) refresh histories
-        // refreshTuboHistory();
-        // refreshPartialHistory();
-    } else {
-        Swal.fire("Error!", res.message, "error");
-    }
-}
-,
+                        // (Optional) refresh histories
+                        // refreshTuboHistory();
+                        // refreshPartialHistory();
+                    } else {
+                        Swal.fire("Error!", res.message, "error");
+                    }
+                }
+                ,
                 error: function (xhr, status, error) {
                     Swal.fire(
                         'Error!',

@@ -216,6 +216,7 @@ $(document).ready(function () {
         <div>Interest: ₱${interest.toLocaleString(undefined, { minimumFractionDigits: 2 })} 
             ${waiveInterest ? "<span class='text-success'>(Interest waived)</span>" : ""}
         </div>
+        <div>Months: ${monthsBetween(startDate, todayLocal)} month/s</div>
         <hr>
         <strong>Total Payable: ₱${totalPay.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong>
     `);

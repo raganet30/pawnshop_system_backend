@@ -170,8 +170,8 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                                         User will be logged out after inactivity.
                                     </p>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" name="session_timeout" min="5"
-                                            max="120">
+                                        <input type="number" class="form-control" name="session_timeout" min="20"
+                                            max="480">
                                         <span class="input-group-text">minutes</span>
                                     </div>
                                 </div>

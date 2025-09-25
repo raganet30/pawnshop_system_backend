@@ -52,8 +52,14 @@ include '../views/header.php';
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" id="password" class="form-control" required>
+                    <div class="input-group">
+                        <input type="password" name="password" id="password" class="form-control" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
+
                 <button type="submit" class="btn btn-primary w-100">Login</button>
                 <div class="text-center mt-3">
                     <a href="#" class="text-decoration-none">Forgot password? Contact Admin.</a>
@@ -61,6 +67,25 @@ include '../views/header.php';
         </div>
     </div>
 </div>
+<script>
+    // Show/Hide password toggle
+document.querySelectorAll('.toggle-password').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace("bi-eye", "bi-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.replace("bi-eye-slash", "bi-eye");
+        }
+    });
+});
+
+</script>
 <script src="../assets/js/jquery-3.7.1.min.js"></script>
 <script src="../assets/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/jquery.dataTables.min.js"></script>

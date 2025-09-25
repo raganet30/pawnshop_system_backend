@@ -418,7 +418,14 @@ $notifCount = count($nearing) + count($overdue);
             }
         });
 
-        // Show/Hide password toggle (works for all password inputs)
+       
+
+
+
+    });
+
+
+     // Show/Hide password toggle (works for all password inputs)
         document.querySelectorAll('.toggle-password').forEach(btn => {
             btn.addEventListener('click', function () {
                 const targetId = this.getAttribute('data-target');
@@ -435,10 +442,6 @@ $notifCount = count($nearing) + count($overdue);
             });
         });
 
-
-
-
-    });
 
 
 
