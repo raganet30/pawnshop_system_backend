@@ -1,6 +1,11 @@
 <?php
 session_start();
 require_once "../config/db.php";
+require_once "../config/helpers.php";
+
+
+$shopName = getReceiptHeader($pdo);
+
 
 if (!isset($_GET['pawn_id']) || !is_numeric($_GET['pawn_id'])) {
     die("Invalid Pawn ID");
@@ -85,7 +90,7 @@ $cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
 <body onload="window.print()">
 
   <div class="center">
-    <h3 style="margin:0;">LD GADGET PAWNSHOP</h3>
+    <h3 style="margin:0;"><?php echo htmlspecialchars($shopName) ?></h3>
     <div><?= htmlspecialchars($branch_name) ?></div>
     <div><?= htmlspecialchars($branch_address) ?></div>
     <div>Cell: <?= htmlspecialchars($branch_contact) ?></div>

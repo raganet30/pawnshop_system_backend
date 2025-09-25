@@ -1,4 +1,5 @@
 <?php
+
 // --- Session User ---
 $userId = $_SESSION['user']['id'];
 $sessionBranchId = $_SESSION['user']['branch_id'];
@@ -192,6 +193,16 @@ $notifCount = count($nearing) + count($overdue);
 </nav>
 
 
+<!-- Low Cash Alert -->
+<!-- <div id="cashAlert" class="alert alert-warning alert-dismissible fade show shadow position-fixed top-0 start-50 translate-middle-x mt-2" 
+     style="z-index: 2000; width: auto; max-width: 600px;" role="alert">
+  ⚠️ Low Cash on Hand: ₱9,500.00
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div> -->
+
+
+
+
 <!-- Edit Profile Modal -->
 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -346,7 +357,7 @@ $notifCount = count($nearing) + count($overdue);
         });
     });
 
-    // ✅ Preview for Edit User (vanilla JS only)
+    //  Preview for Edit User (vanilla JS only)
     document.getElementById("edit_profile_photo").addEventListener("change", function (event) {
         const file = event.target.files[0];
         const preview = document.getElementById("edit_profile_preview");
@@ -444,6 +455,12 @@ $notifCount = count($nearing) + count($overdue);
 
 
 
-
-
+    // low cash alert
+    setTimeout(() => {
+        let el = document.getElementById("cashAlert");
+        if (el) {
+            let alert = bootstrap.Alert.getOrCreateInstance(el);
+            alert.close();
+        }
+    }, 10000);
 </script>

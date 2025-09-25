@@ -1,5 +1,9 @@
 <?php
 session_start();
+require_once "../config/db.php";
+require_once "../config/helpers.php";
+
+$shopName = getReceiptHeader($pdo);
 
 // Capture query parameters (from JS)
 $receipt_no = $_GET['receipt_no'] ?? 'N/A';
@@ -67,7 +71,7 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
 <body onload="window.print()">
 
     <div class="center">
-        <h3 style="margin:0;">LD GADGET PAWNSHOP</h3>
+        <h3 style="margin:0;"><?= htmlspecialchars($shopName) ?></h3>
         <div><?= htmlspecialchars($branch_name) ?></div>
         <div><?= htmlspecialchars($branch_address) ?></div>
         <div>Cell: <?= htmlspecialchars($branch_contact) ?></div>

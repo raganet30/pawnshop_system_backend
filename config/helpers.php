@@ -110,3 +110,24 @@ function getInterestRate(PDO $pdo, int $branch_id, string $item_type = "default"
 }
 
 
+// functions to get the receipt header from settings table
+function getReceiptHeader($pdo) {
+    try {
+        $stmt = $pdo->prepare("SELECT shop_name FROM settings LIMIT 1");
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row && isset($row['shop_name'])) {
+            return $row['shop_name'];
+        } else {
+            return "LD Gadget Pawnshop"; // fallback default
+        }
+    } catch (PDOException $e) {
+        error_log("Error fetching receipt header: " . $e->getMessage());
+        return "My Pawnshop"; // safe fallback
+    }
+}
+
+
+// low cash alert threshold
+
