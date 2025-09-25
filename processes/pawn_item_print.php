@@ -44,12 +44,18 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 <title>Pawn Ticket</title>
 <style>
     @page {
-        size: 8.5in 5.5in;
-        margin: 0.2in;
-    }
+    size: auto;   /* let the printer decide paper size */
+    margin: 5mm;  /* safe margin for dot matrix */
+}
+.page {
+    width: 190mm;   /* keeps ticket width inside fanfold */
+    margin: 0 auto;
+}
+
+
     body {
         font-family: "Courier New", monospace;
-        font-size: 10pt; /* smaller font */
+        font-size: 10pt;
         line-height: 1.1;
         margin: 0;
         padding: 0;
@@ -60,7 +66,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     }
     td, th {
         padding: 1px 2px;
-        vertical-align: top;
+        vertical-align: top;    
     }
     .border td, .border th {
         border: 1px solid black;
@@ -70,7 +76,12 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     .bold { font-weight: bold; }
     .section { margin-top: 4px; }
     .small { font-size: 9pt; }
+    .page {
+        width: 190mm;   /* keep some space inside margins */
+        margin: 0 auto;
+    }
 </style>
+
 </head>
 <body onload="window.print()">
 
