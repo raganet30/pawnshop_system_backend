@@ -144,12 +144,14 @@ function renderReceipt($pawn, $header, $totalRepayment, $copyType) { ?>
         </table>
 
         <div class="small">
+            <br>
+            <br>
             <b>Pawner Declarations:</b><br>
             1. Nasa aking pang-unawa na kapag hindi ako nakapagbayad ng kabuuang halaga ng ipinahiram na pera kasama ang interes sa loob ng 2 buwan ay magreresulta ng pagkakaremata ng isinanglang gamit.<br>
             2. Ang battery ng aking gadget ay hindi na responsibilidad ng pawnshop kung sakali mang ito ay masira.<br>
             3. Ang aking pirma sa ibaba ang pagpapatunay na aking naunawaan ang rules and regulations ng pawnshop. <br><br>
             Under the penalty of anti-fencing law, dini-deklara ko po na ako ang may-ari ng item na isinanla.
-            <br><br>
+            <br><br><br><br>
         </div>
 
         <div class="small">
