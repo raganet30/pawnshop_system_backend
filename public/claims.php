@@ -65,7 +65,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                     <input type="text" class="form-control" id="viewAmountPawned" readonly>
                                 </div>
                                 <div class="col-md-3">
-                                    <label>Interest</label>
+                                    <label>Total Interest</label>
                                     <input type="text" class="form-control" id="viewInterest" readonly>
                                 </div>
                                 <div class="col-md-3">
@@ -73,7 +73,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                     <input type="text" class="form-control" id="viewPenalty" readonly>
                                 </div>
                                 <div class="col-md-3">
-                                    <label>Total Paid</label>
+                                    <label>Total Amount Paid</label>
                                     <input type="text" class="form-control" id="viewTotalPaid" readonly>
                                 </div>
                                 <div class="col-md-3">
@@ -86,13 +86,13 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                     <input type="text" class="form-control" id="viewNotes" readonly>
                                 </div>
 
-                               
 
-                               
+
+
 
                                 <!--  Tubo Payments History -->
-                                <h6 class="mt-2">Tubo Payments History</h6>
-                                <div class="table-responsive mb-3">
+                               <h6 class="mt-2 mb-0">Tubo Payments History</h6>
+                                <div class="table-responsive mb-3 mb-0">
                                     <table class="table table-bordered table-sm" id="tuboPaymentsTable">
                                         <thead class="table-light">
                                             <tr>
@@ -111,8 +111,8 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                 </div>
 
                                 <!--  Partial Payments History -->
-                                <h6 class="mt-2">Partial Payments History</h6>
-                                <div class="table-responsive">
+                                <h6 class="mt-2 mb-0">Partial Payments History</h6>
+                                <div class="table-responsive mb-0">
                                     <table class="table table-bordered table-sm" id="partialPaymentsTable">
                                         <thead class="table-light">
                                             <tr>
@@ -131,7 +131,58 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                     </table>
                                 </div>
 
-                                 <div class="col-md-3">
+
+                                <!-- Full Settlement Table -->
+                                <h6 class="mt-2 mb-0">Full Settlement</h6>
+                                <div class="table-responsive mb-0 ">
+                                    <table class="table table-bordered table-sm" id="fullSettlementTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date Paid</th>
+                                                <th>Amount</th>
+                                                <th>Interest</th>
+                                                <th>Penalty</th>
+                                                <th>Total Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="fsDatePaid"></td>
+                                                <td id="fsRemainingAmountPawned"></td>
+                                                <td id="fsTotalInterest"></td>
+                                                <td id="fsTotalPenalty"></td>
+                                                <td id="fsTotalPaid"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Grand Total Payment -->
+                                <!-- <h6 class="mt-2 mb-0">Grand Total Payment</h6>
+                                <div class="table-responsive mb-3 mb-0">
+                                    <table class="table table-bordered table-sm" id="grandTotalTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Total Tubo Paid</th>
+                                                <th>Total Partial Paid</th>
+                                                <th>Grand Total Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="gtTotalTuboPaid"></td>
+                                                <td id="gtTotalPartialPaid"></td>
+                                                <td id="gtGrandTotalPaid"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div> -->
+
+
+
+
+
+                                <div class="col-md-3">
                                     <label>Claimant Photo</label>
                                     <img id="viewClaimPhoto" src="" class="img-fluid border rounded"
                                         alt="Claimant Photo">
@@ -161,7 +212,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                                 <th>Unit</th>
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
-                                <th>Interest Amount</th>
+                                <th>Total Interest</th>
                                 <th>Penalty</th>
                                 <th>Total Paid</th>
                                 <th>Contact No.</th>
@@ -250,7 +301,7 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
                 { data: 8, className: "text-end" }, // Total Paid
                 { data: 9, className: "text-center" }, // Contact No.
                 <?php if ($_SESSION['user']['role'] !== 'super_admin'): ?>
-                        { data: 10, orderable: false, className: "text-center" } // Actions
+                            { data: 10, orderable: false, className: "text-center" } // Actions
             <?php endif; ?>
             ],
             order: [[1, "desc"]],
@@ -287,45 +338,45 @@ $branch_id = $_SESSION['user']['branch_id'] ?? null;
     });
 
 
-   // Handle View button
-$(document).on("click", ".viewClaimBtn", function (e) {
-    e.preventDefault();
-    const pawnId = $(this).data("id");
+    // Handle View button
+    $(document).on("click", ".viewClaimBtn", function (e) {
+        e.preventDefault();
+        const pawnId = $(this).data("id");
 
-    $.ajax({
-        url: "../api/claim_view.php",
-        type: "GET",
-        data: { pawn_id: pawnId },
-        dataType: "json",
-        success: function (response) {
-            if (response.status === "success") {
-                const d = response.data;
+        $.ajax({
+            url: "../api/claim_view.php",
+            type: "GET",
+            data: { pawn_id: pawnId },
+            dataType: "json",
+            success: function (response) {
+                if (response.status === "success") {
+                    const d = response.data;
 
-                // Fill in claim details
-                $("#viewPawnId").val(d.pawn_id);
-                $("#viewOwnerName").val(d.full_name);
-                $("#viewUnitDescription").val(d.unit_description);
-                $("#viewDatePawned").val(d.date_pawned);
-                $("#viewDateClaimed").val(d.date_claimed);
-                $("#viewAmountPawned").val("₱" + parseFloat(d.amount_pawned).toFixed(2));
-                $("#viewInterest").val("₱" + parseFloat(d.interest_amount).toFixed(2));
-                $("#viewTotalPaid").val("₱" + parseFloat(d.total_paid).toFixed(2));
-                $("#viewPenalty").val("₱" + parseFloat(d.penalty_amount).toFixed(2));
-                $("#viewContact").val(d.contact_no);
-                $("#viewNotes").val(d.notes || '');
+                    // Fill in claim details
+                    $("#viewPawnId").val(d.pawn_id);
+                    $("#viewOwnerName").val(d.full_name);
+                    $("#viewUnitDescription").val(d.unit_description);
+                    $("#viewDatePawned").val(d.date_pawned);
+                    $("#viewDateClaimed").val(d.date_claimed);
+                    $("#viewAmountPawned").val("₱" + parseFloat(d.amount_pawned).toFixed(2));
+                    $("#viewInterest").val("₱" + parseFloat(d.total_interest).toFixed(2));
+                    $("#viewTotalPaid").val("₱" + parseFloat(d.total_paid).toFixed(2));
+                    $("#viewPenalty").val("₱" + parseFloat(d.penalty_amount).toFixed(2));
+                    $("#viewContact").val(d.contact_no);
+                    $("#viewNotes").val(d.notes || '');
 
-                // Show claimant photo
-                if (d.photo_path && d.photo_path !== "") {
-                    $("#viewClaimPhoto").attr("src", "../" + d.photo_path);
-                } else {
-                    $("#viewClaimPhoto").attr("src", "assets/img/no-photo.png");
-                }
+                    // Show claimant photo
+                    if (d.photo_path && d.photo_path !== "") {
+                        $("#viewClaimPhoto").attr("src", "../" + d.photo_path);
+                    } else {
+                        $("#viewClaimPhoto").attr("src", "assets/img/no-photo.png");
+                    }
 
-                // --- Populate Partial Payments ---
-                let ppHtml = "";
-if (d.partial_payments && d.partial_payments.length > 0) {
-    d.partial_payments.forEach((p, i) => {
-        ppHtml += `
+                    // --- Populate Partial Payments ---
+                    let ppHtml = "";
+                    if (d.partial_payments && d.partial_payments.length > 0) {
+                        d.partial_payments.forEach((p, i) => {
+                            ppHtml += `
             <tr>
                 <td>${i + 1}</td>
                 <td>${p.date_paid}</td>
@@ -334,17 +385,17 @@ if (d.partial_payments && d.partial_payments.length > 0) {
                 <td>${p.remarks}</td>
             </tr>
         `;
-    });
-} else {
-                    ppHtml = `<tr><td colspan="7" class="text-center">No partial payments</td></tr>`;
-                }
-                $("#partialPaymentsTable tbody").html(ppHtml);
+                        });
+                    } else {
+                        ppHtml = `<tr><td colspan="7" class="text-center">No partial payments</td></tr>`;
+                    }
+                    $("#partialPaymentsTable tbody").html(ppHtml);
 
-                // --- Populate Tubo Payments ---
-                let tuboHtml = "";
-                if (d.tubo_payments && d.tubo_payments.length > 0) {
-                    d.tubo_payments.forEach((t,i) => {
-                        tuboHtml += `
+                    // --- Populate Tubo Payments ---
+                    let tuboHtml = "";
+                    if (d.tubo_payments && d.tubo_payments.length > 0) {
+                        d.tubo_payments.forEach((t, i) => {
+                            tuboHtml += `
                             <tr>
                                 <td>${i + 1}</td>
                                 <td>${t.date_paid}</td>
@@ -354,20 +405,33 @@ if (d.partial_payments && d.partial_payments.length > 0) {
                                 <td>${t.remarks}</td>
                             </tr>
                         `;
-                    });
-                } else {
-                    tuboHtml = `<tr><td colspan="5" class="text-center">No tubo payments</td></tr>`;
-                }
-                $("#tuboPaymentsTable tbody").html(tuboHtml);
+                        });
+                    }
 
-                // Show modal
-                $("#viewClaimModal").modal("show");
-            } else {
-                alert(response.message);
+                    else {
+                        tuboHtml = `<tr><td colspan="5" class="text-center">No tubo payments</td></tr>`;
+                    }
+
+
+                      // populate full settlement summary
+                    $("#fsDatePaid").text(d.date_claimed);
+                $("#fsRemainingAmountPawned").text("₱" + parseFloat(d.remaining_amount_pawned).toFixed(2));
+                $("#fsTotalInterest").text("₱" + parseFloat(d.interest_amount).toFixed(2));
+                $("#fsTotalPenalty").text("₱" + parseFloat(d.penalty_amount).toFixed(2));
+                $("#fsTotalPaid").text("₱" + parseFloat(d.claim_total_paid).toFixed(2));
+
+
+
+                    $("#tuboPaymentsTable tbody").html(tuboHtml);
+
+                    // Show modal
+                    $("#viewClaimModal").modal("show");
+                } else {
+                    alert(response.message);
+                }
             }
-        }
+        });
     });
-});
 
 
 
@@ -412,18 +476,18 @@ if (d.partial_payments && d.partial_payments.length > 0) {
 
 
 
-    
-   // Handle manual print from dropdown
-$(document).on("click", ".printClaimBtn", function (e) {
-    e.preventDefault();
 
-    let pawnId = $(this).data("id");
+    // Handle manual print from dropdown
+    $(document).on("click", ".printClaimBtn", function (e) {
+        e.preventDefault();
 
-    if (pawnId) {
-        let printUrl = "../processes/receipt_print.php?pawn_id=" + pawnId;
-        window.open(printUrl, "_blank"); // open receipt in new tab for printing
-    }
-});
+        let pawnId = $(this).data("id");
+
+        if (pawnId) {
+            let printUrl = "../processes/receipt_print.php?pawn_id=" + pawnId;
+            window.open(printUrl, "_blank"); // open receipt in new tab for printing
+        }
+    });
 
 
 </script>

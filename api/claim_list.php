@@ -24,24 +24,53 @@ $start_date = $_GET['start_date'] ?? null;
 $end_date   = $_GET['end_date'] ?? null;
 
 $query = "
-    SELECT 
-        p.date_pawned AS `date_pawned`,
-        p.has_partial_payments as `has_partial_payments`,
-        c.date_claimed AS `date_claimed`,
-        cu.full_name AS `owner_name`,
-        p.unit_description AS `unit_description`,
-        p.category AS `category`,
-        p.amount_pawned AS `amount_pawned`,
-        c.interest_amount AS `interest_amount`,
-        c.penalty_amount as `penalty_amount`,
-        c.total_paid AS `total_paid`,
-        cu.contact_no AS `contact_no`,
-        p.pawn_id,
-        c.branch_id
-    FROM claims c
-    JOIN pawned_items p ON c.pawn_id = p.pawn_id
-    JOIN customers cu ON p.customer_id = cu.customer_id
-    WHERE 1=1
+  SELECT 
+    p.date_pawned AS `date_pawned`,
+    p.has_partial_payments AS `has_partial_payments`,
+    c.date_claimed AS `date_claimed`,
+    cu.full_name AS `owner_name`,
+    p.unit_description AS `unit_description`,
+    p.category AS `category`,
+    p.original_amount_pawned AS `amount_pawned`,
+    c.interest_amount AS `interest_amount`,
+    c.penalty_amount AS `penalty_amount`,
+    cu.contact_no AS `contact_no`,
+    p.pawn_id,
+    c.branch_id,
+
+    -- Total interest = claim interest + tubo + partial
+    (COALESCE(c.interest_amount,0) 
+     + COALESCE(SUM(tp.interest_amount),0) 
+     + COALESCE(SUM(pp.interest_paid),0)) AS total_interest,
+
+    -- Total paid = principal + total_interest + penalty
+    ( COALESCE(p.original_amount_pawned,0)
+    + COALESCE(c.interest_amount,0) 
+    + COALESCE(c.penalty_amount,0) 
+    + COALESCE(SUM(tp.interest_amount),0) 
+    + COALESCE(SUM(pp.interest_paid),0) ) AS total_paid
+
+FROM claims c
+JOIN pawned_items p ON c.pawn_id = p.pawn_id
+JOIN customers cu ON p.customer_id = cu.customer_id
+LEFT JOIN tubo_payments tp ON tp.pawn_id = p.pawn_id
+LEFT JOIN partial_payments pp ON pp.pawn_id = p.pawn_id
+
+WHERE 1=1
+GROUP BY 
+    p.date_pawned,
+    p.has_partial_payments,
+    c.date_claimed,
+    cu.full_name,
+    p.unit_description,
+    p.category,
+    p.amount_pawned,
+    c.interest_amount,
+    c.penalty_amount,
+    cu.contact_no,
+    p.pawn_id,
+    c.branch_id;
+
 ";
 
 $params = [];
@@ -140,7 +169,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
         '₱'.number_format($row['amount_pawned'],2),
-        '₱'.number_format($row['interest_amount'],2),
+        '₱'.number_format($row['total_interest'],2),
         '₱'.number_format($row['penalty_amount'],2),
         '₱'.number_format($row['total_paid'],2),
         htmlspecialchars($row['contact_no']),

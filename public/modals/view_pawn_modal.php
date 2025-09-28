@@ -36,8 +36,15 @@
                                     <input type="text" class="form-control" id="viewCategory" readonly>
                                 </div>
 
+                                <!-- Original Amount Pawned -->
+                                 <div class="col-md-3">
+                                    <label>Original Amount Pawned</label>
+                                    <input type="text" class="form-control" id="viewOriginalAmountPawned" readonly>
+                                </div>
+
+
                                 <div class="col-md-3">
-                                    <label>Amount Pawned</label>
+                                    <label>Remaining Amount Pawned</label>
                                     <input type="text" class="form-control" id="viewAmountPawned" readonly>
                                 </div>
 
@@ -79,8 +86,8 @@
 
 
                                 <!--  Tubo Payments History -->
-                                <h6 class="mt-3">Tubo Payments History</h6>
-                                <div class="table-responsive mb-3">
+                                <h6 class="mt-3 mb-0">Tubo Payments History</h6>
+                                <div class="table-responsive mb-0">
                                     <table class="table table-bordered table-sm" id="tuboPaymentsTable">
                                         <thead class="table-light">
                                             <tr>
@@ -99,8 +106,8 @@
                                 </div>
 
                                 <!--  Partial Payments History -->
-                                <h6 class="mt-3">Partial Payments History</h6>
-                                <div class="table-responsive">
+                                <h6 class="mt-3 mb-0">Partial Payments History</h6>
+                                <div class="table-responsive mb-0">
                                     <table class="table table-bordered table-sm" id="partialPaymentsTable">
                                         <thead class="table-light">
                                             <tr>

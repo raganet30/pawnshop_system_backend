@@ -69,6 +69,7 @@ $(document).on("click", ".viewPawnBtn", function (e) {
             $("#viewUnitDescription").val(pawn.unit_description);
             $("#viewCategory").val(pawn.category);
             $("#viewAmountPawned").val("₱" + parseFloat(pawn.amount_pawned).toFixed(2));
+            $("#viewOriginalAmountPawned").val("₱" + parseFloat(pawn.original_amount_pawned).toFixed(2));
             $("#viewNotes").val(pawn.notes || "");
             $("#viewPassKey").val(pawn.pass_key || "");
             $("#viewDatePawned").val(pawn.date_pawned);

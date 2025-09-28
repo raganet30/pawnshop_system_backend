@@ -213,7 +213,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
     // Build row for DataTable
 
-    $totalPawned += floatval($row['amount_pawned']);
+    $totalPawned += floatval($row['original_amount_pawned']);
 
     $datePawned = new DateTime($row['date_pawned']);
     $today = new DateTime();
@@ -281,7 +281,7 @@ if ($today > $startDate) {
         htmlspecialchars($row['unit_description']),
         htmlspecialchars($row['category']),
         // $amountDisplay,
-        '₱' . number_format($row['amount_pawned'], 2),
+        '₱' . number_format($row['original_amount_pawned'], 2),
         htmlspecialchars($row['contact_no']),
         htmlspecialchars($row['address']),
         htmlspecialchars($row['notes']),
