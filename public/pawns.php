@@ -90,7 +90,7 @@ $highlightPawnId = $_GET['id'] ?? '';
                                 <th>Unit</th>
                                 <th>Category</th>
                                 <th>Amount Pawned</th>
-                                <th>Contact No.</th>
+                                <th>Contact #</th>
                                 <th>Address</th>
                                 <th>Notes</th>
                                 <?php if (in_array($_SESSION['user']['role'], ['admin', 'cashier'])): ?>
@@ -187,12 +187,12 @@ $highlightPawnId = $_GET['id'] ?? '';
                     }
                 },
                 { title: "Date Pawned" },
-                { title: "Unpaid Months" },
+                { title: "Unpaid Months." },
                 { title: "Owner" },
                 { title: "Unit" },
                 { title: "Category" },
                 { title: "Amount Pawned" },
-                { title: "Contact No." },
+                { title: "Contact #" },
                 { title: "Address" },
                 { title: "Notes" },
                 <?php if ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'cashier'): ?>

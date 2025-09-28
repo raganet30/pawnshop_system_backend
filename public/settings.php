@@ -129,6 +129,20 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                             </div>
                         </div>
 
+                        <!-- FB Page Name -->
+                        <div class="col-md-3">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-facebook"></i> Facebook Page Name</h6>
+                                    <p class="text-muted small mb-2">
+                                        This will appear on the receipt for customer reference.
+                                    </p>
+                                    <input type="text" class="form-control" name="fb_page_name"
+                                        placeholder="Enter Facebook Page Name">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Low Cash Alert Threshold -->
                         <div class="col-md-3">
                             <div class="card h-100 shadow-sm">
@@ -247,6 +261,7 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
                 $("select[name='backup_frequency']").val(s.backup_frequency);
                 $("input[name='session_timeout']").val(s.session_timeout);
                 $("input[name='shop_name']").val(s.shop_name);
+                $("input[name='fb_page_name']").val(s.fb_page_name);
                 $("select[name='backup_frequency']").val(s.backup_frequency);
                 $("#enable_sms").prop("checked", s.enable_sms == 1);
 

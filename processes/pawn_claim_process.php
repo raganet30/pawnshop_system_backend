@@ -145,22 +145,49 @@ $stmt->execute([
     }
 
 
+// Fetch interest option from form (modal)
+$interestOption = $_POST['interestOption'] ?? 'auto'; 
+$custom_interest = isset($_POST['customInterest']) ? floatval($_POST['customInterest']) : null;
 
-    // --- Insert into audit_logs ---
-    $description = sprintf(
-        "Claimed pawn item: %s, Category: %s, Total Amount Paid: ₱%s",
-        $pawn_item,
-        $pawn['category'],
-        number_format($total_paid, 2)
-    );
 
-    logAudit(
-        $pdo,
-        $user_id,
-        $pawn['branch_id'],
-        'Claim Pawned Item',
-        $description
-    );
+// --- Decide action type and description based on interestOption ---
+//$actionType = 'Claimed Pawned Item (auto compute)   '; //  default
+$interestNote = '';
+
+if (isset($interestOption)) {
+    if ($interestOption === 'waive') {   //  match the HTML value
+        $actionType = 'Claimed Pawned Item (interest waived)';
+        $interestNote = ' | Interest: Waived';
+    } elseif ($interestOption === 'custom') {
+        $actionType = 'Claimed Pawned Item (custom interest)';
+        $interestNote = sprintf(' | Custom Interest: ₱%s', number_format($custom_interest ?? 0, 2));
+    }
+    elseif ($interestOption === 'auto') {
+        $actionType = 'Claimed Pawned Item (auto compute)';
+        $interestNote = sprintf(' | Interest: ₱%s', number_format($interest_amount ?? 0, 2));
+    } else {
+        $actionType = 'Claimed Pawned Item (auto compute)'; // fallback
+        $interestNote = sprintf(' | Interest: ₱%s', number_format($interest_amount ?? 0, 2));
+    }
+}
+
+
+// --- Insert into audit_logs ---
+$description = sprintf(
+    "Claimed pawn item: %s, Category: %s, Total Amount Paid: ₱%s%s",
+    $pawn_item,
+    $pawn['category'],
+    number_format($total_paid, 2),
+    $interestNote
+);
+
+logAudit(
+    $pdo,
+    $user_id,
+    $pawn['branch_id'],
+    $actionType,
+    $description
+);
 
 
 

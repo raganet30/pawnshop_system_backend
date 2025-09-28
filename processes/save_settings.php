@@ -21,6 +21,7 @@ $export_format    = isset($_POST['export_format']) ? trim($_POST['export_format'
 $report_info      = isset($_POST['report_info']) ? trim($_POST['report_info']) : '';
 $backup_frequency = isset($_POST['backup_frequency']) ? trim($_POST['backup_frequency']) : 'manual';
 $shop_name        = isset($_POST['shop_name']) ? trim($_POST['shop_name']) : 'LD Gadget Pawnshop';
+$fb_page_name        = isset($_POST['fb_page_name']) ? trim($_POST['fb_page_name']) : 'LD Gadget Pawnshop';
 $backup_frequency = $_POST['backup_frequency'] ?? 'manual';
 $enable_sms = isset($_POST['enable_sms']) ? 1 : 0;
 
@@ -44,7 +45,7 @@ try {
 
     $stmt = $pdo->prepare("
     UPDATE settings 
-    SET cash_threshold=?, pawn_maturity_reminder_days=?, export_format=?, report_info=?, backup_frequency=?, session_timeout=?,shop_name=?, backup_frequency=?, enable_sms=?,  updated_at=NOW() 
+    SET cash_threshold=?, pawn_maturity_reminder_days=?, export_format=?, report_info=?, backup_frequency=?, session_timeout=?,shop_name=?, fb_page_name=?, backup_frequency=?, enable_sms=?,  updated_at=NOW() 
     WHERE id=1
 ");
 $ok = $stmt->execute([
@@ -55,6 +56,7 @@ $ok = $stmt->execute([
     $backup_frequency,
     $session_timeout,
     $shop_name,
+    $fb_page_name,
     $backup_frequency, 
     $enable_sms
 ]);

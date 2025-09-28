@@ -3,7 +3,9 @@ session_start();
 require_once "../config/db.php";
 require_once "../config/helpers.php";
 
-$shopName = getReceiptHeader($pdo);
+$header = getReceiptHeader($pdo);
+
+
 
 // Capture query parameters (from JS)
 $receipt_no = $_GET['receipt_no'] ?? 'N/A';
@@ -71,15 +73,18 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
 <body onload="window.print()">
 
     <div class="center">
-        <h3 style="margin:0;"><?= htmlspecialchars($shopName) ?></h3>
+        <div><?= htmlspecialchars($header['shop_name']) ?></div>
         <div><?= htmlspecialchars($branch_name) ?></div>
         <div><?= htmlspecialchars($branch_address) ?></div>
-        <div>Cell: <?= htmlspecialchars($branch_contact) ?></div>
+        <div>FB Page: <?= htmlspecialchars($header['fb_page_name']); ?></div>
     </div>
 
-    <hr>
-    <div class="center"><b>ACKNOWLEDGEMENT RECEIPT</b></div>
+
     <br>
+      <div class="center" style="font-size: larger;"><b>ACKNOWLEDGEMENT RECEIPT</b></div>
+    <hr>
+  
+
 
     <table>
         <tr>
@@ -136,14 +141,11 @@ $cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
         <p style="margin:4px 0;">Not valid as Claim Receipt.</p>
     </div>
 
-    <br><br>
+    <br>
 
     <table>
         <tr>
-            <td class="center">
-                _________________________<br>
-                Customer Signature
-            </td>
+           
             <td class="center">
                 _________________________<br>
                 Cashier

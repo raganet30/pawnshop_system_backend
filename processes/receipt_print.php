@@ -4,11 +4,12 @@ require_once "../config/db.php";
 require_once "../config/helpers.php";
 
 
-$shopName = getReceiptHeader($pdo);
+$header = getReceiptHeader($pdo);
+
 
 
 if (!isset($_GET['pawn_id']) || !is_numeric($_GET['pawn_id'])) {
-    die("Invalid Pawn ID");
+  die("Invalid Pawn ID");
 }
 
 $pawn_id = intval($_GET['pawn_id']);
@@ -34,7 +35,7 @@ $stmt->execute([$pawn_id]);
 $claim = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$claim) {
-    die("No claim found for this pawn record.");
+  die("No claim found for this pawn record.");
 }
 
 // Fetch payment history (partial + tubo + final claim)
@@ -52,18 +53,19 @@ $payments = $pdo->query("
 ");
 
 while ($row = $payments->fetch(PDO::FETCH_ASSOC)) {
-    $history[] = $row;
+  $history[] = $row;
 }
 
 // Session branch + cashier info
-$branch_name    = $_SESSION['user']['branch_name'] ?? "Branch Name";
+$branch_name = $_SESSION['user']['branch_name'] ?? "Branch Name";
 $branch_address = $_SESSION['user']['branch_address'] ?? "Branch Address";
 $branch_contact = $_SESSION['user']['branch_phone'] ?? "Contact No";
-$cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
+$cashier_name = $_SESSION['user']['full_name'] ?? "Cashier";
 
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Pawn Claim Receipt</title>
   <style>
@@ -72,35 +74,53 @@ $cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
       font-size: 12px;
       margin: 10px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 8px;
     }
-    td, th {
+
+    td,
+    th {
       border: none;
       padding: 3px 5px;
       vertical-align: top;
     }
-    .right { text-align: right; }
-    .center { text-align: center; }
-    hr { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+
+    .right {
+      text-align: right;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #000;
+      margin: 8px 0;
+    }
   </style>
 </head>
+
 <body onload="window.print()">
 
   <div class="center">
-    <h3 style="margin:0;"><?php echo htmlspecialchars($shopName) ?></h3>
+    <div><?php echo htmlspecialchars($header['shop_name']); ?></div>
     <div><?= htmlspecialchars($branch_name) ?></div>
     <div><?= htmlspecialchars($branch_address) ?></div>
-    <div>Cell: <?= htmlspecialchars($branch_contact) ?></div>
+    <div>FB Page: <?= htmlspecialchars($header['fb_page_name']); ?></div>
   </div>
-
+  <br>
+  <!-- CLAIM RECEIPT -->
+  <div class="center" style="font-size: larger;"><b>PAWN CLAIM RECEIPT</b></div>
   <hr>
+
   <table>
     <tr>
-      <td><b>OR NO:</b> <?= $claim['claim_id'] ."-". date("mdy", strtotime($claim['date_pawned'])) ?>
-</td>
+      <td><b>OR NO:</b> <?= $claim['claim_id'] . "-" . date("mdy", strtotime($claim['date_pawned'])) ?>
+      </td>
       <td><b>Item:</b> <?= htmlspecialchars($claim['unit_description']) ?></td>
     </tr>
     <tr>
@@ -108,16 +128,14 @@ $cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
       <td><b>Category:</b> <?= htmlspecialchars($claim['category']) ?></td>
     </tr>
     <tr>
-      <td><b>Address:</b> <?= htmlspecialchars($claim['address']) ?></td>
       <td><b>Amount Pawned:</b> ₱<?= number_format($claim['original_amount_pawned'], 2) ?></td>
+      <td><b>Interest Rate:</b> <?= $claim['interest_rate'] * 100 ?>%</td>
     </tr>
     <tr>
       <td><b>Date Pawned:</b> <?= date("m/d/Y", strtotime($claim['date_pawned'])) ?></td>
-      <td><b>Interest Rate:</b> <?= $claim['interest_rate'] *100 ?>%</td>
-    </tr>
-    <tr>
       <td><b>Date Claimed:</b> <?= date("m/d/Y", strtotime($claim['date_claimed'])) ?></td>
     </tr>
+
   </table>
 
   <hr>
@@ -147,20 +165,28 @@ $cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
 
   <hr>
   <table>
-    <tr><td><b>Amount Pawned:</b> ₱<?= number_format($claim['original_amount_pawned'], 2) ?></td></tr>
+    <tr>
+      <td><b>Amount Pawned:</b> ₱<?= number_format($claim['original_amount_pawned'], 2) ?></td>
+    </tr>
     <?php
-      $total_payment = 0;
-      $total_interest_amount = 0;
-      $total_penalty = 0;
-      foreach ($history as $h) {
-          $total_payment += $h['amount_paid'];
-          $total_interest_amount += $h['interest_paid'];
-          $total_penalty += $h['penalty'];
-      }
+    $total_payment = 0;
+    $total_interest_amount = 0;
+    $total_penalty = 0;
+    foreach ($history as $h) {
+      $total_payment += $h['amount_paid'];
+      $total_interest_amount += $h['interest_paid'];
+      $total_penalty += $h['penalty'];
+    }
     ?>
-    <tr><td><b>Total Interest:</b> ₱<?= number_format($total_interest_amount, 2) ?></td></tr>
-    <tr><td><b>Total Penalty:</b> ₱<?= number_format($total_penalty, 2) ?></td></tr>
-    <tr><td><b>Total Paid:</b> ₱<?= number_format ($total_payment, 2) ?></td></tr>
+    <tr>
+      <td><b>Total Interest:</b> ₱<?= number_format($total_interest_amount, 2) ?></td>
+    </tr>
+    <tr>
+      <td><b>Total Penalty:</b> ₱<?= number_format($total_penalty, 2) ?></td>
+    </tr>
+    <tr>
+      <td><b>Total Paid:</b> ₱<?= number_format($total_payment, 2) ?></td>
+    </tr>
   </table>
 
   <small>Cashier: <?= htmlspecialchars($cashier_name) ?></small><br>
@@ -170,4 +196,5 @@ $cashier_name   = $_SESSION['user']['full_name'] ?? "Cashier";
   <div class="center">***** THANK YOU *****</div>
 
 </body>
+
 </html>

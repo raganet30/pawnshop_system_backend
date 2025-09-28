@@ -1,6 +1,12 @@
 <?php
 require_once "../config/db.php";
 session_start();
+require_once "../config/helpers.php";
+
+
+$header = getReceiptHeader($pdo);
+
+
 
 // $branch_address = $_SESSION['user']['branch_address'];
 
@@ -85,9 +91,11 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 </head>
 <body onload="window.print()">
 
-<div class="center bold">LD GADGET PAWNSHOP</div>
+<div class="center bold"><?php echo htmlspecialchars($header['shop_name']); ?></div>
 <div class="center small"><?php echo $_SESSION['user']['branch_name']; ?></div>
 <div class="center small"><?php echo $_SESSION['user']['branch_address']; ?></div>
+<div class="center small">FB Page: <?= htmlspecialchars($header['fb_page_name']); ?></div>
+
 <br>
 
 
@@ -98,7 +106,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     </tr>
     <tr>
         <td><b>OWNER:</b> <?= strtoupper($pawn['full_name']) ?></td>
-        <td><b>CONTACT:</b> <?= $pawn['contact_no'] ?></td>
+        <td><b>CONTACT #:</b> <?= $pawn['contact_no'] ?></td>
     </tr>
     <tr>
         <td><b>ADDRESS:</b> <?= $pawn['address'] ?></td>
@@ -112,7 +120,7 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     <tr>
         <td colspan="2">
             <b>AMOUNT:</b> ₱<?= number_format($pawn['amount_pawned'], 2) ?> &nbsp;&nbsp;
-            <b>INTEREST AMOUNT</b> ₱<?= number_format($pawn['amount_pawned'] * $pawn['interest_rate'], 2) ?> &nbsp;&nbsp;
+            <b>INTEREST AMOUNT:</b> ₱<?= number_format($pawn['amount_pawned'] * $pawn['interest_rate'], 2) ?> &nbsp;&nbsp;
             <b>TOTAL REPAYMENT:</b> ₱<?= number_format($totalRepayment, 2) ?>
         </td>
     </tr>
@@ -124,15 +132,17 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
     <b>Pawner Declarations:</b><br>
     1. Nasa aking pang-unawa na kapag hindi ako nakapagbayad ng kabuuang halaga ng ipinahiram na pera kasama ang interes sa loob ng 2 buwan ay magreresulta ng pagkakaremata ng isinanglang gamit.<br>
     2. Ang battery ng aking gadget ay hindi na responsibilidad ng pawnshop kung sakali mang ito ay masira.<br>
-    3. Ang aking pirma sa baba ang pagpapatunay na aking naunawaan ang rules and regulations ng pawnshop. <br><br><br>
+    3. Ang aking pirma sa ibaba ang pagpapatunay na aking naunawaan ang rules and regulations ng pawnshop. <br><br>
+    Under the penalty of anti-fencing law, dini-deklara ko po na ako ang may-ari ng item na isinanla.
+    <br><br>
    
 </div>
 
 
 <div class="section small">
-    <b>PAWNER:</b> <u> <?= strtoupper($pawn['full_name']) ?></u> &nbsp;&nbsp;
-    <b>PAWNSHOP REPRESENTATIVE:</b> __________________ &nbsp;&nbsp;
-    <b>CLAIMED BY:</b> __________________
+    <b>PAWNER:</b> ______________________ &nbsp;&nbsp;
+    <b>CASHIER:</b> ______________________ &nbsp;&nbsp;
+    <b>CLAIMED BY:</b> ____________________
 </div>
 
 <div class="section small">

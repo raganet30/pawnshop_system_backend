@@ -33,12 +33,12 @@
                                     <div id="newCustomerFields" class="row g-3" style="display:none;">
                                         <div class="col-md-6">
                                             <label>Full Name</label>
-                                            <input type="text" class="form-control" name="customer_name">
+                                            <input type="text" class="form-control" name="customer_name" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Contact No.</label>
                                             <input type="text" class="form-control" name="contact_no"
-                                                placeholder="09XXXXXXXXX">
+                                                placeholder="09XXXXXXXXX" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label>Address</label>

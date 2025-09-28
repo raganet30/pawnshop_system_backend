@@ -95,13 +95,13 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     if (in_array($user_role, ['admin', 'cashier'])) {
         $actions .= '
            <a href="#" class="text-secondary text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots fs-5"></i>
+                <i class="bi bi-three-dots fs-4"></i>
             </a>
 
            <a href="#" 
             class="text-info text-decoration-none viewPawnBtn" 
             data-id="' . $row['pawn_id'] . '">
-            <i class="bi bi-eye"></i>
+            <i class="bi bi-eye fs-4"></i>
             </a>
 
 
@@ -109,7 +109,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
            <a href="../processes/pawn_item_print.php?id=' . $row['pawn_id'] . '" 
             target="_blank" 
             class="text-primary text-decoration-none">
-            <i class="bi bi-printer"></i>
+            <i class="bi bi-printer fs-4"></i>
             </a>
 
            

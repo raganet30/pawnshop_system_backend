@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
+// custom script to toggle sidebar visibility
+// set as default collapsed
 document.addEventListener("DOMContentLoaded", function () {
     const sidebar = document.getElementById("sidebar-wrapper");
     const toggleBtn = document.getElementById("sidebarToggle");
