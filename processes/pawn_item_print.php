@@ -50,8 +50,8 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 <title>Pawn Ticket</title>
 <style>
     @page {
-        size: Letter portrait;  /*  default Letter size */
-        margin: 10mm;
+        size: Letter portrait;   /* default Letter size */
+        margin: 0;              /* remove page margin */
     }
     body {
         font-family: "Courier New", monospace;
@@ -59,10 +59,14 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
         line-height: 1.1;
         margin: 0;
         padding: 0;
+        height: 100vh;          /* full page height */
+        position: relative;
     }
     .receipt {
         width: 100%;
-        margin-bottom: 20px;
+        height: 50%;            /* each receipt takes half the page */
+        box-sizing: border-box;
+        padding: 10mm;
         page-break-inside: avoid;
     }
     table {
@@ -86,11 +90,17 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
         font-size: 8pt;
         font-style: italic;
     }
+
+    /* Force cut line in exact middle of page */
     .cut-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
         border-top: 1px dashed #000;
-        margin: 15px 0;
     }
 </style>
+
 
 </head>
 <body onload="window.print()">
@@ -98,6 +108,9 @@ $totalRepayment = $pawn['amount_pawned'] + $interest;
 <?php 
 function renderReceipt($pawn, $header, $totalRepayment, $copyType) { ?>
     <div class="receipt">
+        <br>
+        
+        
         <div class="center bold"><?= htmlspecialchars($header['shop_name']); ?></div>
         <div class="center small"><?= $_SESSION['user']['branch_name']; ?></div>
         <div class="center small"><?= $_SESSION['user']['branch_address']; ?></div>
@@ -154,11 +167,14 @@ function renderReceipt($pawn, $header, $totalRepayment, $copyType) { ?>
 <?php } ?>
 
 <?php 
-// render two copies
+// render two copies stacked vertically
 renderReceipt($pawn, $header, $totalRepayment, "Customer's");
-echo '<div class="cut-line"></div>'; // cutting line
 renderReceipt($pawn, $header, $totalRepayment, "Pawnshop's");
+
+// middle cut line
+echo '<div class="cut-line"></div>';
 ?>
+
 
 </body>
 </html>
