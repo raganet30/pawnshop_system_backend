@@ -31,10 +31,24 @@
                             <input type="text" class="form-control" id="claimMonths" readonly>
                             <input type="hidden" id="claimMonthsValue" name="claimMonthsValue">
                         </div>
-                        <div class="col-md-3">
-                            <label>Amount Pawned</label>
-                            <input type="text" class="form-control" id="claimAmountPawned" readonly>
-                        </div>
+
+
+                   <!-- Original Amount Pawned -->
+<div class="col-md-3">
+    <label id="claimOriginalAmountLabel">Original Amount Pawned</label>
+    <input type="text" class="form-control" id="claimOriginalAmountPawned" readonly>
+</div>
+
+<!-- Remaining Amount Pawned -->
+<div class="col-md-3" id="claimRemainingWrapper">
+    <label id="claimRemainingLabel">Remaining Amount Pawned</label>
+    <input type="text" class="form-control" id="claimAmountPawned" readonly>
+</div>
+
+
+
+
+
                         <div class="col-md-3">
                             <label>Interest Amount <small>(auto compute)</small> </label>
                             <input type="text" class="form-control" id="claimInterest" readonly>

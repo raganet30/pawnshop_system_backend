@@ -77,6 +77,9 @@ $(document).on("click", ".viewPawnBtn", function (e) {
             $("#viewStatus").val(pawn.status);
             $("#viewInterest").val(pawn.interest_rate);
 
+
+
+
             // --- Auto compute interest for display ---
             const { monthsCovered, interestAmount, waiveInterest } =
                 computeViewInterest(pawn, res.tubo_history, res.partial_history);
@@ -133,6 +136,23 @@ $(document).on("click", ".viewPawnBtn", function (e) {
                     <tr><td colspan="5" class="text-center text-muted">No partial payments found</td></tr>
                 `);
             }
+
+
+            // show original amount pawned if has partial payments
+            if (pawn.has_partial_payments == 1) {
+                $("#remainingAmountGroup").show();
+                $("#viewAmountPawned").val("₱" + parseFloat(pawn.amount_pawned || 0).toFixed(2));
+                  $("#originalAmountLabel").text("Original Amount Pawned");
+            } else {
+                $("#remainingAmountGroup").hide();
+                $("#originalAmountLabel").text("Amount Pawned");
+            }
+
+          
+
+
+
+
 
         } else {
             alert(res.message || "Error loading pawn details");

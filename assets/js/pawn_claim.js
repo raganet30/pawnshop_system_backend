@@ -68,189 +68,189 @@ $(function () {
                     $("#partialPaymentsTable tbody").html(partialRows);
 
                     // ---------------- Interest Computation ----------------
-                   // --- 1. Compute Claim Interest (global function) ---
-function computeClaimInterest() {
-    function parseYMD(ymd) {
-        if (!ymd) return null;
-        const parts = String(ymd).split("-").map(Number);
-        return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
-    function formatDateLocal(date) {
-        return date ? date.toLocaleDateString("en-CA") : null;
-    }
+                    // --- 1. Compute Claim Interest (global function) ---
+                    function computeClaimInterest() {
+                        function parseYMD(ymd) {
+                            if (!ymd) return null;
+                            const parts = String(ymd).split("-").map(Number);
+                            return new Date(parts[0], parts[1] - 1, parts[2]);
+                        }
+                        function formatDateLocal(date) {
+                            return date ? date.toLocaleDateString("en-CA") : null;
+                        }
 
-    const hasPartial = (pawn.has_partial_payments == 1) ||
-        (Array.isArray(data.partial_history) && data.partial_history.length > 0);
-    const hasTubo = (pawn.has_tubo_payments == 1) ||
-        (Array.isArray(data.tubo_history) && data.tubo_history.length > 0);
+                        const hasPartial = (pawn.has_partial_payments == 1) ||
+                            (Array.isArray(data.partial_history) && data.partial_history.length > 0);
+                        const hasTubo = (pawn.has_tubo_payments == 1) ||
+                            (Array.isArray(data.tubo_history) && data.tubo_history.length > 0);
 
-    let claimDateStr = $("#claimDate").val();
-    let todayLocal = claimDateStr ? parseYMD(claimDateStr) : new Date();
-    if (!todayLocal || isNaN(todayLocal.getTime())) todayLocal = new Date();
+                        let claimDateStr = $("#claimDate").val();
+                        let todayLocal = claimDateStr ? parseYMD(claimDateStr) : new Date();
+                        if (!todayLocal || isNaN(todayLocal.getTime())) todayLocal = new Date();
 
-    let startDate = parseYMD(pawn.date_pawned) || new Date();
-    if (!startDate || isNaN(startDate.getTime())) startDate = new Date();
+                        let startDate = parseYMD(pawn.date_pawned) || new Date();
+                        if (!startDate || isNaN(startDate.getTime())) startDate = new Date();
 
-    let claimdiffMonths = 0;
-    let totalInterest = 0;
-    let waiveInterest = false;
+                        let claimdiffMonths = 0;
+                        let totalInterest = 0;
+                        let waiveInterest = false;
 
-    const interestOption = $("#interestOption").val(); // auto, waive, custom
-    const principal = parseFloat(pawn.amount_pawned) || 0;
-    const interestRate = parseFloat(pawn.interest_rate) || 0.06;
+                        const interestOption = $("#interestOption").val(); // auto, waive, custom
+                        const principal = parseFloat(pawn.amount_pawned) || 0;
+                        const interestRate = parseFloat(pawn.interest_rate) || 0.06;
 
-    if (interestOption === "waive") {
-        waiveInterest = true;
-        totalInterest = 0;
-        claimdiffMonths = 0;
-    } else if (interestOption === "custom") {
-        totalInterest = parseFloat($("#customInterest").val()) || 0;
-        claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-            (todayLocal.getMonth() - startDate.getMonth());
-        if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-        if (claimdiffMonths < 1) claimdiffMonths = 1;
-        waiveInterest = false;
-    } else {
-        // --- Auto Compute ---
-        if (!hasPartial && !hasTubo && pawn.status === 'pawned') {
-            claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                (todayLocal.getMonth() - startDate.getMonth());
-            if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-            if (claimdiffMonths < 1) claimdiffMonths = 1;
-            totalInterest = principal * interestRate * claimdiffMonths;
-        } else if (hasTubo && pawn.status === 'pawned') {
-            let lastTuboEnd = null;
-            if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
-                const lastTubo = data.tubo_history.reduce((a, b) => {
-                    return parseYMD(a.period_end) > parseYMD(b.period_end) ? a : b;
-                });
-                lastTuboEnd = parseYMD(lastTubo.period_end);
-                lastTuboEnd.setHours(23, 59, 59, 999);
-            }
+                        if (interestOption === "waive") {
+                            waiveInterest = true;
+                            totalInterest = 0;
+                            claimdiffMonths = 0;
+                        } else if (interestOption === "custom") {
+                            totalInterest = parseFloat($("#customInterest").val()) || 0;
+                            claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                                (todayLocal.getMonth() - startDate.getMonth());
+                            if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
+                            if (claimdiffMonths < 1) claimdiffMonths = 1;
+                            waiveInterest = false;
+                        } else {
+                            // --- Auto Compute ---
+                            if (!hasPartial && !hasTubo && pawn.status === 'pawned') {
+                                claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                                    (todayLocal.getMonth() - startDate.getMonth());
+                                if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
+                                if (claimdiffMonths < 1) claimdiffMonths = 1;
+                                totalInterest = principal * interestRate * claimdiffMonths;
+                            } else if (hasTubo && pawn.status === 'pawned') {
+                                let lastTuboEnd = null;
+                                if (Array.isArray(data.tubo_history) && data.tubo_history.length > 0) {
+                                    const lastTubo = data.tubo_history.reduce((a, b) => {
+                                        return parseYMD(a.period_end) > parseYMD(b.period_end) ? a : b;
+                                    });
+                                    lastTuboEnd = parseYMD(lastTubo.period_end);
+                                    lastTuboEnd.setHours(23, 59, 59, 999);
+                                }
 
-            todayLocal.setHours(0, 0, 0, 0);
+                                todayLocal.setHours(0, 0, 0, 0);
 
-            if (lastTuboEnd) {
-                if (todayLocal <= lastTuboEnd) {
-                    waiveInterest = true;
-                    claimdiffMonths = 0;
-                    totalInterest = 0;
-                } else {
-                    startDate = new Date(lastTuboEnd);
-                    startDate.setHours(0, 0, 0, 0);
-                    claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
-                        (todayLocal.getMonth() - startDate.getMonth());
-                    if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
-                    if (claimdiffMonths < 1) claimdiffMonths = 1;
-                    totalInterest = principal * interestRate * claimdiffMonths;
-                }
-            }
-        }
-    }
+                                if (lastTuboEnd) {
+                                    if (todayLocal <= lastTuboEnd) {
+                                        waiveInterest = true;
+                                        claimdiffMonths = 0;
+                                        totalInterest = 0;
+                                    } else {
+                                        startDate = new Date(lastTuboEnd);
+                                        startDate.setHours(0, 0, 0, 0);
+                                        claimdiffMonths = (todayLocal.getFullYear() - startDate.getFullYear()) * 12 +
+                                            (todayLocal.getMonth() - startDate.getMonth());
+                                        if (todayLocal.getDate() > startDate.getDate()) claimdiffMonths++;
+                                        if (claimdiffMonths < 1) claimdiffMonths = 1;
+                                        totalInterest = principal * interestRate * claimdiffMonths;
+                                    }
+                                }
+                            }
+                        }
 
-    // --- Update UI ---
-    if (waiveInterest) {
-        $("#claimMonths").val("Interest Waived");
-        $("#claimInterest").val("₱0.00");
-        $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-        $("#claimMonthsValue").val(0);
+                        // --- Update UI ---
+                        if (waiveInterest) {
+                            $("#claimMonths").val("Interest Waived");
+                            $("#claimInterest").val("₱0.00");
+                            $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                            $("#claimMonthsValue").val(0);
 
-       
-    } else {
-        $("#claimMonths").val(claimdiffMonths + " month(s)");
-        $("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-        $("#claimTotal").val("₱" + (principal + totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
-        $("#claimMonthsValue").val(claimdiffMonths);
-    }
 
-    // Hidden fields
-    $("#claimPrincipalValue").val(principal.toFixed(2));
-    $("#claimInterestValue").val(totalInterest.toFixed(2));
-    $("#claimTotalValue").val((principal + totalInterest).toFixed(2));
-    $("#claimPenalty").val('0.00');
-}
+                        } else {
+                            $("#claimMonths").val(claimdiffMonths + " month(s)");
+                            $("#claimInterest").val("₱" + totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                            $("#claimTotal").val("₱" + (principal + totalInterest).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                            $("#claimMonthsValue").val(claimdiffMonths);
+                        }
 
-// --- 2. Interest Option Change ---
-$("#interestOption").on("change", function() {
-    const option = $(this).val();
-    const principal = parseFloat(pawn.amount_pawned) || 0; // use actual principal from pawn object
+                        // Hidden fields
+                        $("#claimPrincipalValue").val(principal.toFixed(2));
+                        $("#claimInterestValue").val(totalInterest.toFixed(2));
+                        $("#claimTotalValue").val((principal + totalInterest).toFixed(2));
+                        $("#claimPenalty").val('0.00');
+                    }
 
-    if (option === "waive") {
-        $("#customInterestWrapper").hide();
-        $("#customInterest").val("");
+                    // --- 2. Interest Option Change ---
+                    $("#interestOption").on("change", function () {
+                        const option = $(this).val();
+                        const principal = parseFloat(pawn.amount_pawned) || 0; // use actual principal from pawn object
 
-        $("#claimInterest").val("₱0.00");
-        $("#claimMonths").val("Interest Waived");
+                        if (option === "waive") {
+                            $("#customInterestWrapper").hide();
+                            $("#customInterest").val("");
 
-        $("#claimInterestValue").val("0.00");
-        $("#claimMonthsValue").val(0);
-        $("#claimTotalValue").val(principal.toFixed(2));
-        $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
-    }
-    else if (option === "custom") {
-        $("#customInterestWrapper").show();
-        // Keep computeClaimInterest() or custom input logic here
-    }
-    else {
-        $("#customInterestWrapper").hide();
-        $("#customInterest").val("");
-        // Recompute automatically
-        computeClaimInterest();
-    }
-});
+                            $("#claimInterest").val("₱0.00");
+                            $("#claimMonths").val("Interest Waived");
 
-// --- 3. Custom Interest Input ---
-$("#customInterest").on("input", function () {
-    function parseYMD(ymd) {
-        if (!ymd) return null;
-        const parts = String(ymd).split("-").map(Number);
-        return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
+                            $("#claimInterestValue").val("0.00");
+                            $("#claimMonthsValue").val(0);
+                            $("#claimTotalValue").val(principal.toFixed(2));
+                            $("#claimTotal").val("₱" + principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                        }
+                        else if (option === "custom") {
+                            $("#customInterestWrapper").show();
+                            // Keep computeClaimInterest() or custom input logic here
+                        }
+                        else {
+                            $("#customInterestWrapper").hide();
+                            $("#customInterest").val("");
+                            // Recompute automatically
+                            computeClaimInterest();
+                        }
+                    });
 
-    // --- Principal (safe fallback) ---
-    let principal = parseFloat($("#claimPrincipalValue").val());
-    if (isNaN(principal) || principal <= 0) {
-        principal = parseFloat(pawn.amount_pawned) || 0;
-    }
+                    // --- 3. Custom Interest Input ---
+                    $("#customInterest").on("input", function () {
+                        function parseYMD(ymd) {
+                            if (!ymd) return null;
+                            const parts = String(ymd).split("-").map(Number);
+                            return new Date(parts[0], parts[1] - 1, parts[2]);
+                        }
 
-    // --- Interest rate (safe fallback) ---
-    let rawRate = parseFloat(pawn.interest_rate);
-    const interestRate = (isNaN(rawRate) || rawRate <= 0) ? 0.06 : rawRate;
+                        // --- Principal (safe fallback) ---
+                        let principal = parseFloat($("#claimPrincipalValue").val());
+                        if (isNaN(principal) || principal <= 0) {
+                            principal = parseFloat(pawn.amount_pawned) || 0;
+                        }
 
-    // --- Covered months from pawn → claim ---
-    const pawnDate = parseYMD(pawn.date_pawned);
-    const claimDateStr = $("#claimDate").val();
-    const claimDate = claimDateStr ? parseYMD(claimDateStr) : new Date();
+                        // --- Interest rate (safe fallback) ---
+                        let rawRate = parseFloat(pawn.interest_rate);
+                        const interestRate = (isNaN(rawRate) || rawRate <= 0) ? 0.06 : rawRate;
 
-    let coveredMonths = (claimDate.getFullYear() - pawnDate.getFullYear()) * 12 +
-                        (claimDate.getMonth() - pawnDate.getMonth());
-    if (claimDate.getDate() > pawnDate.getDate()) coveredMonths++;
-    if (coveredMonths < 1) coveredMonths = 1;
+                        // --- Covered months from pawn → claim ---
+                        const pawnDate = parseYMD(pawn.date_pawned);
+                        const claimDateStr = $("#claimDate").val();
+                        const claimDate = claimDateStr ? parseYMD(claimDateStr) : new Date();
 
-    // --- Pre-calculated max interest ---
-    const maxInterest = principal * interestRate * coveredMonths;
+                        let coveredMonths = (claimDate.getFullYear() - pawnDate.getFullYear()) * 12 +
+                            (claimDate.getMonth() - pawnDate.getMonth());
+                        if (claimDate.getDate() > pawnDate.getDate()) coveredMonths++;
+                        if (coveredMonths < 1) coveredMonths = 1;
 
-    // --- Input value ---
-    let customValue = parseFloat($(this).val()) || 0;
+                        // --- Pre-calculated max interest ---
+                        const maxInterest = principal * interestRate * coveredMonths;
 
-    // --- Validation ---
-    if (customValue < 0) customValue = 0;
-    if (customValue > maxInterest) {
-        customValue = maxInterest;
-        $(this).val(maxInterest.toFixed(2)); // reset input to max
-        Swal.fire("Invalid", `Custom interest cannot exceed ₱${maxInterest.toFixed(2)}`, "warning");
-    }
+                        // --- Input value ---
+                        let customValue = parseFloat($(this).val()) || 0;
 
-    // --- Update modal ---
-    $("#claimInterest").val("₱" + customValue.toFixed(2));
-    $("#claimMonths").val(coveredMonths + " month(s)");
-    $("#claimMonthsValue").val(coveredMonths);
-    $("#claimInterestValue").val(customValue.toFixed(2));
-    $("#claimTotalValue").val((principal + customValue).toFixed(2));
-    $("#claimTotal").val("₱" + (principal + customValue).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                        // --- Validation ---
+                        if (customValue < 0) customValue = 0;
+                        if (customValue > maxInterest) {
+                            customValue = maxInterest;
+                            $(this).val(maxInterest.toFixed(2)); // reset input to max
+                            Swal.fire("Invalid", `Custom interest cannot exceed ₱${maxInterest.toFixed(2)}`, "warning");
+                        }
 
-    console.log("principal:", principal, "rate:", interestRate, "months:", coveredMonths, "maxInterest:", maxInterest, "customValue:", customValue);
-});
+                        // --- Update modal ---
+                        $("#claimInterest").val("₱" + customValue.toFixed(2));
+                        $("#claimMonths").val(coveredMonths + " month(s)");
+                        $("#claimMonthsValue").val(coveredMonths);
+                        $("#claimInterestValue").val(customValue.toFixed(2));
+                        $("#claimTotalValue").val((principal + customValue).toFixed(2));
+                        $("#claimTotal").val("₱" + (principal + customValue).toLocaleString(undefined, { minimumFractionDigits: 2 }));
+
+                        console.log("principal:", principal, "rate:", interestRate, "months:", coveredMonths, "maxInterest:", maxInterest, "customValue:", customValue);
+                    });
 
 
 
@@ -279,6 +279,26 @@ $("#customInterest").on("input", function () {
                     }, pawn);
 
                     $("#claimAmountPawned").val(principal.toLocaleString(undefined, { minimumFractionDigits: 2 }));
+                    $("#claimOriginalAmountPawned").val("₱" + parseFloat(pawn.original_amount_pawned).toFixed(2));
+
+
+
+                    if (pawn.has_partial_payments == 0) {
+                        // Change label text
+                        $("#claimOriginalAmountLabel").text("Amount Pawned");
+
+                        // Hide remaining field
+                        $("#claimRemainingWrapper").hide();
+                    } else {
+                        // Reset to original label
+                        $("#claimOriginalAmountLabel").text("Original Amount Pawned");
+
+                        // Show remaining field
+                        $("#claimRemainingWrapper").show();
+                    }
+
+
+
 
                     // --- Live penalty calculation ---
                     // --- Live penalty calculation ---
@@ -405,6 +425,6 @@ $("#customInterest").on("input", function () {
 
 
 
-    
+
 
 });

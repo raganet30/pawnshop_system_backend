@@ -38,20 +38,19 @@
 
                     <!-- Original Amount Pawned -->
                     <div class="col-md-3">
-                        <label>Original Amount Pawned</label>
+                        <label id="originalAmountLabel">Original Amount Pawned</label>
                         <input type="text" class="form-control" id="viewOriginalAmountPawned" readonly>
                     </div>
 
 
 
-                  <!-- add condition to show only if has_partial_payments==1 -->
-                        <!-- Remaining Amount Pawned -->
-                        <div class="col-md-3">
-                            <label>Remaining Amount Pawned</label>
-                            <input type="text" class="form-control" id="viewAmountPawned" readonly>
-                        </div>
-                   
 
+                    <!-- add condition to show only if has_partial_payments==1 -->
+                    <!-- Remaining Amount Pawned -->
+                    <div class="col-md-3" id="remainingAmountGroup">
+                        <label>Remaining Amount Pawned</label>
+                        <input type="text" class="form-control" id="viewAmountPawned" readonly>
+                    </div>
 
 
 
