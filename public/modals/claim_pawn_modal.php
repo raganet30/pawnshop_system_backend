@@ -33,17 +33,17 @@
                         </div>
 
 
-                   <!-- Original Amount Pawned -->
-<div class="col-md-3">
-    <label id="claimOriginalAmountLabel">Original Amount Pawned</label>
-    <input type="text" class="form-control" id="claimOriginalAmountPawned" readonly>
-</div>
+                        <!-- Original Amount Pawned -->
+                        <div class="col-md-3">
+                            <label id="claimOriginalAmountLabel">Original Amount Pawned</label>
+                            <input type="text" class="form-control" id="claimOriginalAmountPawned" readonly>
+                        </div>
 
-<!-- Remaining Amount Pawned -->
-<div class="col-md-3" id="claimRemainingWrapper">
-    <label id="claimRemainingLabel">Remaining Amount Pawned</label>
-    <input type="text" class="form-control" id="claimAmountPawned" readonly>
-</div>
+                        <!-- Remaining Amount Pawned -->
+                        <div class="col-md-3" id="claimRemainingWrapper">
+                            <label id="claimRemainingLabel">Remaining Amount Pawned</label>
+                            <input type="text" class="form-control" id="claimAmountPawned" readonly>
+                        </div>
 
 
 
@@ -82,18 +82,18 @@
                         </div>
 
 
-                
-                       <!-- DISPLAY IF ROLE IS ADMIN ONLY - prepared only  -->
+
+                        <!-- DISPLAY IF ROLE IS ADMIN ONLY - prepared only  -->
                         <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin'): ?>
-                        <!-- Interest Options -->
-                        <div class="col-md-3">
-                            <label for="interestOption">Interest Computation</label>
-                            <select id="interestOption" class="form-control" name="interestOption">
-                                <option value="auto" selected>Compute Automatically</option>
-                                <option value="waive">Waive Interest</option>
-                                <option value="custom">Custom Interest Amount</option>
-                            </select>
-                        </div>
+                            <!-- Interest Options -->
+                            <div class="col-md-3">
+                                <label for="interestOption">Interest Computation</label>
+                                <select id="interestOption" class="form-control" name="interestOption">
+                                    <option value="auto" selected>Compute Automatically</option>
+                                    <option value="waive">Waive Interest</option>
+                                    <option value="custom">Custom Interest Amount</option>
+                                </select>
+                            </div>
                         <?php endif; ?>
 
                         <div class="col-md-3">
@@ -110,7 +110,7 @@
                         </div>
 
 
-                        
+
 
                     </div>
                     <p id="waiveInfo" class="small d-none mt-2"></p>

@@ -33,10 +33,22 @@
                                         <input type="text" class="form-control" id="tpDueDate" readonly>
                                     </div>
 
+
+                                    <!-- Original Amount Pawned -->
+                                     <!-- <div class="col-md-3">
+                                        <label id="tpOriginalAmountLabel" class="form-label">Original Amount Pawned</label>
+                                        <input type="text" class="form-control" id="tpOriginalAmountPawned" readonly>
+                                    </div> -->
+                                    <!-- Original Amount Pawned -->
+
+                                    <!-- Remaining Amount Pawned -->
                                     <div class="col-md-3">
-                                        <label class="form-label">Amount Pawned</label>
+                                        <label id="tpRemainingAmountLabel" class="form-label">Amount Pawned</label>
                                         <input type="text" class="form-control" id="tpAmountPawned" readonly>
                                     </div>
+
+
+
                                     <div class="col-md-4">
                                         <label class="form-label">Months period to pay</label>
                                         <select id="tpMonthsSelector" class="form-select">
