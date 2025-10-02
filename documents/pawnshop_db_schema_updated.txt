@@ -154,5 +154,20 @@ notes
 created_at	
 
 
+12. settings
+--------------
+id
+cash_threshold
+pawn_maturity_reminder_days
+export_format
+report_info
+backup_frequency
+shop_name
+fb_page_name
+updated_at
+session_timeout
+enable_sms
+
+
 
 

@@ -71,6 +71,17 @@ $(document).ready(function () {
                     $("#ppOriginalAmountPawned").val(pawn.original_amount_pawned);
 
 
+                    if (pawn.has_partial_payments == 0) {
+                        // Only show one field labeled "Amount Pawned"
+                        $("#ppOriginalAmountLabel").text("Amount Pawned");
+                        $("#ppRemainingWrapper").hide();
+                    } else {
+                        // Show both fields
+                        $("#ppOriginalAmountLabel").text("Original Amount Pawned");
+                        $("#ppRemainingLabel").text("Remaining Amount Pawned");
+                        $("#ppRemainingWrapper").show();
+                    }
+
 
 
                     $("#ppAmount").val("");
@@ -234,15 +245,19 @@ $(document).ready(function () {
         $("#ppNewDueDate").val(newDueDate.toISOString().split("T")[0]);
         $("#ppInterestAmount").val(interest.toFixed(2));
 
-        console.debug("computePartialSummary debug:", {
-            today: todayLocal && todayLocal.toISOString().split("T")[0],
-            currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
-            lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
-            startDate: startDate && startDate.toISOString().split("T")[0],
-            hasTubo, hasPartial, waiveInterest,
-            principal, interestRate, interest,
-            monthsDiff: monthsBetween(startDate, todayLocal)
-        });
+        // console.debug("computePartialSummary debug:", {
+        //     today: todayLocal && todayLocal.toISOString().split("T")[0],
+        //     currentDueDate: currentDueDate && currentDueDate.toISOString().split("T")[0],
+        //     lastTuboEnd: lastTuboEnd && lastTuboEnd.toISOString().split("T")[0],
+        //     startDate: startDate && startDate.toISOString().split("T")[0],
+        //     hasTubo, hasPartial, waiveInterest,
+        //     principal, interestRate, interest,
+        //     monthsDiff: monthsBetween(startDate, todayLocal)
+        // });
+
+
+
+
     }
 
 

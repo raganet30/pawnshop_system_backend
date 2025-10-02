@@ -39,7 +39,7 @@ try {
             $direction = 'in';
             break;
 
-        case 'subtract':
+        case 'deduct':
             if ($amount <= 0) throw new Exception("Invalid amount");
             if ($currentCOH < $amount) throw new Exception("Insufficient cash on hand.");
             $delta = $amount;
@@ -77,7 +77,7 @@ switch ($action) {
         );
         break;
 
-    case 'subtract':
+    case 'deduct':
         $ledgerNotes = sprintf(
             "Deducted ₱%s (Old COH: ₱%s → New COH: ₱%s)",
             number_format($delta, 2),

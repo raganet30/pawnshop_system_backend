@@ -58,10 +58,10 @@ checkSessionTimeout($pdo);
                                         <div class="input-group">
                                             <input type="password" class="form-control" id="add_password"
                                                 name="password" required>
-                                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                                data-target="add_password">
+                                            <span class="input-group-text toggle-password" data-target="add_password"
+                                                style="cursor: pointer;">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </span>
                                         </div>
                                     </div>
 
@@ -70,12 +70,13 @@ checkSessionTimeout($pdo);
                                         <div class="input-group">
                                             <input type="password" class="form-control" id="add_confirm_password"
                                                 name="confirm_password" required>
-                                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                                data-target="add_confirm_password">
+                                            <span class="input-group-text toggle-password"
+                                                data-target="add_confirm_password" style="cursor: pointer;">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </span>
                                         </div>
                                     </div>
+
 
 
                                     <div class="col-md-6">
@@ -146,15 +147,16 @@ checkSessionTimeout($pdo);
                                         <input type="text" class="form-control" name="username" id="edit_username"
                                             required>
                                     </div>
+
                                     <div class="col-md-6">
                                         <label>Password</label>
                                         <div class="input-group">
                                             <input type="password" class="form-control" name="password"
                                                 id="edit_password" placeholder="Leave blank to keep current password">
-                                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                                data-target="edit_password">
+                                            <span class="input-group-text toggle-password" data-target="edit_password"
+                                                style="cursor: pointer;">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </span>
                                         </div>
                                     </div>
 
@@ -164,12 +166,13 @@ checkSessionTimeout($pdo);
                                             <input type="password" class="form-control" name="confirm_password"
                                                 id="edit_confirm_password"
                                                 placeholder="Leave blank to keep current password">
-                                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                                data-target="edit_confirm_password">
+                                            <span class="input-group-text toggle-password"
+                                                data-target="edit_confirm_password" style="cursor: pointer;">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </span>
                                         </div>
                                     </div>
+
 
                                     <div class="col-md-6">
                                         <label>Branch</label>
@@ -339,7 +342,7 @@ checkSessionTimeout($pdo);
             $('#editUserModal').modal('show');
         });
 
-        
+
     });
 
     // Live preview for newly selected photo

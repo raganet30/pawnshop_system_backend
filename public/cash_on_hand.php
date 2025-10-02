@@ -103,7 +103,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <label>Action</label>
                                 <select id="cashAdjustmentType" class="form-control">
                                     <option value="add">Add to Cash</option>
-                                    <option value="subtract">Deduct from Cash</option>
+                                    <option value="deduct">Deduct from Cash</option>
                                     <option value="set">Set Exact Amount</option>
                                 </select>
                             </div>
@@ -226,7 +226,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     if (dir === 'in' || dir === 'add') {
                         badgeClass = 'bg-success';
                         sign = '+';
-                    } else if (dir === 'out' || dir === 'subtract') {
+                    } else if (dir === 'out' || dir === 'deduct') {
                         badgeClass = 'bg-danger';
                         sign = '−';
                     }
@@ -277,7 +277,7 @@ $adjustments = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         if (!notes) {
-            Swal.fire("Notes Required", "Please provide a reason for the adjustment.", "warning");
+            Swal.fire("Notes Required", "Please provide notes for the adjustment.", "warning");
             return;
         }
 

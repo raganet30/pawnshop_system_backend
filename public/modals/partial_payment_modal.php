@@ -31,19 +31,30 @@
                         </div>
 
 
-                        <div class="col-md-3">
-                            <label class="form-label">Amount Pawned</label>
-                            <input type="text" class="form-control" id="ppAmountPawned" readonly>
-                        </div>
+                       <!-- Original Amount Pawned -->
+<div class="col-md-3" id="ppOriginalWrapper">
+    <label id="ppOriginalAmountLabel" class="form-label">Original Amount Pawned</label>
+    <input type="text" class="form-control" id="ppOriginalAmountPawned" readonly>
+</div>
+
+<!-- Remaining Amount Pawned -->
+<div class="col-md-3" id="ppRemainingWrapper">
+    <label id="ppRemainingAmountLabel" class="form-label">Remaining Amount Pawned</label>
+    <input type="text" class="form-control" id="ppAmountPawned" readonly>
+</div>
+
+
+
+
+                      
+
+
 
                         <!-- it should be dynamic, will be fixed later -->
                         <!-- <div class="col-md-3">
                                         <label class="form-label">Months Covered</label>
                                         <input type="text" class="form-control" id="ppMonths" readonly>
                                     </div> -->
-
-
-
 
                         <!-- Partial Payment -->
 

@@ -54,9 +54,9 @@ include '../views/header.php';
                     <label for="password" class="form-label">Password</label>
                     <div class="input-group">
                         <input type="password" name="password" id="password" class="form-control" required>
-                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="password">
+                        <span class="input-group-text toggle-password" data-target="password" style="cursor:pointer;">
                             <i class="bi bi-eye"></i>
-                        </button>
+                        </span>
                     </div>
                 </div>
 
@@ -69,21 +69,26 @@ include '../views/header.php';
 </div>
 <script>
     // Show/Hide password toggle
-document.querySelectorAll('.toggle-password').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const targetId = this.getAttribute('data-target');
-        const input = document.getElementById(targetId);
-        const icon = this.querySelector('i');
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".toggle-password").forEach(function (el) {
+            el.addEventListener("click", function () {
+                const targetId = el.getAttribute("data-target");
+                const input = document.getElementById(targetId);
+                const icon = el.querySelector("i");
 
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.replace("bi-eye", "bi-eye-slash");
-        } else {
-            input.type = "password";
-            icon.classList.replace("bi-eye-slash", "bi-eye");
-        }
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove("bi-eye");
+                    icon.classList.add("bi-eye-slash");
+                } else {
+                    input.type = "password";
+                    icon.classList.remove("bi-eye-slash");
+                    icon.classList.add("bi-eye");
+                }
+            });
+        });
     });
-});
+
 
 </script>
 <script src="../assets/js/jquery-3.7.1.min.js"></script>

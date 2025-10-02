@@ -41,7 +41,7 @@ function buildTuboSelector(startDate, maxMonths = 4) {
 
         const label = (i === 1)
             ? `1 month: ${formatDate(periodStart)} → ${formatDate(periodEnd)}`
-            : `Advance ${i} months: ${formatDate(periodStart)} → ${formatDate(periodEnd)}`;
+            : `${i} months: ${formatDate(periodStart)} → ${formatDate(periodEnd)}`;
 
         $selector.append(
             $("<option>", {
@@ -124,6 +124,23 @@ $(document).on("click", ".addTuboPaymentBtn", function () {
             $("#tpDueDate").val(pawn.current_due_date);
             // original ampount pawned
             $("#tpOriginalAmountPawned").val("₱" + parseFloat(pawn.original_amount_pawned).toFixed(2));
+
+
+
+            if (pawn.has_partial_payments == 0) {
+                // Change label text
+                $("#tpOriginalAmountLabel").text("Amount Pawned");
+
+                // Hide Remaining Amount Pawned
+                $("#tpRemainingWrapper").hide();
+            } else {
+                // Reset to Original
+                $("#tpOriginalAmountLabel").text("Original Amount Pawned");
+
+                // Show Remaining Amount Pawned
+                $("#tpRemainingWrapper").show();
+            }
+
 
 
 

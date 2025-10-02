@@ -194,11 +194,13 @@ $notifCount = count($nearing) + count($overdue);
 
 
 <!-- Low Cash Alert -->
-<!-- <div id="cashAlert" class="alert alert-warning alert-dismissible fade show shadow position-fixed top-0 start-50 translate-middle-x mt-2" 
-     style="z-index: 2000; width: auto; max-width: 600px;" role="alert">
-  ⚠️ Low Cash on Hand: ₱9,500.00
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div> -->
+<div id="cashAlert"
+    class="alert alert-warning alert-dismissible fade show shadow position-fixed top-0 start-50 translate-middle-x mt-2 d-none"
+    style="z-index: 2000; width: auto; max-width: 600px;" role="alert">
+    ⚠️ Low Cash on Hand: <span id="cashAmount"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
 
 
 
@@ -263,10 +265,10 @@ $notifCount = count($nearing) + count($overdue);
                         <label class="form-label">Old Password</label>
                         <div class="input-group">
                             <input type="password" class="form-control" name="old_password" id="old_password" required>
-                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                data-target="old_password">
+                            <span class="input-group-text toggle-password" data-target="old_password"
+                                style="cursor:pointer;">
                                 <i class="bi bi-eye"></i>
-                            </button>
+                            </span>
                         </div>
                     </div>
 
@@ -274,10 +276,10 @@ $notifCount = count($nearing) + count($overdue);
                         <label class="form-label">New Password</label>
                         <div class="input-group">
                             <input type="password" class="form-control" name="new_password" id="new_password" required>
-                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                data-target="new_password">
+                            <span class="input-group-text toggle-password" data-target="new_password"
+                                style="cursor:pointer;">
                                 <i class="bi bi-eye"></i>
-                            </button>
+                            </span>
                         </div>
                     </div>
 
@@ -286,12 +288,13 @@ $notifCount = count($nearing) + count($overdue);
                         <div class="input-group">
                             <input type="password" class="form-control" name="confirm_password"
                                 id="confirm_new_password" required>
-                            <button class="btn btn-outline-secondary toggle-password" type="button"
-                                data-target="confirm_new_password">
+                            <span class="input-group-text toggle-password" data-target="confirm_new_password"
+                                style="cursor:pointer;">
                                 <i class="bi bi-eye"></i>
-                            </button>
+                            </span>
                         </div>
                     </div>
+
 
                 </div>
                 <div class="modal-footer">
@@ -429,38 +432,63 @@ $notifCount = count($nearing) + count($overdue);
             }
         });
 
-       
+
 
 
 
     });
 
 
-     // Show/Hide password toggle (works for all password inputs)
-        document.querySelectorAll('.toggle-password').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const targetId = this.getAttribute('data-target');
-                const input = document.getElementById(targetId);
-                const icon = this.querySelector('i');
+    // Show/Hide password toggle (works for all password inputs)
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
 
-                if (input.type === "password") {
-                    input.type = "text";
-                    icon.classList.replace("bi-eye", "bi-eye-slash");
-                } else {
-                    input.type = "password";
-                    icon.classList.replace("bi-eye-slash", "bi-eye");
-                }
-            });
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
         });
+    });
 
 
 
     // low cash alert
-    setTimeout(() => {
-        let el = document.getElementById("cashAlert");
-        if (el) {
-            let alert = bootstrap.Alert.getOrCreateInstance(el);
-            alert.close();
-        }
-    }, 10000);
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("../api/get_cash_status.php")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const cashOnHand = parseFloat(data.cash_on_hand);
+                    const threshold = parseFloat(data.cash_threshold);
+
+                    // Get last alerted value from localStorage
+                    const lastAlerted = localStorage.getItem("lastAlertedCash");
+
+                    if (cashOnHand <= threshold && lastAlerted != cashOnHand) {
+                        // Show alert
+                        document.getElementById("cashAmount").textContent =
+                            "₱" + cashOnHand.toLocaleString();
+                        document.getElementById("cashAlert").classList.remove("d-none");
+
+                        // Save this cash value so we don’t alert again until it changes
+                        localStorage.setItem("lastAlertedCash", cashOnHand);
+
+                        // Allow dismiss
+                        document.querySelector("#cashAlert .btn-close").addEventListener("click", () => {
+                            document.getElementById("cashAlert").classList.add("d-none");
+                        });
+                    }
+                }
+            })
+            .catch(err => console.error("Cash alert error:", err));
+    });
+
+
+
 </script>
